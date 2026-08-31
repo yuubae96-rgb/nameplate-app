@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16233F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="シール見積">
+<title>シール見積もり</title>
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--line:#dde2e7;--ink:#16233f;--muted:#68758c;--accent:#0f6e5f;--accentSoft:#e7f3f0;--danger:#b83a32;--safeTop:env(safe-area-inset-top,0px);--safeBottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}body{padding-bottom:calc(40px + var(--safeBottom))}.app{max-width:760px;margin:auto}.head{padding:calc(18px + var(--safeTop)) 16px 18px;background:linear-gradient(180deg,#253756,#16233f);color:white}.head h1{margin:0;font-size:22px}.head p{margin:6px 0 0;color:#c6cfdd;font-size:12px}.tabs{display:flex;gap:6px;padding:12px 12px 0}.tab{flex:1;border:0;border-radius:10px;padding:11px;background:#fff;color:var(--muted);font-weight:700;min-height:44px}.tab.active{background:var(--ink);color:#fff}main{padding:12px}.panel{display:none}.panel.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(22,35,63,.04)}.card h2{font-size:15px;margin:0 0 14px}.field{margin-bottom:13px}.field:last-child{margin-bottom:0}.field label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px}.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}select,input{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font-size:15px;padding:9px 10px}.methods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.method{border:1px solid var(--line);border-radius:11px;background:#fff;padding:12px 5px;text-align:center;font-size:14px;font-weight:800;color:var(--muted);min-height:48px}.method.active{background:var(--ink);color:white;border-color:var(--ink)}.hint{font-size:11px;color:var(--muted);line-height:1.6;margin-top:7px}.check{display:flex!important;gap:8px;align-items:center!important;font-weight:600!important}.check input{width:19px;height:19px;min-height:auto}.result{background:var(--ink);color:#fff;border-radius:15px;padding:18px;margin-bottom:12px}.result .label{font-size:12px;color:#b8c3d3}.price{font-size:37px;font-weight:800;margin:3px 0 2px}.unit{font-size:14px;color:#d8dee8}.break{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid rgba(255,255,255,.13);font-size:13px;color:#d3dbe8}.break.first{margin-top:15px}.qty-table{width:100%;border-collapse:collapse;font-size:13px}.qty-table th,.qty-table td{padding:10px 7px;border-bottom:1px solid var(--line);text-align:right}.qty-table th:first-child,.qty-table td:first-child{text-align:left}.qty-table tr.current{background:var(--accentSoft);font-weight:800;color:var(--accent)}.notice{font-size:11px;line-height:1.65;color:var(--muted);background:#f7f8fa;border-radius:10px;padding:10px}.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.save{width:100%;border:0;border-radius:11px;background:var(--accent);color:#fff;min-height:50px;font-size:15px;font-weight:800}.reset{width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--danger);min-height:44px;margin-top:8px;font-weight:700}.status{text-align:center;height:20px;margin-top:7px;color:var(--accent);font-size:12px}.smalltitle{font-size:12px;font-weight:800;color:var(--muted);margin:14px 0 8px}.chip{display:inline-block;font-size:11px;border-radius:999px;padding:3px 8px;background:var(--accentSoft);color:var(--accent);font-weight:800;margin-left:5px}@media(max-width:520px){.row3,.settings-grid{grid-template-columns:1fr}.price{font-size:33px}}
+</style>
+</head>
+<body><div class="app">
+<div class="head"><h1>シール見積もり</h1><p>平圧・輪転・シルクの社内概算価格をすばやく計算</p></div>
+<div class="tabs"><button class="tab active" data-panel="quote">見積もり</button><button class="tab" data-panel="settings">単価設定</button></div>
+<main>
+<section class="panel active" id="quote">
+<div class="card"><h2>1. 印刷方式</h2><div class="methods"><button class="method active" data-method="flat">平圧</button><button class="method" data-method="rotary">輪転</button><button class="method" data-method="silk">シルク</button></div><div class="hint" id="methodHint">少量・シンプルな印刷向け</div></div>
+<div class="card"><h2>2. 製品仕様</h2>
+<div class="field"><label>仕上がりサイズ（mm）</label><div class="row2"><input id="long" type="number" min="1" value="50" inputmode="decimal" placeholder="長手"><input id="short" type="number" min="1" value="30" inputmode="decimal" placeholder="短手"></div></div>
+<div class="field"><label>素材</label><select id="material"></select></div>
+<div class="field"><label>ラミネート</label><select id="laminate"></select></div>
+<div class="row2"><div class="field"><label>色数</label><select id="colors"><option value="0">0色</option><option value="1" selected>1色</option><option value="2">2色</option><option value="3">3色</option><option value="4">4色</option></select></div><div class="field"><label>数量（枚）</label><input id="qty" type="number" min="1" value="1000" inputmode="numeric"></div></div>
+<div class="field" id="shapeField" style="display:none"><label>形状</label><select id="shape"><option value="rect">四角形（角Rなし）</option><option value="other">上記以外・変形</option></select></div>
+<div class="field"><label class="check"><input type="checkbox" id="includeSetup">初期費用も合計に含める</label></div>
+</div>
+<div class="result"><div class="label">概算製品単価（税別）</div><div class="price" id="unitPrice">¥0.00</div><div class="unit" id="totalPrice">合計 ¥0</div><div class="break first"><span>製品面積</span><span id="areaOut">0 cm²</span></div><div class="break"><span>製品価格</span><span id="productOut">¥0</span></div><div class="break"><span>初期費用</span><span id="setupOut">¥0</span></div><div class="break"><span>計算方式</span><span id="methodOut">平圧</span></div></div>
+<div class="card"><h2>数量別の概算単価 <span class="chip">比較</span></h2><table class="qty-table"><thead><tr><th>数量</th><th>単価</th><th>製品価格</th></tr></thead><tbody id="qtyRows"></tbody></table></div>
+<div class="notice">このアプリは社内用の概算計算です。AIM Groupの公開ページを参考に入力項目を整理していますが、AIM Groupの価格表そのものを複製したものではありません。正式見積では材質、糊、印刷内容、抜き、スリット、包装、指定色などを確認してください。</div>
+</section>
+<section class="panel" id="settings">
+<div class="card"><h2>価格マスター</h2><div class="hint">ここを変えると見積計算へすぐ反映されます。設定はこの端末に保存されます。</div>
+<div class="smalltitle">印刷方式</div><div class="settings-grid">
+<div class="field"><label>平圧 初期費用（円）</label><input id="s_flatSetup" type="number"></div><div class="field"><label>平圧 1色基本費（円/枚）</label><input id="s_flatColor" type="number" step="0.01"></div>
+<div class="field"><label>輪転 初期費用（円）</label><input id="s_rotarySetup" type="number"></div><div class="field"><label>輪転 1色基本費（円/枚）</label><input id="s_rotaryColor" type="number" step="0.01"></div>
+<div class="field"><label>シルク 初期費用（円）</label><input id="s_silkSetup" type="number"></div><div class="field"><label>シルク 1色基本費（円/枚）</label><input id="s_silkColor" type="number" step="0.01"></div>
+</div>
+<div class="smalltitle">共通</div><div class="settings-grid"><div class="field"><label>最低単価（円/枚）</label><input id="s_minUnit" type="number" step="0.01"></div><div class="field"><label>変形加算（円/枚）</label><input id="s_shapeAdd" type="number" step="0.01"></div></div>
+<div class="smalltitle">数量係数</div><div class="settings-grid"><div class="field"><label>100枚未満</label><input id="s_q1" type="number" step="0.01"></div><div class="field"><label>500枚未満</label><input id="s_q2" type="number" step="0.01"></div><div class="field"><label>2,000枚未満</label><input id="s_q3" type="number" step="0.01"></div><div class="field"><label>10,000枚未満</label><input id="s_q4" type="number" step="0.01"></div><div class="field"><label>10,000枚以上</label><input id="s_q5" type="number" step="0.01"></div></div>
+<button class="save" id="save">この内容で保存</button><button class="reset" id="reset">初期設定に戻す</button><div class="status" id="status"></div></div>
+<div class="card"><h2>素材係数</h2><div class="notice">素材・ラミネートの係数は初版の仮マスターです。実際の仕入単価・外注実績に合わせて次の版で個別編集できるよう拡張できます。</div></div>
+</section>
+</main></div>
+<script>
+const DEFAULTS={flatSetup:3500,flatColor:4.2,rotarySetup:8000,rotaryColor:2.2,silkSetup:9500,silkColor:7.5,minUnit:8,shapeAdd:7,q1:1.65,q2:1.35,q3:1.12,q4:1,q5:.88};
+const MATERIALS=[
+['上質紙55（強粘着）',.72],['上質紙70（強粘着）',.78],['アート紙（強粘着）',.86],['ミラーコート紙（強粘着）',.95],['ユポ80μ（強粘着）',1.35],['ユポ80μ（超強粘着）',1.48],['塩ビ白80μ（超強粘着）',1.72],['塩ビ白100μ（超強粘着）',1.88],['PET白50μ（超強粘着）',1.9],['PET透明25μ（強粘着）',1.72],['PET透明50μ（超強粘着）',2.05],['PET蒸着銀25μ（超強粘着）',2.12],['PET蒸着金25μ（超強粘着）',2.25]];
+const LAMS=[['ラミネートなし',0],['PET透明16μ',.18],['PET透明25μ',.25],['PET透明艶消25μ',.31],['PP透明40μ',.22]];
+const METHOD={flat:{name:'平圧',hint:'少量・シンプルな印刷向け'},rotary:{name:'輪転',hint:'中〜大量生産向け'},silk:{name:'シルク',hint:'耐候性・厚盛り・大きめサイズ向け'}};
+const KEY='seal-estimate-settings-v1';let s=Object.assign({},DEFAULTS,JSON.parse(localStorage.getItem(KEY)||'{}'));let method='flat';
+const $=id=>document.getElementById(id),yen=n=>'¥'+Math.round(n).toLocaleString('ja-JP'),yen2=n=>'¥'+n.toLocaleString('ja-JP',{minimumFractionDigits:2,maximumFractionDigits:2});
+function initSelects(){MATERIALS.forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent=x[0];$('material').appendChild(o)});LAMS.forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent=x[0];$('laminate').appendChild(o)});$('material').value=4}
+function qFactor(q){if(q<100)return s.q1;if(q<500)return s.q2;if(q<2000)return s.q3;if(q<10000)return s.q4;return s.q5}
+function calc(qOverride){const L=Math.max(1,Number($('long').value)||1),W=Math.max(1,Number($('short').value)||1),q=Math.max(1,Number(qOverride??$('qty').value)||1),area=L*W/100,mat=MATERIALS[+$('material').value][1],lam=LAMS[+$('laminate').value][1],colors=+$('colors').value,shape=$('shape').value;let baseColor,setup,methodFactor;if(method==='flat'){baseColor=s.flatColor;setup=s.flatSetup;methodFactor=1}else if(method==='rotary'){baseColor=s.rotaryColor;setup=s.rotarySetup;methodFactor=.92}else{baseColor=s.silkColor;setup=s.silkSetup;methodFactor=1.18}const substrate=area*.062*mat,lamCost=area*.045*lam,print=Math.max(colors,1)*baseColor,shapeCost=(method==='silk'&&shape==='other')?s.shapeAdd:0;let unit=(substrate+lamCost+print+shapeCost)*qFactor(q)*methodFactor;unit=Math.max(s.minUnit,unit);const product=unit*q;return{q,area,unit,product,setup,total:product+($('includeSetup').checked?setup:0)}}
+function render(){const r=calc();$('unitPrice').textContent=yen2(r.unit);$('totalPrice').textContent='合計 '+yen(r.total);$('areaOut').textContent=r.area.toLocaleString('ja-JP',{maximumFractionDigits:2})+' cm²';$('productOut').textContent=yen(r.product);$('setupOut').textContent=yen(r.setup)+($('includeSetup').checked?'（合計に含む）':'（別途）');$('methodOut').textContent=METHOD[method].name;const qs=[100,300,500,1000,2000,3000,5000,10000,20000,50000,100000],cur=Math.max(1,Number($('qty').value)||1);$('qtyRows').innerHTML=qs.map(q=>{const x=calc(q);return `<tr class="${q===cur?'current':''}"><td>${q.toLocaleString()}枚</td><td>${yen2(x.unit)}</td><td>${yen(x.product)}</td></tr>`}).join('')}
+function setMethod(m){method=m;document.querySelectorAll('.method').forEach(b=>b.classList.toggle('active',b.dataset.method===m));$('methodHint').textContent=METHOD[m].hint;$('shapeField').style.display=m==='silk'?'block':'none';render()}
+function loadSettingsForm(){Object.keys(DEFAULTS).forEach(k=>{const el=$('s_'+k);if(el)el.value=s[k]})}
+function saveSettings(){const n={};Object.keys(DEFAULTS).forEach(k=>{const el=$('s_'+k);n[k]=Number(el.value);if(!Number.isFinite(n[k]))n[k]=DEFAULTS[k]});s=n;localStorage.setItem(KEY,JSON.stringify(s));$('status').textContent='保存しました';setTimeout(()=>$('status').textContent='',1600);render()}
+initSelects();loadSettingsForm();
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===b.dataset.panel));if(b.dataset.panel==='settings')loadSettingsForm()}));
+document.querySelectorAll('.method').forEach(b=>b.addEventListener('click',()=>setMethod(b.dataset.method)));document.querySelectorAll('#quote input,#quote select').forEach(el=>el.addEventListener('input',render));$('save').addEventListener('click',saveSettings);$('reset').addEventListener('click',()=>{s=Object.assign({},DEFAULTS);localStorage.removeItem(KEY);loadSettingsForm();render();$('status').textContent='初期設定に戻しました';setTimeout(()=>$('status').textContent='',1600)});render();
+</script></body></html>
