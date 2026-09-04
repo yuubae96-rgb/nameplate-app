@@ -8,109 +8,37 @@
 <title>動画AI解析</title>
 <style>
 :root{--bg:#f3f5f7;--card:#fff;--ink:#16233f;--muted:#68758c;--line:#dce2e8;--accent:#0f6e5f;--danger:#b83a32;--safeTop:env(safe-area-inset-top,0px);--safeBottom:env(safe-area-inset-bottom,0px)}
-*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}body{padding-bottom:calc(40px + var(--safeBottom))}.app{max-width:760px;margin:auto}.head{padding:calc(18px + var(--safeTop)) 16px 18px;background:linear-gradient(180deg,#253756,#16233f);color:#fff}.head h1{font-size:23px;margin:0}.head p{font-size:12px;line-height:1.6;margin:6px 0 0;color:#cbd4df}main{padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(22,35,63,.04)}.card h2{font-size:15px;margin:0 0 13px}.field{margin-bottom:13px}.field:last-child{margin-bottom:0}label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px}input,textarea,select{width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);font-size:16px;padding:11px;min-height:46px}textarea{min-height:135px;resize:vertical;line-height:1.6}.keyrow{display:grid;grid-template-columns:1fr auto;gap:8px}.smallbtn{border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 12px;color:var(--ink);font-weight:700}.drop{border:2px dashed #b7c0cc;border-radius:14px;padding:18px;text-align:center;background:#fafbfc}.drop input{border:0;padding:8px 0;min-height:auto}.meta{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.55}video{display:none;width:100%;margin-top:12px;border-radius:12px;background:#000;max-height:330px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.preset{border:1px solid var(--line);background:#fff;border-radius:11px;min-height:44px;font-weight:800;color:var(--ink)}.preset.active{background:var(--ink);color:#fff;border-color:var(--ink)}.run{width:100%;border:0;border-radius:12px;background:var(--accent);color:#fff;font-size:16px;font-weight:900;min-height:54px}.run:disabled{opacity:.45}.status{font-size:13px;color:var(--muted);line-height:1.6;margin-top:10px}.progress{height:8px;background:#e8ecef;border-radius:999px;overflow:hidden;margin-top:8px;display:none}.bar{height:100%;width:0;background:var(--accent);transition:width .3s}.result{white-space:pre-wrap;line-height:1.75;font-size:15px}.result.empty{color:var(--muted)}.warn{font-size:12px;line-height:1.65;background:#fff8e7;border:1px solid #ead9aa;border-radius:10px;padding:10px;color:#655224}.error{color:var(--danger)}.foot{font-size:11px;color:var(--muted);line-height:1.65}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}body{padding-bottom:calc(40px + var(--safeBottom))}.app{max-width:760px;margin:auto}.head{padding:calc(18px + var(--safeTop)) 16px 18px;background:linear-gradient(180deg,#253756,#16233f);color:#fff}.head h1{font-size:23px;margin:0}.head p{font-size:12px;line-height:1.6;margin:6px 0 0;color:#cbd4df}main{padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(22,35,63,.04)}.card h2{font-size:15px;margin:0 0 13px}.field{margin-bottom:13px}.field:last-child{margin-bottom:0}label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px}input,textarea,select{width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);font-size:16px;padding:11px;min-height:46px}textarea{min-height:160px;resize:vertical;line-height:1.6}.keyrow{display:grid;grid-template-columns:1fr auto;gap:8px}.smallbtn{border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 12px;color:var(--ink);font-weight:700}.drop{border:2px dashed #b7c0cc;border-radius:14px;padding:18px;text-align:center;background:#fafbfc}.drop input{border:0;padding:8px 0;min-height:auto}.meta{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.55}video{display:none;width:100%;margin-top:12px;border-radius:12px;background:#000;max-height:330px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.preset{border:1px solid var(--line);background:#fff;border-radius:11px;min-height:46px;padding:7px 4px;font-weight:800;color:var(--ink);font-size:14px}.preset.active{background:var(--ink);color:#fff;border-color:var(--ink)}.run{width:100%;border:0;border-radius:12px;background:var(--accent);color:#fff;font-size:16px;font-weight:900;min-height:54px}.run:disabled{opacity:.45}.status{font-size:13px;color:var(--muted);line-height:1.6;margin-top:10px}.progress{height:8px;background:#e8ecef;border-radius:999px;overflow:hidden;margin-top:8px;display:none}.bar{height:100%;width:0;background:var(--accent);transition:width .3s}.result{white-space:pre-wrap;line-height:1.75;font-size:15px}.result.empty{color:var(--muted)}.warn{font-size:12px;line-height:1.65;background:#fff8e7;border:1px solid #ead9aa;border-radius:10px;padding:10px;color:#655224}.error{color:var(--danger)}.foot{font-size:11px;color:var(--muted);line-height:1.65}
 </style>
 </head>
-<body>
-<div class="app">
-  <div class="head"><h1>動画AI解析</h1><p>iPhoneの動画をGeminiへ送り、内容を日本語で分析する試作版</p></div>
-  <main>
-    <div class="card">
-      <h2>1. Gemini APIキー</h2>
-      <div class="field">
-        <label>Google AI Studioで発行したAPIキー</label>
-        <div class="keyrow"><input id="apiKey" type="password" autocomplete="off" placeholder="AIza..."><button class="smallbtn" id="toggleKey" type="button">表示</button></div>
-        <div class="meta">この試作版ではAPIキーをGitHubやサーバーへ保存しません。この画面を閉じると消えます。</div>
-      </div>
-      <div class="field"><label>モデル</label><select id="model"><option value="gemini-3.5-flash">Gemini 3.5 Flash</option><option value="gemini-2.5-flash">Gemini 2.5 Flash</option></select></div>
-    </div>
-
-    <div class="card">
-      <h2>2. 動画を選択</h2>
-      <div class="drop">
-        <input id="videoFile" type="file" accept="video/*">
-        <div class="meta" id="fileInfo">まずは10〜20秒程度・15MB以下の短い動画がおすすめです。</div>
-      </div>
-      <video id="preview" controls playsinline></video>
-    </div>
-
-    <div class="card">
-      <h2>3. 何を見てもらう？</h2>
-      <div class="actions">
-        <button class="preset active" data-preset="general" type="button">普通に解説</button>
-        <button class="preset" data-preset="golf" type="button">ゴルフ分析</button>
-      </div>
-      <div class="field" style="margin-top:12px"><label>AIへの指示</label><textarea id="prompt">この動画をよく観察して、何が起きているか日本語で詳しく説明してください。重要な動作があれば、時系列に沿って説明してください。映像だけでは断定できないことは断定せず、その旨も書いてください。</textarea></div>
-    </div>
-
-    <div class="card">
-      <button class="run" id="run" type="button">動画をAI解析する</button>
-      <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
-      <div class="status" id="status">APIキーと動画を選んだら解析できます。</div>
-    </div>
-
-    <div class="card">
-      <h2>AIの回答</h2>
-      <div class="result empty" id="result">まだ解析していません。</div>
-    </div>
-
-    <div class="warn">試作版です。高速な動作はGeminiの動画サンプリングで細部を取りこぼす場合があります。ゴルフのインパクトや工場の細かな作業判定は、次段階で骨格検出・フレーム抽出などを組み合わせる想定です。</div>
-    <p class="foot">動画データはこのページからGoogle Gemini APIへ直接送信されます。機密動画や個人情報を含む動画は、社内運用向けの安全なバックエンドを作るまでは使用しないでください。</p>
-  </main>
-</div>
+<body><div class="app">
+<div class="head"><h1>動画AI解析</h1><p>動画をGeminiへ送り、目的に合わせてAI分析する試作版</p></div>
+<main>
+<div class="card"><h2>1. Gemini APIキー</h2><div class="field"><label>Google AI Studioで発行したAPIキー</label><div class="keyrow"><input id="apiKey" type="password" autocomplete="off" placeholder="AIza..."><button class="smallbtn" id="toggleKey" type="button">表示</button></div><div class="meta">APIキーはGitHubやサーバーへ保存しません。この画面を閉じると消えます。</div></div><div class="field"><label>モデル</label><select id="model"><option value="gemini-3.5-flash">Gemini 3.5 Flash</option><option value="gemini-2.5-flash">Gemini 2.5 Flash</option></select></div></div>
+<div class="card"><h2>2. 動画を選択</h2><div class="drop"><input id="videoFile" type="file" accept="video/*"><div class="meta" id="fileInfo">まずは10〜20秒程度・15MB以下の短い動画がおすすめです。</div></div><video id="preview" controls playsinline></video></div>
+<div class="card"><h2>3. 何を見てもらう？</h2><div class="actions">
+<button class="preset active" data-preset="general" type="button">普通に解説</button><button class="preset" data-preset="golf" type="button">ゴルフ分析</button>
+<button class="preset" data-preset="improve" type="button">作業改善</button><button class="preset" data-preset="safety" type="button">危険動作</button>
+<button class="preset" data-preset="inspect" type="button">検品</button><button class="preset" data-preset="manual" type="button">手順書作成</button>
+</div><div class="field" style="margin-top:12px"><label>AIへの指示（自由に書き換えできます）</label><textarea id="prompt"></textarea><div class="meta">上のボタンを押すと指示文が自動で切り替わります。さらに文章を自由に追加・修正できます。</div></div></div>
+<div class="card"><button class="run" id="run" type="button">動画をAI解析する</button><div class="progress" id="progress"><div class="bar" id="bar"></div></div><div class="status" id="status">APIキーと動画を選んだら解析できます。</div></div>
+<div class="card"><h2>AIの回答</h2><div class="result empty" id="result">まだ解析していません。</div></div>
+<div class="warn">AIの指摘は補助情報です。安全・品質・合否の最終判断は人が確認してください。高速動作や細かな傷・寸法などは通常の動画解析だけでは見落とす場合があります。</div><p class="foot">動画データはこのページからGoogle Gemini APIへ直接送信されます。機密動画や個人情報を含む動画は、社内運用向けの安全なバックエンドを作るまでは使用しないでください。</p>
+</main></div>
 <script>
-const $=id=>document.getElementById(id);
-const MAX_BYTES=15*1024*1024;
+const $=id=>document.getElementById(id),MAX_BYTES=15*1024*1024;
 const prompts={
-  general:'この動画をよく観察して、何が起きているか日本語で詳しく説明してください。重要な動作があれば、時系列に沿って説明してください。映像だけでは断定できないことは断定せず、その旨も書いてください。',
-  golf:'このゴルフスイング動画をコーチの視点で分析してください。①アドレス ②テークバック ③トップ ④ダウンスイング ⑤インパクト付近 ⑥フォローの順に観察し、特に腰・肩・腕・手首・頭の動きを見てください。「手打ち傾向」があるかも評価し、そう判断する根拠を動画から確認できる範囲で説明してください。最後に、良い点・改善点・次の練習で意識することをそれぞれ簡潔にまとめてください。映像だけでは断定できない点は断定しないでください。'
+general:'この動画をよく観察して、何が起きているか日本語で詳しく説明してください。重要な動作があれば、時系列に沿って説明してください。映像だけでは断定できないことは断定せず、その旨も書いてください。',
+golf:'このゴルフスイング動画をコーチの視点で分析してください。①アドレス ②テークバック ③トップ ④ダウンスイング ⑤インパクト付近 ⑥フォローの順に観察し、特に腰・肩・腕・手首・頭の動きを見てください。手打ち傾向があるかも評価し、その根拠を動画から確認できる範囲で説明してください。最後に良い点・改善点・次の練習で意識することを簡潔にまとめてください。断定できない点は断定しないでください。',
+improve:'この動画を製造現場の改善担当者として分析してください。まず作業者が何をしているか工程順・時系列で説明してください。そのうえで、①無駄な動作や移動 ②待ち時間 ③持ち替え・探す・取りに行く動作 ④作業姿勢や配置で改善できそうな点 ⑤作業時間を短縮できそうな点を指摘してください。可能なら該当時刻も示してください。最後に「すぐできる改善」を優先順位順に3つ提案してください。映像から確認できないことは推測で断定しないでください。',
+safety:'この動画を製造現場の安全担当者として観察してください。作業内容を時系列で説明したうえで、①手や指が危険箇所に近づく動作 ②挟まれ・巻き込まれ・切創・転倒などにつながりそうな動作 ③無理な姿勢 ④保護具や安全確認で気になる点を、見える範囲だけで指摘してください。可能なら該当時刻を示し、「危険度 高・中・低」の目安も付けてください。動画だけでは安全性を断定できないため、見えない設備仕様やルールを推測しないでください。',
+inspect:'この動画を製造品の検品補助として観察してください。製品や作業対象について、①傷・汚れ・欠け ②印刷のかすれ・文字抜け・にじみ ③位置ずれや向き ④数量や部品の入れ忘れ ⑤その他目視で気になる箇所を探してください。異常候補があれば該当時刻と場所を説明してください。動画の解像度や角度で確認できない項目は「確認不能」としてください。合否を断定せず、人が再確認すべき箇所を優先して示してください。',
+manual:'この動画を新人教育用の作業マニュアル作成担当として分析してください。作業を開始から終了まで工程に分け、各工程について「何をする」「どこを見る」「注意点」を簡潔に整理してください。動画から読み取れる範囲で工具・材料・操作も記載してください。最後に新人が間違えやすそうなポイントをまとめてください。映像だけで分からない設定値や社内ルールは作らず、「要確認」としてください。'
 };
-let objectUrl='';
-
-document.querySelectorAll('.preset').forEach(btn=>btn.addEventListener('click',()=>{
-  document.querySelectorAll('.preset').forEach(x=>x.classList.remove('active'));
-  btn.classList.add('active');
-  $('prompt').value=prompts[btn.dataset.preset];
-}));
+$('prompt').value=prompts.general;let objectUrl='';
+document.querySelectorAll('.preset').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.preset').forEach(x=>x.classList.remove('active'));btn.classList.add('active');$('prompt').value=prompts[btn.dataset.preset]}));
 $('toggleKey').addEventListener('click',()=>{const x=$('apiKey');x.type=x.type==='password'?'text':'password';$('toggleKey').textContent=x.type==='password'?'表示':'隠す'});
-$('videoFile').addEventListener('change',()=>{
-  const f=$('videoFile').files[0];
-  if(!f)return;
-  const mb=(f.size/1024/1024).toFixed(1);
-  $('fileInfo').textContent=`${f.name} / ${mb}MB / ${f.type||'video'}`;
-  if(objectUrl)URL.revokeObjectURL(objectUrl);
-  objectUrl=URL.createObjectURL(f);$('preview').src=objectUrl;$('preview').style.display='block';
-  if(f.size>MAX_BYTES){$('fileInfo').innerHTML+=`<br><span class="error">15MBを超えています。まずは短い動画で試してください。</span>`}
-});
-function fileToBase64(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file)})}
-function setProgress(p,msg){$('progress').style.display='block';$('bar').style.width=p+'%';$('status').textContent=msg}
-$('run').addEventListener('click',async()=>{
-  const key=$('apiKey').value.trim(),file=$('videoFile').files[0],prompt=$('prompt').value.trim(),model=$('model').value;
-  $('result').classList.add('empty');$('result').textContent='';
-  if(!key){$('status').innerHTML='<span class="error">Gemini APIキーを入力してください。</span>';return}
-  if(!file){$('status').innerHTML='<span class="error">動画を選択してください。</span>';return}
-  if(file.size>MAX_BYTES){$('status').innerHTML='<span class="error">試作版は15MB以下の動画にしてください。</span>';return}
-  if(!prompt){$('status').innerHTML='<span class="error">AIへの指示を入力してください。</span>';return}
-  $('run').disabled=true;
-  try{
-    setProgress(15,'動画を読み込んでいます…');
-    const base64=await fileToBase64(file);
-    setProgress(45,'Geminiへ動画を送っています…');
-    const url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:file.type||'video/mp4',data:base64}},{text:prompt}]}],generationConfig:{temperature:0.25}})});
-    setProgress(80,'AIが動画を解析しています…');
-    const data=await res.json();
-    if(!res.ok)throw new Error(data?.error?.message||`HTTP ${res.status}`);
-    const text=(data.candidates||[]).flatMap(c=>c.content?.parts||[]).map(p=>p.text||'').filter(Boolean).join('\n\n');
-    if(!text)throw new Error('AIから文章の回答を取得できませんでした。');
-    setProgress(100,'解析完了');
-    $('result').classList.remove('empty');$('result').textContent=text;
-  }catch(e){
-    $('result').classList.remove('empty');$('result').innerHTML=`<span class="error">解析できませんでした。\n${String(e.message||e)}</span>`;
-    $('status').innerHTML='<span class="error">エラーが発生しました。APIキー・動画形式・モデル名を確認してください。</span>';
-    $('bar').style.width='0%';
-  }finally{$('run').disabled=false}
-});
-</script>
-</body>
-</html>
+$('videoFile').addEventListener('change',()=>{const f=$('videoFile').files[0];if(!f)return;const mb=(f.size/1024/1024).toFixed(1);$('fileInfo').textContent=`${f.name} / ${mb}MB / ${f.type||'video'}`;if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(f);$('preview').src=objectUrl;$('preview').style.display='block';if(f.size>MAX_BYTES)$('fileInfo').innerHTML+=`<br><span class="error">15MBを超えています。まずは短い動画で試してください。</span>`});
+function fileToBase64(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file)})}function setProgress(p,msg){$('progress').style.display='block';$('bar').style.width=p+'%';$('status').textContent=msg}
+$('run').addEventListener('click',async()=>{const key=$('apiKey').value.trim(),file=$('videoFile').files[0],prompt=$('prompt').value.trim(),model=$('model').value;$('result').classList.add('empty');$('result').textContent='';if(!key){$('status').innerHTML='<span class="error">Gemini APIキーを入力してください。</span>';return}if(!file){$('status').innerHTML='<span class="error">動画を選択してください。</span>';return}if(file.size>MAX_BYTES){$('status').innerHTML='<span class="error">試作版は15MB以下の動画にしてください。</span>';return}if(!prompt){$('status').innerHTML='<span class="error">AIへの指示を入力してください。</span>';return}$('run').disabled=true;try{setProgress(15,'動画を読み込んでいます…');const base64=await fileToBase64(file);setProgress(45,'Geminiへ動画を送っています…');const url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:file.type||'video/mp4',data:base64}},{text:prompt}]}],generationConfig:{temperature:0.25}})});setProgress(80,'AIが動画を解析しています…');const data=await res.json();if(!res.ok)throw new Error(data?.error?.message||`HTTP ${res.status}`);const text=(data.candidates||[]).flatMap(c=>c.content?.parts||[]).map(p=>p.text||'').filter(Boolean).join('\n\n');if(!text)throw new Error('AIから文章の回答を取得できませんでした。');setProgress(100,'解析完了');$('result').classList.remove('empty');$('result').textContent=text}catch(e){$('result').classList.remove('empty');$('result').innerHTML=`<span class="error">解析できませんでした。\n${String(e.message||e)}</span>`;$('status').innerHTML='<span class="error">エラーが発生しました。APIキー・動画形式・モデル名を確認してください。</span>';$('bar').style.width='0%'}finally{$('run').disabled=false}});
+</script></body></html>
