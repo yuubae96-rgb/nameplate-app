@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16233f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>動画AI解析</title>
+<style>
+html,body{margin:0;width:100%;height:100%;background:#f3f5f7;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}.bar{position:fixed;z-index:10;left:0;right:0;top:0;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;background:#16233f;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px}.bar strong{font-size:13px}.bar button{border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;border-radius:8px;padding:7px 9px;font-weight:700}.saved{color:#bfe9df}.frame{position:fixed;left:0;right:0;bottom:0;top:calc(45px + env(safe-area-inset-top,0px));width:100%;height:calc(100% - 45px - env(safe-area-inset-top,0px));border:0;background:#f3f5f7}
+</style>
+</head>
+<body>
+<div class="bar"><div><strong>動画AI解析</strong> <span class="saved" id="state">APIキー自動保存</span></div><button id="forget" type="button">キーを削除</button></div>
+<iframe class="frame" id="app" src="video-ai.html" allow="camera; microphone"></iframe>
+<script>
+const KEY='video-ai-gemini-key-v1';
+const frame=document.getElementById('app');
+const state=document.getElementById('state');
+function setup(){
+  try{
+    const doc=frame.contentDocument;
+    const input=doc&&doc.getElementById('apiKey');
+    if(!input){setTimeout(setup,250);return}
+    const saved=localStorage.getItem(KEY)||'';
+    if(saved){input.value=saved;state.textContent='APIキー保存済み';}
+    else state.textContent='初回だけAPIキーを入力';
+    let timer;
+    input.addEventListener('input',()=>{
+      clearTimeout(timer);
+      timer=setTimeout(()=>{
+        const v=input.value.trim();
+        if(v){localStorage.setItem(KEY,v);state.textContent='APIキー保存済み';}
+      },400);
+    });
+  }catch(e){state.textContent='キー保存機能を利用できません';}
+}
+frame.addEventListener('load',setup);
+document.getElementById('forget').addEventListener('click',()=>{
+  localStorage.removeItem(KEY);
+  try{const i=frame.contentDocument.getElementById('apiKey');if(i)i.value='';}catch{}
+  state.textContent='APIキーを削除しました';
+});
+</script>
+</body>
+</html>
