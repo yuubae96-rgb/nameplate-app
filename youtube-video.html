@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16233f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>YouTube動画作成</title>
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--ink:#16233f;--muted:#68758c;--line:#dce2e8;--accent:#0f6e5f;--warn:#8a6400;--danger:#b83a32}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink);padding-bottom:calc(50px + env(safe-area-inset-bottom))}.head{padding:calc(18px + env(safe-area-inset-top)) 16px 18px;background:linear-gradient(180deg,#253756,#16233f);color:#fff}.head h1{font-size:23px;margin:0}.head p{font-size:12px;line-height:1.6;margin:6px 0 0;color:#cbd4df}.app{max-width:860px;margin:auto}.main{padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:12px}.card h2{font-size:15px;margin:0 0 13px}.field{margin-bottom:13px}label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px}input,textarea,select{width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);font-size:16px;padding:11px;min-height:46px}textarea{min-height:110px;resize:vertical;line-height:1.6}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btn{border:0;border-radius:11px;min-height:48px;padding:10px 12px;font-weight:900;font-size:14px;background:#e9edf2;color:var(--ink)}.btn.primary{background:var(--accent);color:#fff}.btn.navy{background:var(--ink);color:#fff}.btn.warn{background:#fff3d8;color:#684d00}.btn:disabled{opacity:.45}.status{font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px}.pill{display:inline-block;background:#e6f2ef;color:#21594f;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800}.scene{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:12px}.scene-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.scene-head h3{font-size:15px;margin:0}.scene-num{font-size:11px;background:var(--ink);color:#fff;border-radius:999px;padding:5px 8px}.imgbox{aspect-ratio:16/9;background:#e9edf1;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--muted);font-size:12px;margin-bottom:10px}.imgbox img{width:100%;height:100%;object-fit:cover}.scene-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.small{min-height:42px;font-size:12px}.fact{font-size:11px;color:#765d16;background:#fff7df;border-radius:9px;padding:9px;line-height:1.55;margin-top:9px}.audio{width:100%;margin-top:8px}.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px}.note{font-size:12px;line-height:1.65;background:#eef5f3;border:1px solid #c9ded8;padding:11px;border-radius:10px;color:#315f57}.danger{color:var(--danger)}.usage{font-size:11px;color:var(--muted);margin-top:8px}.preview{display:none}.preview.show{display:block}.preview-screen{aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;position:relative}.preview-screen img{width:100%;height:100%;object-fit:cover}.preview-caption{position:absolute;left:6%;right:6%;bottom:5%;color:#fff;text-shadow:0 2px 7px #000;font-weight:800;font-size:clamp(15px,2.7vw,28px);text-align:center;line-height:1.4}.progress{height:8px;background:#e5e9ed;border-radius:999px;overflow:hidden;margin-top:9px}.progress>div{height:100%;width:0;background:var(--accent)}@media(max-width:600px){.row,.toolbar{grid-template-columns:1fr}.scene-actions{grid-template-columns:1fr 1fr}.scene-actions .wide{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="head"><h1>YouTube動画作成</h1><p>テーマ → AI構成 → リアルな歴史映画風画像 → 12種類のナレーション → 動画プレビュー</p></div>
+  <div class="main">
+    <div class="card">
+      <h2>1. テーマを入力</h2>
+      <div class="field"><label>動画テーマ</label><input id="topic" placeholder="例：坂本龍馬の人生"></div>
+      <div class="field"><label>追加指示（任意）</label><textarea id="extra" placeholder="例：初心者にも分かりやすく。史実を優先。"></textarea></div>
+      <div class="field"><label>動画の長さ</label><select id="minutes"><option value="1">約1分</option><option value="3" selected>約3分</option><option value="5">約5分</option><option value="8">約8分</option></select></div>
+      <button class="btn primary" id="makeScript">AIで動画構成を作る</button>
+      <div class="status" id="scriptStatus">まだ構成を作っていません。</div>
+    </div>
+
+    <div class="card" id="voiceCard" style="display:none">
+      <h2>2. ナレーションの声</h2>
+      <div class="row">
+        <div class="field"><label>声（12種類）</label><select id="voice"></select></div>
+        <div class="field"><label>読み方の雰囲気</label><select id="direction"><option>落ち着いた日本語の歴史ドキュメンタリー調。自然な間、明瞭な発音、ややゆっくり。</option><option>重厚で落ち着いた日本語ナレーション。低めのテンションで、史実を丁寧に伝える。</option><option>聞きやすく親しみのある日本語解説。明瞭で自然なテンポ。</option></select></div>
+      </div>
+      <button class="btn" id="voiceSample">この声を試聴</button>
+      <audio id="sampleAudio" class="audio" controls style="display:none"></audio>
+    </div>
+
+    <div id="bulk" class="card" style="display:none">
+      <h2>3. シーンを作る</h2>
+      <div class="note">画像は標準で<strong>実写の歴史映画・高品質ドキュメンタリー風</strong>です。イラスト・漫画・アニメ調にはしません。</div>
+      <div class="toolbar" style="margin-top:10px"><button class="btn navy" id="allImages">全シーンのAI画像を作る</button><button class="btn navy" id="allAudio">全シーンの音声を作る</button></div>
+      <div class="usage" id="usage">今回の利用：構成0回 / 画像0枚 / 音声0回</div>
+    </div>
+
+    <div id="scenes"></div>
+
+    <div class="card preview" id="previewCard">
+      <h2>4. 動画プレビュー</h2>
+      <div class="preview-screen"><img id="previewImg"><div class="preview-caption" id="previewCaption"></div></div>
+      <div class="progress"><div id="previewProgress"></div></div>
+      <div class="toolbar" style="margin-top:10px"><button class="btn primary" id="playAll">最初から再生</button><button class="btn" id="stopAll">停止</button></div>
+      <div class="status">画像と音声がそろったシーンを順番に再生します。</div>
+    </div>
+  </div>
+</div>
+<script>
+const FN='https://vnnvuxccazkdzwqjmntz.supabase.co/functions/v1/youtube-video-maker';
+const voices=[['Charon','男声・解説向け'],['Gacrux','男声・落ち着き'],['Sadaltager','男声・知的'],['Iapetus','男声・明瞭'],['Algieba','男声・なめらか'],['Schedar','男声・安定'],['Kore','女声・しっかり'],['Aoede','女声・軽やか'],['Sulafat','女声・温かい'],['Vindemiatrix','女声・やさしい'],['Achernar','女声・柔らかい'],['Puck','明るい・軽快']];
+const $=id=>document.getElementById(id); let project=null, counts={script:0,image:0,audio:0}, stopped=false;
+voices.forEach(([v,n])=>{const o=document.createElement('option');o.value=v;o.textContent=`${v}｜${n}`;$('voice').appendChild(o)});
+function usage(){ $('usage').textContent=`今回の利用：構成${counts.script}回 / 画像${counts.image}枚 / 音声${counts.audio}回`; }
+async function call(body){const r=await fetch(FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);return d}
+function dataUrl(mime,data){return `data:${mime};base64,${data}`}
+function syncScene(i){const s=project.scenes[i];s.narration=$(`nar-${i}`).value;s.reading=$(`read-${i}`).value;s.imagePrompt=$(`imgp-${i}`).value;s.title=$(`title-${i}`).value}
+function sceneHtml(s,i){return `<div class="scene" id="scene-${i}"><div class="scene-head"><h3><span class="scene-num">SCENE ${i+1}</span> <input id="title-${i}" value="${esc(s.title||'')}" style="width:auto;min-height:36px;padding:6px 8px;font-size:14px"></h3><span class="pill" id="state-${i}">未生成</span></div><div class="imgbox" id="imgbox-${i}">AI画像はまだありません</div><div class="field"><label>ナレーション</label><textarea id="nar-${i}">${esc(s.narration||'')}</textarea></div><div class="field"><label>音声用の読み方</label><textarea id="read-${i}">${esc(s.reading||s.narration||'')}</textarea></div><div class="field"><label>画像の内容（必要なら編集できます）</label><textarea id="imgp-${i}">${esc(s.imagePrompt||'')}</textarea></div><div class="scene-actions"><button class="btn small" onclick="genImage(${i})">AI画像を作る</button><button class="btn small" onclick="genAudio(${i})">音声を作る</button><button class="btn small wide" onclick="playScene(${i})">このシーンを再生</button></div><audio id="audio-${i}" class="audio" controls style="display:none"></audio>${s.factCheck?`<div class="fact">史実メモ：${esc(s.factCheck)}</div>`:''}</div>`}
+function esc(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function render(){project.scenes.forEach(s=>{if(!s.reading)s.reading=s.narration||''});$('scenes').innerHTML=project.scenes.map(sceneHtml).join('');$('voiceCard').style.display='block';$('bulk').style.display='block';$('previewCard').classList.add('show')}
+$('makeScript').onclick=async()=>{const topic=$('topic').value.trim();if(!topic){$('scriptStatus').innerHTML='<span class="danger">テーマを入力してください。</span>';return}const b=$('makeScript');b.disabled=true;$('scriptStatus').textContent='AIが構成を作成中…';try{project=await call({action:'generateScript',topic,extra:$('extra').value,minutes:Number($('minutes').value)});counts.script++;usage();render();$('scriptStatus').textContent=`「${project.title||topic}」の構成ができました。まず内容を確認してください。`}catch(e){$('scriptStatus').innerHTML=`<span class="danger">${esc(e.message)}</span>`}finally{b.disabled=false}};
+window.genImage=async i=>{syncScene(i);const s=project.scenes[i],st=$(`state-${i}`);st.textContent='画像生成中…';try{const d=await call({action:'generateImage',prompt:s.imagePrompt});s.image=dataUrl(d.mimeType,d.data);$(`imgbox-${i}`).innerHTML=`<img src="${s.image}">`;counts.image++;usage();st.textContent='画像OK'}catch(e){st.textContent='画像エラー';alert(e.message)}};
+window.genAudio=async i=>{syncScene(i);const s=project.scenes[i],st=$(`state-${i}`);st.textContent='音声生成中…';try{const d=await call({action:'generateTts',text:s.reading,voice:$('voice').value,direction:$('direction').value});s.audio=dataUrl(d.mimeType,d.data);const a=$(`audio-${i}`);a.src=s.audio;a.style.display='block';counts.audio++;usage();st.textContent=s.image?'画像・音声OK':'音声OK'}catch(e){st.textContent='音声エラー';alert(e.message)}};
+$('allImages').onclick=async()=>{if(!project)return;if(!confirm(`${project.scenes.length}枚の画像を順番に生成します。Gemini APIを使用します。続けますか？`))return;const b=$('allImages');b.disabled=true;for(let i=0;i<project.scenes.length;i++){try{await genImage(i)}catch{}}b.disabled=false};
+$('allAudio').onclick=async()=>{if(!project)return;if(!confirm(`${project.scenes.length}シーンの音声を順番に生成します。Gemini APIを使用します。続けますか？`))return;const b=$('allAudio');b.disabled=true;for(let i=0;i<project.scenes.length;i++){try{await genAudio(i)}catch{}}b.disabled=false};
+$('voiceSample').onclick=async()=>{const b=$('voiceSample');b.disabled=true;b.textContent='生成中…';try{const d=await call({action:'generateTts',text:'こんにちは。今日は歴史の物語を分かりやすくご紹介します。',voice:$('voice').value,direction:$('direction').value});const a=$('sampleAudio');a.src=dataUrl(d.mimeType,d.data);a.style.display='block';await a.play();counts.audio++;usage()}catch(e){alert(e.message)}finally{b.disabled=false;b.textContent='この声を試聴'}};
+window.playScene=async i=>{syncScene(i);const s=project.scenes[i];if(!s.image){alert('先に画像を作ってください。');return}const img=$('previewImg'),cap=$('previewCaption');img.src=s.image;cap.textContent=s.narration;if(s.audio){const a=new Audio(s.audio);await a.play()} };
+$('stopAll').onclick=()=>{stopped=true;document.querySelectorAll('audio').forEach(a=>{a.pause();a.currentTime=0});$('previewProgress').style.width='0%'};
+$('playAll').onclick=async()=>{if(!project)return;stopped=false;const ready=project.scenes.filter(s=>s.image&&s.audio);if(!ready.length){alert('画像と音声を作ってから再生してください。');return}for(let i=0;i<project.scenes.length;i++){if(stopped)break;syncScene(i);const s=project.scenes[i];if(!s.image||!s.audio)continue;$('previewImg').src=s.image;$('previewCaption').textContent=s.narration;await new Promise(resolve=>{const a=new Audio(s.audio);a.onended=resolve;a.onerror=resolve;a.play().catch(resolve)});$('previewProgress').style.width=`${Math.round((i+1)/project.scenes.length*100)}%`}}
+</script>
+</body>
+</html>
