@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16233f">
+<title>OpenAI画像 Medium / High 比較</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f5f7;color:#17213a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;padding-bottom:30px}.app{max-width:900px;margin:auto}.head{background:linear-gradient(#33435f,#172239);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px}.head h1{font-size:20px;margin:0}.main{padding:12px}.card{background:#fff;border:1px solid #d7dde6;border-radius:16px;padding:14px;margin-bottom:12px}label{display:block;font-weight:800;font-size:13px;margin-bottom:6px;color:#667188}textarea{width:100%;min-height:120px;border:1px solid #cfd6e0;border-radius:12px;padding:11px;font-size:15px;line-height:1.55}.buttons{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}.btn{border:0;border-radius:12px;min-height:46px;padding:9px;font-weight:900;background:#eef1f5;color:#17213a}.navy{background:#16233f;color:#fff}.red{background:#e44945;color:#fff}.status{font-size:12px;color:#667188;line-height:1.5;margin-top:8px}.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pane{background:#fff;border:1px solid #d7dde6;border-radius:16px;padding:10px}.pane h2{font-size:17px;margin:2px 0 8px}.imgbox{aspect-ratio:3/2;background:#111;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:13px}.imgbox img{width:100%;height:100%;object-fit:cover;display:block}.badge{font-size:12px;font-weight:800;color:#667188;margin-top:7px}.note{font-size:12px;line-height:1.6;color:#5c4b18;background:#fff7df;border-radius:10px;padding:10px}.back{display:block;text-align:center;text-decoration:none;margin-top:12px}@media(max-width:620px){.compare{grid-template-columns:1fr}.buttons{grid-template-columns:1fr}.head h1{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="head"><h1>🖼 OpenAI画像 Medium / High 比較テスト</h1></header>
+<main class="main">
+<section class="card">
+<div class="note">一時的な比較ページです。通常のYouTube動画作成画面は変更していません。同じ指示をGPT Image 2のMediumとHighで作って見比べます。</div>
+<div style="margin-top:12px"><label>同じ画像指示</label><textarea id="prompt">1867年、幕末の京都。坂本龍馬が夕暮れの石畳の通りを歩いている。30代の日本人男性、和装、腰に刀。背景には江戸末期の木造町家と行き交う町人。写真のようにリアルで、歴史映画のワンシーン。人物を大きめに、自然な表情、史実に配慮した服装と町並み。</textarea></div>
+<div class="buttons"><button class="btn" id="mediumBtn">Mediumだけ作る</button><button class="btn" id="highBtn">Highだけ作る</button><button class="btn red" id="bothBtn">MediumとHighを比較</button></div>
+<div id="status" class="status">接続確認中…</div>
+</section>
+<section class="compare">
+<div class="pane"><h2>Medium</h2><div class="imgbox" id="mediumBox">まだ生成していません</div><div class="badge" id="mediumInfo"></div></div>
+<div class="pane"><h2>High</h2><div class="imgbox" id="highBox">まだ生成していません</div><div class="badge" id="highInfo"></div></div>
+</section>
+<a class="btn back" href="youtube-video.html">← YouTube動画作成へ戻る</a>
+</main>
+</div>
+<script>
+const FN='https://vnnvuxccazkdzwqjmntz.supabase.co/functions/v1/openai-image-compare';
+const $=id=>document.getElementById(id);
+async function call(body){const r=await fetch(FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});let d={};try{d=await r.json()}catch{}if(!r.ok)throw new Error(d.error||('HTTP '+r.status));return d}
+async function check(){try{const d=await call({action:'status'});$('status').textContent=d.configured?'OpenAI API接続準備OK。':'OpenAI APIキーがまだSupabaseに設定されていません。比較生成にはOPENAI_API_KEYの設定が必要です。'}catch(e){$('status').textContent='接続確認エラー: '+e.message}}
+async function generate(q){const prompt=$('prompt').value.trim();if(!prompt){$('status').textContent='画像指示を入力してください。';return}const box=$(q+'Box'),info=$(q+'Info');box.textContent=q==='medium'?'Medium生成中…':'High生成中…';info.textContent='';const t=performance.now();try{const d=await call({action:'generate',prompt,quality:q});const img=new Image();img.alt=q+' generated image';img.src='data:'+(d.mimeType||'image/jpeg')+';base64,'+d.data;box.replaceChildren(img);info.textContent=`GPT Image 2 / ${q==='medium'?'Medium':'High'} / ${((performance.now()-t)/1000).toFixed(1)}秒`;return true}catch(e){box.textContent='生成できませんでした';info.textContent=e.message;$('status').textContent=e.message;return false}}
+$('mediumBtn').onclick=()=>generate('medium');
+$('highBtn').onclick=()=>generate('high');
+$('bothBtn').onclick=async()=>{for(const b of ['mediumBtn','highBtn','bothBtn'])$(b).disabled=true;$('status').textContent='Mediumを生成しています…';const a=await generate('medium');if(a){$('status').textContent='Highを生成しています…';await generate('high')}for(const b of ['mediumBtn','highBtn','bothBtn'])$(b).disabled=false;$('status').textContent='比較生成が終わりました。左右を見比べてください。'};
+check();
+</script>
+</body>
+</html>
