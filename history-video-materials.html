@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16233f">
+<title>歴史動画の素材を作る</title>
+<style>
+:root{--bg:#f4f5f7;--ink:#17213a;--muted:#667188;--line:#d7dde6;--navy:#16233f;--red:#d84b45;--green:#16805a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink);padding-bottom:32px}.app{max-width:760px;margin:auto}.head{padding:calc(11px + env(safe-area-inset-top)) 18px 12px;background:linear-gradient(#33435f,#172239);color:#fff}.head h1{margin:0;font-size:22px}.head p{margin:5px 0 0;font-size:12px;opacity:.85}.main{padding:10px}.card,.scene{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}.card h2{font-size:18px;margin:0 0 12px}.field{margin-bottom:11px}label{display:block;font-size:13px;font-weight:800;color:var(--muted);margin-bottom:5px}input,textarea,select{width:100%;border:1px solid #ccd4df;border-radius:12px;background:#fff;color:var(--ink);font-size:15px;padding:10px 12px;min-height:44px}textarea{min-height:84px;line-height:1.55}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.btn{border:0;border-radius:12px;min-height:44px;padding:10px 12px;font-weight:900;font-size:14px;background:#edf1f5;color:var(--ink);cursor:pointer}.btn:disabled{opacity:.45}.navy{background:var(--navy);color:#fff}.red{background:var(--red);color:#fff}.green{background:var(--green);color:#fff}.full{width:100%}.notice{font-size:12px;line-height:1.6;padding:10px;border-radius:11px;background:#eef5ff;color:#314a76}.warn{background:#fff6df;color:#684f11}.status{font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px}.scene-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}.scene-num{background:var(--navy);color:#fff;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}.done{font-size:11px;font-weight:900;color:var(--green)}.imgbox{aspect-ratio:16/9;background:#111;color:#fff;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:12px}.imgbox img{width:100%;height:100%;object-fit:cover}.scene-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.summary{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.pill{font-size:11px;font-weight:900;padding:6px 9px;border-radius:999px;background:#eef1f5}.progress{height:8px;border-radius:99px;background:#e7ebef;overflow:hidden;margin-top:8px}.progress>div{height:100%;width:0;background:var(--green);transition:width .2s}.download-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.small{font-size:11px}.check{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:11px;background:#fafbfc;font-size:13px;font-weight:800}.check input{width:18px;height:18px;min-height:0;margin:0}.ai{font-size:12px;background:#eef5ff;border:1px solid #cbdaf4;border-radius:12px;padding:10px;line-height:1.7}@media(max-width:520px){.grid2,.download-row{grid-template-columns:1fr}.scene-actions{grid-template-columns:1fr 1fr}.card,.scene{padding:14px}.main{padding:8px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="head"><h1>🎞️ 歴史動画の素材を作る</h1><p>脚本12シーン＋独立画像12枚 → CapCut用素材</p></header>
+<main class="main">
+<section class="card">
+<h2>1. テーマ</h2>
+<div class="field"><label>テーマ</label><input id="topic" placeholder="例：坂本龍馬の人生"></div>
+<div class="grid2">
+<div class="field"><label>動画の長さ</label><select id="minutes"><option value="1">約1分</option><option value="3" selected>約3分</option><option value="5">約5分</option></select></div>
+<div class="field"><label>画風</label><select id="style"><option value="realistic" selected>実写・歴史映画風</option><option value="documentary">歴史ドキュメンタリー風</option><option value="gekiga">劇画・映画ポスター風</option></select></div>
+</div>
+<label class="check"><input type="checkbox" id="titleOnImage" checked>画像の左上に「番号＋短いタイトル」だけ入れる</label>
+<div class="field" style="margin-top:10px"><label>追加指示（任意）</label><textarea id="extra" placeholder="例：史実を優先。人物の服装・髪型・建物・武器は時代考証を守る。"></textarea></div>
+<button id="makeScript" class="btn red full">12シーンの脚本を作る</button>
+<div id="scriptStatus" class="status">テーマを入力してください。</div>
+</section>
+
+<section class="card" id="bulkCard" style="display:none">
+<h2>2. 画像を作る</h2>
+<div class="notice warn">安全装置：完成済み画像は飛ばします。1回で最大12枚。途中で失敗したら停止し、次回は未完成から再開します。</div>
+<div class="summary"><span class="pill" id="sceneCount">12シーン</span><span class="pill" id="imageCount">画像 0/12</span></div>
+<div class="progress"><div id="progressBar"></div></div>
+<div class="grid2" style="margin-top:10px"><button id="allImages" class="btn navy">未完成の画像を一括生成</button><button id="copyScript" class="btn">脚本をコピー</button></div>
+<div id="bulkStatus" class="status"></div>
+</section>
+
+<div id="scenes"></div>
+
+<section class="card" id="downloadCard" style="display:none">
+<h2>3. CapCutへ</h2>
+<div class="download-row"><button id="downloadZip" class="btn green">画像をZIPでまとめて保存</button><button id="copyAll" class="btn">脚本＋画像指示をコピー</button></div>
+<div class="status small">ZIPは scene-01.png ～ scene-12.png の独立ファイルになります。</div>
+</section>
+
+<section class="card"><h2>今回使うAI</h2><div class="ai">脚本・画像指示：OpenAI GPT-5.6 Terra（既存バックエンド）<br>通常画像：GPT Image 2・Medium<br>主人公・基準画像はこの簡易版では使いません。ナレーション・字幕・動画書き出しも行いません。</div></section>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const FN='https://vnnvuxccazkdzwqjmntz.supabase.co/functions/v1/youtube-video-maker-safe';
+const $=id=>document.getElementById(id);let project=null,busy=false;
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+async function call(body){const r=await fetch(FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const t=await r.text();let d;try{d=JSON.parse(t)}catch{d={error:t||`HTTP ${r.status}`}}if(!r.ok)throw Error(d.error||`HTTP ${r.status}`);return d}
+function dataUrl(mime,data){return `data:${mime};base64,${data}`}
+function sync(i){const s=project.scenes[i];s.title=$(`title-${i}`).value.trim();s.narration=$(`nar-${i}`).value.trim();s.imagePrompt=$(`imgp-${i}`).value.trim()}
+function update(){if(!project)return;const total=project.scenes.length,done=project.scenes.filter(s=>s.image).length;$('sceneCount').textContent=`${total}シーン`;$('imageCount').textContent=`画像 ${done}/${total}`;$('progressBar').style.width=`${total?done/total*100:0}%`;$('downloadCard').style.display=done?'block':'none'}
+function render(){project.scenes.forEach((s,i)=>{s.title=s.title||`シーン${i+1}`;s.narration=s.narration||'';s.imagePrompt=s.imagePrompt||''});$('scenes').innerHTML=project.scenes.map((s,i)=>`<section class="scene"><div class="scene-head"><span class="scene-num">SCENE ${i+1}</span><span class="done" id="done-${i}">${s.image?'画像完成':''}</span></div><div class="field"><label>タイトル</label><input id="title-${i}" value="${esc(s.title)}"></div><div class="imgbox" id="img-${i}">${s.image?`<img src="${s.image}">`:'まだ画像はありません'}</div><div class="field"><label>ナレーション</label><textarea id="nar-${i}">${esc(s.narration)}</textarea></div><div class="field"><label>画像指示</label><textarea id="imgp-${i}">${esc(s.imagePrompt)}</textarea></div><div class="scene-actions"><button class="btn navy" id="gen-${i}" onclick="genImage(${i},false)">${s.image?'この画像を作り直す':'この画像を作る'}</button><button class="btn" id="save-${i}" onclick="saveImage(${i})" ${s.image?'':'disabled'}>画像を保存</button></div><div class="status" id="st-${i}"></div></section>`).join('');$('bulkCard').style.display='block';update()}
+function scriptText(withPrompts=false){if(!project)return'';return project.scenes.map((s,i)=>{sync(i);return `SCENE ${i+1}　${s.title}\n${s.narration}${withPrompts?`\n\n画像指示：${s.imagePrompt}`:''}`}).join('\n\n')}
+$('makeScript').onclick=async()=>{if(!$('topic').value.trim())return;const b=$('makeScript');b.disabled=true;$('scriptStatus').textContent='12シーンの脚本を作成中…';try{const extra=[`必ず全12シーンで構成する。各シーンには短いタイトル、ナレーション、史実に沿った具体的な画像指示を付ける。画像は16:9。歴史上存在しない服装・髪型・武器・建築物を避ける。人物は実写映画のように自然で写実的にする。画像内に説明文・引用文・長文を入れない。`,$('extra').value.trim()].filter(Boolean).join('\n');const d=await call({action:'generateScript',topic:$('topic').value.trim(),referenceUrls:[],extra,minutes:Number($('minutes').value),aspectRatio:'16:9'});if(!Array.isArray(d.scenes)||!d.scenes.length)throw Error('シーンを取得できませんでした。');project=d;if(project.scenes.length>12)project.scenes=project.scenes.slice(0,12);if(project.scenes.length<12)throw Error(`AIが${project.scenes.length}シーンしか返しませんでした。もう一度押してください。`);render();$('scriptStatus').textContent='12シーンの脚本ができました。文章と画像指示を確認してから画像生成できます。'}catch(e){$('scriptStatus').textContent='脚本生成エラー：'+e.message}finally{b.disabled=false}}
+window.genImage=async(i,fromBulk=false)=>{if(!project)return false;const btn=$(`gen-${i}`);if(btn.disabled)return false;sync(i);btn.disabled=true;$(`st-${i}`).textContent='画像生成中…';try{const s=project.scenes[i];let prompt=s.imagePrompt;const titleOn=$('titleOnImage').checked;if(titleOn){prompt+=`\n\n【画像内文字】左上に黒背景・白文字で「${i+1}. ${s.title}」のみ表示する。それ以外の文字、説明文、引用、キャプション、看板文字は入れない。`; }else{prompt+='\n\n画像内に文字・タイトル・説明文を一切入れない。';}prompt+='\n16:9の横長。実写映画のワンシーンのような高品質で写実的な歴史表現。時代考証を守る。';const d=await call({action:'generateImage',prompt,style:$('style').value,aspectRatio:'16:9',protagonistReference:'',protagonistTraits:[],forceProtagonist:false,styleReference:''});s.image=dataUrl(d.mimeType||'image/png',d.data);s.mimeType=d.mimeType||'image/png';s.provider=d.provider||'';$(`img-${i}`).innerHTML=`<img src="${s.image}">`;$(`done-${i}`).textContent='画像完成';$('save-'+i).disabled=false;btn.textContent='この画像を作り直す';$(`st-${i}`).textContent=`完成${d.provider?`（${d.provider==='openai'?'GPT Image 2・Medium':'Gemini画像'}）`:''}`;update();return true}catch(e){$(`st-${i}`).textContent='画像生成エラー：'+e.message;if(fromBulk)throw e;return false}finally{btn.disabled=false}}
+$('allImages').onclick=async()=>{if(busy||!project)return;const pending=project.scenes.map((s,i)=>s.image?null:i).filter(i=>i!==null);if(!pending.length){$('bulkStatus').textContent='12枚すべて完成しています。完成済み画像は再生成しません。';return}if(pending.length>12)return;busy=true;const b=$('allImages');b.disabled=true;try{for(let p=0;p<pending.length;p++){const i=pending[p];$('bulkStatus').textContent=`未完成画像を生成中… SCENE ${i+1}（${p+1}/${pending.length}）`;try{await genImage(i,true)}catch(e){$('bulkStatus').textContent=`SCENE ${i+1}で停止：${e.message}。もう一度押すと未完成から再開します。`;return}await new Promise(r=>setTimeout(r,350))}$('bulkStatus').textContent='未完成だった画像がすべて完成しました。'}finally{busy=false;b.disabled=false;update()}}
+window.saveImage=i=>{const s=project?.scenes?.[i];if(!s?.image)return;const a=document.createElement('a');a.href=s.image;a.download=`scene-${String(i+1).padStart(2,'0')}.png`;document.body.appendChild(a);a.click();a.remove()}
+$('copyScript').onclick=async()=>{await navigator.clipboard.writeText(scriptText(false));$('bulkStatus').textContent='脚本をコピーしました。'}
+$('copyAll').onclick=async()=>{await navigator.clipboard.writeText(scriptText(true));$('bulkStatus').textContent='脚本＋画像指示をコピーしました。'}
+$('downloadZip').onclick=async()=>{if(!project)return;const ready=project.scenes.filter(s=>s.image).length;if(!ready)return;const b=$('downloadZip');b.disabled=true;b.textContent='ZIP作成中…';try{if(typeof JSZip==='undefined')throw Error('ZIP機能を読み込めませんでした。');const zip=new JSZip();project.scenes.forEach((s,i)=>{if(!s.image)return;const base64=s.image.split(',')[1];zip.file(`scene-${String(i+1).padStart(2,'0')}.png`,base64,{base64:true})});zip.file('script.txt',scriptText(true));const blob=await zip.generateAsync({type:'blob'});const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=`history-materials-${new Date().toISOString().slice(0,10)}.zip`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),3000)}catch(e){$('bulkStatus').textContent='ZIP作成エラー：'+e.message}finally{b.disabled=false;b.textContent='画像をZIPでまとめて保存'}}
+</script>
+</body>
+</html>
