@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>銘板図面変換アプリ</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--text:#1f2328;--muted:#667085;--line:#dfe3e8;--accent:#111;--soft:#f0f1f3}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);padding:16px 18px;font-size:22px;font-weight:800}main{max-width:900px;margin:0 auto;padding:16px}.card{background:var(--card);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 2px 10px #0000000d}h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:18px 0 8px}p{line-height:1.6}.muted{color:var(--muted);font-size:14px}.step{display:flex;gap:10px;align-items:flex-start;margin:10px 0}.stepnum{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#111;color:#fff;font-weight:800;flex:0 0 28px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.grid{grid-template-columns:1fr}}label{display:block;font-weight:700;font-size:14px;margin:10px 0 6px}input,select,textarea{width:100%;font:inherit;border:1px solid #cfd4da;border-radius:11px;padding:12px;background:#fff}textarea{min-height:90px;resize:vertical}button{width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:800;margin-top:10px;cursor:pointer}.primary{background:#111;color:#fff}.secondary{background:#eceef1;color:#111}.ghost{background:#fff;border:1px solid #cfd4da}.pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#eee;font-size:12px;font-weight:700;margin:4px 6px 0 0}.drop{border:2px dashed #c8cdd4;border-radius:14px;padding:18px;text-align:center;background:#fafafa}.drop input{border:0;padding:0;margin-top:10px}.filebox{margin-top:10px;padding:10px;border:1px solid #e0e3e7;border-radius:10px;background:#fff}.rule-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}@media(max-width:640px){.rule-list{grid-template-columns:1fr}}.rule{padding:10px;border:1px solid #e1e4e8;border-radius:10px;background:#fafafa}.rule input{width:auto;margin-right:8px}.queue-item{padding:14px 0;border-bottom:1px solid #e4e7eb}.queue-item:last-child{border-bottom:0}.status{display:inline-block;border-radius:999px;padding:4px 8px;background:#edf2ff;font-size:12px;font-weight:800}.warn{background:#fff6db}.ok{background:#e9f9ee}.footer-note{font-size:13px;color:#667085;line-height:1.5}
+</style>
+</head>
+<body>
+<header>銘板図面変換アプリ</header>
+<main>
+<section class="card">
+<h2>このアプリの役割</h2>
+<p>客先から受け取った <strong>AIデータ / PDF</strong> と、御社で完成させた <strong>製造用図面</strong> を蓄積し、将来ChatGPTとIllustratorを連携して自動変換するための土台です。</p>
+<div class="step"><div class="stepnum">1</div><div><strong>客先図面を登録</strong><div class="muted">AI / PDFを案件として保存</div></div></div>
+<div class="step"><div class="stepnum">2</div><div><strong>社員さんが直した完成図を登録</strong><div class="muted">Before / Afterをペアで残す</div></div></div>
+<div class="step"><div class="stepnum">3</div><div><strong>変換ルールを蓄積</strong><div class="muted">何を消す・足す・変更するかを御社仕様として整理</div></div></div>
+<div class="step"><div class="stepnum">4</div><div><strong>将来Illustratorへ自動反映</strong><div class="muted">AIが変更案を作り、人が確認して保存</div></div></div>
+</section>
+
+<section class="card">
+<h2>新しい図面案件</h2>
+<div class="grid">
+<div><label>客先名</label><input id="customer" placeholder="例：〇〇工業株式会社"></div>
+<div><label>案件名 / 図番</label><input id="drawingNo" placeholder="例：AB-12345"></div>
+</div>
+<div class="grid">
+<div><label>材質</label><select id="material"><option value="">未選択</option><option>アルミ</option><option>SUS（ステンレス）</option><option>BSP（真鍮）</option><option>樹脂</option><option>その他</option></select></div>
+<div><label>板厚</label><input id="thickness" placeholder="例：1.0t"></div>
+</div>
+<label>客先から受け取った図面</label>
+<div class="drop"><strong>AIデータまたはPDFを選択</strong><div class="muted">現段階ではファイル名と案件情報を保存します。Illustrator連携は次段階で接続します。</div><input id="sourceFile" type="file" accept=".ai,.pdf,application/pdf"></div>
+<label>この案件で特に見ること</label>
+<textarea id="notes" placeholder="例：穴径、角R、文字位置、色指定、両面テープ、アルマイト色を確認"></textarea>
+<button class="primary" id="saveJob">案件を登録</button>
+</section>
+
+<section class="card">
+<h2>完成した製造用図面を登録</h2>
+<p class="muted">社員さんがIllustratorで修正した完成図を、元図面とペアにします。これが自動化の教師データになります。</p>
+<label>対象案件</label><select id="jobSelect"><option value="">案件を選択</option></select>
+<div class="drop"><strong>完成AI / PDFを選択</strong><input id="finishedFile" type="file" accept=".ai,.pdf,application/pdf"></div>
+<label>今回行った主な修正</label>
+<textarea id="changeSummary" placeholder="例：不要寸法削除、外形線0.25pt、穴径追記、材質表記をSUS304へ統一、文字をアウトライン化"></textarea>
+<button class="secondary" id="saveFinished">完成図を紐付ける</button>
+</section>
+
+<section class="card">
+<h2>村上銘板の変換ルール</h2>
+<p class="muted">紙資料を見ながら、ここを御社仕様へ育てます。まずはよくあるルールをチェックできる状態にしています。</p>
+<div class="rule-list" id="rules"></div>
+<label>追加ルール</label><textarea id="customRule" placeholder="例：アルマイト銘板は色指定を図面右下に必ず記載"></textarea>
+<button class="secondary" id="addRule">ルールを追加</button>
+</section>
+
+<section class="card">
+<h2>変換待ち案件</h2>
+<div id="queue"><p class="muted">まだ案件はありません。</p></div>
+</section>
+
+<section class="card">
+<h2>次に接続する機能</h2>
+<span class="pill">PDF内容解析</span><span class="pill">AIデータ解析</span><span class="pill">変更差分抽出</span><span class="pill">Illustrator MCP</span><span class="pill">ChatGPT判断</span><span class="pill">人による承認</span>
+<p class="footer-note">最終的には「客先図面を入れる → AIが製造用図面案を作る → 社員さんが確認 → Illustrator保存」という流れを目標にします。最初から完全自動にはせず、確認工程を残します。</p>
+</section>
+</main>
+<script>
+const JOB_KEY='nameplateDrawingJobsV1',RULE_KEY='nameplateDrawingRulesV1';
+const defaultRules=['不要な客先注記・寸法を整理する','外形線・穴・切欠きを製造用に整理する','材質・板厚表記を統一する','穴径・穴位置寸法を確認する','角R・面取り指示を確認する','文字サイズ・書体・位置を確認する','印刷色・アルマイト色を確認する','両面テープ・接着指定を確認する','数量・表裏・方向を確認する','最終PDFとAIデータを保存する'];
+const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+let jobs=JSON.parse(localStorage.getItem(JOB_KEY)||'[]');let rules=JSON.parse(localStorage.getItem(RULE_KEY)||'null')||defaultRules.map(x=>({text:x,enabled:true}));
+function save(){localStorage.setItem(JOB_KEY,JSON.stringify(jobs));localStorage.setItem(RULE_KEY,JSON.stringify(rules));render()}
+function renderRules(){$('rules').innerHTML=rules.map((r,i)=>`<label class="rule"><input type="checkbox" data-rule="${i}" ${r.enabled?'checked':''}>${esc(r.text)}</label>`).join('');document.querySelectorAll('[data-rule]').forEach(el=>el.onchange=()=>{rules[+el.dataset.rule].enabled=el.checked;save()})}
+function render(){renderRules();$('jobSelect').innerHTML='<option value="">案件を選択</option>'+jobs.map(j=>`<option value="${j.id}">${esc(j.customer||'客先未入力')}｜${esc(j.drawingNo||'図番なし')}</option>`).join('');$('queue').innerHTML=jobs.length?jobs.slice().reverse().map(j=>`<div class="queue-item"><div><strong>${esc(j.customer||'客先未入力')}</strong> ${esc(j.drawingNo||'')}</div><div class="muted">元図面：${esc(j.sourceFile||'未登録')}<br>完成図：${esc(j.finishedFile||'未登録')}</div><span class="status ${j.finishedFile?'ok':'warn'}">${j.finishedFile?'Before / After 登録済み':'完成図待ち'}</span>${j.material?` <span class="pill">${esc(j.material)} ${esc(j.thickness||'')}</span>`:''}${j.changeSummary?`<div class="muted" style="margin-top:6px">修正内容：${esc(j.changeSummary)}</div>`:''}</div>`).join(''):'<p class="muted">まだ案件はありません。</p>'}
+$('saveJob').onclick=()=>{const f=$('sourceFile').files[0];if(!f)return alert('客先図面を選択してください');jobs.push({id:Date.now().toString(),customer:$('customer').value.trim(),drawingNo:$('drawingNo').value.trim(),material:$('material').value,thickness:$('thickness').value.trim(),notes:$('notes').value.trim(),sourceFile:f.name,finishedFile:'',changeSummary:'',createdAt:new Date().toISOString()});['customer','drawingNo','thickness','notes'].forEach(id=>$(id).value='');$('material').value='';$('sourceFile').value='';save();alert('案件を登録しました')};
+$('saveFinished').onclick=()=>{const id=$('jobSelect').value,f=$('finishedFile').files[0];if(!id)return alert('対象案件を選んでください');if(!f)return alert('完成図を選択してください');const j=jobs.find(x=>x.id===id);if(!j)return;j.finishedFile=f.name;j.changeSummary=$('changeSummary').value.trim();j.finishedAt=new Date().toISOString();$('finishedFile').value='';$('changeSummary').value='';save();alert('完成図を紐付けました')};
+$('addRule').onclick=()=>{const t=$('customRule').value.trim();if(!t)return;rules.push({text:t,enabled:true});$('customRule').value='';save()};
+render();
+</script>
+</body>
+</html>
