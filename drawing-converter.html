@@ -6,7 +6,7 @@
 <title>銘板図面変換アプリ</title>
 <style>
 :root{--bg:#f5f6f8;--card:#fff;--text:#1f2328;--muted:#667085;--line:#dfe3e8;--accent:#111}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);padding:16px 18px;font-size:22px;font-weight:800}main{max-width:900px;margin:0 auto;padding:16px}.card{background:var(--card);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 2px 10px #0000000d}h1{font-size:24px;margin:0 0 8px}h2{font-size:19px;margin:0 0 12px}p{line-height:1.6}.lead{font-size:17px;font-weight:700;margin:0 0 16px}.muted{color:var(--muted);font-size:14px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:640px){.pair{grid-template-columns:1fr}}.upload{border:2px dashed #bfc5cc;border-radius:16px;padding:20px;background:#fafafa}.upload h3{margin:0 0 6px;font-size:18px}.upload input{width:100%;margin-top:12px;font:inherit}.filename{margin-top:10px;font-size:14px;font-weight:700;word-break:break-all}.primary{width:100%;border:0;border-radius:12px;padding:15px;font-size:17px;font-weight:800;margin-top:16px;background:#111;color:#fff;cursor:pointer}.secondary{width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:800;margin-top:10px;background:#eceef1;color:#111;cursor:pointer}.queue-item{padding:14px 0;border-bottom:1px solid #e4e7eb}.queue-item:last-child{border-bottom:0}.status{display:inline-block;border-radius:999px;padding:4px 8px;background:#e9f9ee;font-size:12px;font-weight:800;margin-top:6px}.rule{padding:10px 0;border-bottom:1px solid #eee}.footer-note{font-size:13px;color:#667085;line-height:1.6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);padding:16px 18px;font-size:22px;font-weight:800}main{max-width:900px;margin:0 auto;padding:16px}.card{background:var(--card);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 2px 10px #0000000d}h1{font-size:24px;margin:0 0 8px}h2{font-size:19px;margin:0 0 12px}p{line-height:1.6}.lead{font-size:17px;font-weight:700;margin:0 0 16px}.muted{color:var(--muted);font-size:14px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:640px){.pair{grid-template-columns:1fr}}.upload{border:2px dashed #bfc5cc;border-radius:16px;padding:20px;background:#fafafa}.upload h3{margin:0 0 6px;font-size:18px}.pickers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.pick-btn{border:1px solid #d5d9df;border-radius:12px;padding:12px 8px;background:#fff;color:#111;font:inherit;font-size:15px;font-weight:800;cursor:pointer;text-align:center}.pick-btn:active{transform:scale(.98)}.hidden-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.filename{margin-top:10px;font-size:14px;font-weight:700;word-break:break-all;min-height:20px}.filename.selected{color:#157347}.primary{width:100%;border:0;border-radius:12px;padding:15px;font-size:17px;font-weight:800;margin-top:16px;background:#111;color:#fff;cursor:pointer}.secondary{width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:800;margin-top:10px;background:#eceef1;color:#111;cursor:pointer}.queue-item{padding:14px 0;border-bottom:1px solid #e4e7eb}.queue-item:last-child{border-bottom:0}.status{display:inline-block;border-radius:999px;padding:4px 8px;background:#e9f9ee;font-size:12px;font-weight:800;margin-top:6px}.rule{padding:10px 0;border-bottom:1px solid #eee}.footer-note{font-size:13px;color:#667085;line-height:1.6}
 </style>
 </head>
 <body>
@@ -18,14 +18,24 @@
 <div class="pair">
   <div class="upload">
     <h3>① 客先図面</h3>
-    <div class="muted">お客さんから来た元のAIデータまたはPDF</div>
-    <input id="sourceFile" type="file" accept=".ai,.pdf,application/pdf">
+    <div class="muted">お客さんから来た元のAIデータ・PDF・写真</div>
+    <div class="pickers">
+      <button class="pick-btn" type="button" id="sourcePhotoBtn">📷 写真から選ぶ</button>
+      <button class="pick-btn" type="button" id="sourceFileBtn">📁 ファイルから選ぶ</button>
+    </div>
+    <input id="sourcePhoto" class="hidden-input" type="file" accept="image/*">
+    <input id="sourceFile" class="hidden-input" type="file" accept=".ai,.pdf,image/*,application/pdf">
     <div id="sourceName" class="filename"></div>
   </div>
   <div class="upload">
     <h3>② 村上図面</h3>
-    <div class="muted">社員さんがIllustratorで作り直した完成AIまたはPDF</div>
-    <input id="finishedFile" type="file" accept=".ai,.pdf,application/pdf">
+    <div class="muted">社員さんがIllustratorで作り直した完成AI・PDF・写真</div>
+    <div class="pickers">
+      <button class="pick-btn" type="button" id="finishedPhotoBtn">📷 写真から選ぶ</button>
+      <button class="pick-btn" type="button" id="finishedFileBtn">📁 ファイルから選ぶ</button>
+    </div>
+    <input id="finishedPhoto" class="hidden-input" type="file" accept="image/*">
+    <input id="finishedFile" class="hidden-input" type="file" accept=".ai,.pdf,image/*,application/pdf">
     <div id="finishedName" class="filename"></div>
   </div>
 </div>
@@ -48,20 +58,36 @@ const PAIR_KEY='nameplateDrawingPairsV2';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 let pairs=JSON.parse(localStorage.getItem(PAIR_KEY)||'[]');
+let selectedSource=null;
+let selectedFinished=null;
 const starterRules=['不要な寸法・注記の整理','外形線・穴・切欠きの整理','材質・板厚表記の統一','文字・書体・位置の調整','色・アルマイト・接着指定の整理'];
 function render(){
   $('queue').innerHTML=pairs.length?pairs.slice().reverse().map((p,i)=>`<div class="queue-item"><strong>図面セット ${pairs.length-i}</strong><br><span class="muted">客先図面：${esc(p.source)}<br>村上図面：${esc(p.finished)}</span><br><span class="status">登録済み</span></div>`).join(''):'<p class="muted">まだ登録はありません。まず上の2枚を入れてください。</p>';
   $('rules').innerHTML='<div class="muted" style="margin-top:14px">今後読み取る主なポイント</div>'+starterRules.map(x=>`<div class="rule">・${esc(x)}</div>`).join('');
 }
-$('sourceFile').onchange=function(){$('sourceName').textContent=this.files[0]?.name||''};
-$('finishedFile').onchange=function(){$('finishedName').textContent=this.files[0]?.name||''};
+function showSelected(nameId,file){
+  const el=$(nameId);
+  el.textContent=file?`✅ ${file.name}`:'';
+  el.classList.toggle('selected',!!file);
+}
+function selectSource(file){selectedSource=file||null;showSelected('sourceName',selectedSource)}
+function selectFinished(file){selectedFinished=file||null;showSelected('finishedName',selectedFinished)}
+$('sourcePhotoBtn').onclick=()=>$('sourcePhoto').click();
+$('sourceFileBtn').onclick=()=>$('sourceFile').click();
+$('finishedPhotoBtn').onclick=()=>$('finishedPhoto').click();
+$('finishedFileBtn').onclick=()=>$('finishedFile').click();
+$('sourcePhoto').onchange=function(){selectSource(this.files[0])};
+$('sourceFile').onchange=function(){selectSource(this.files[0])};
+$('finishedPhoto').onchange=function(){selectFinished(this.files[0])};
+$('finishedFile').onchange=function(){selectFinished(this.files[0])};
 $('savePair').onclick=()=>{
-  const s=$('sourceFile').files[0],f=$('finishedFile').files[0];
+  const s=selectedSource,f=selectedFinished;
   if(!s)return alert('まず客先図面を選んでください');
   if(!f)return alert('次に村上図面を選んでください');
   pairs.push({id:Date.now(),source:s.name,finished:f.name,createdAt:new Date().toISOString()});
   localStorage.setItem(PAIR_KEY,JSON.stringify(pairs));
-  $('sourceFile').value='';$('finishedFile').value='';$('sourceName').textContent='';$('finishedName').textContent='';
+  ['sourcePhoto','sourceFile','finishedPhoto','finishedFile'].forEach(id=>$(id).value='');
+  selectedSource=null;selectedFinished=null;showSelected('sourceName',null);showSelected('finishedName',null);
   render();alert('1組登録しました。次の図面セットをどうぞ。');
 };
 render();
