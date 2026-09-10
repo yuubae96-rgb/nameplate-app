@@ -1,96 +1,18 @@
 <!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>銘板図面変換アプリ</title>
-<style>
-:root{--bg:#f5f6f8;--card:#fff;--text:#1f2328;--muted:#667085;--line:#dfe3e8;--accent:#111}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);padding:16px 18px;font-size:22px;font-weight:800}main{max-width:900px;margin:0 auto;padding:16px}.card{background:var(--card);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 2px 10px #0000000d}h1{font-size:24px;margin:0 0 8px}h2{font-size:19px;margin:0 0 12px}p{line-height:1.6}.lead{font-size:17px;font-weight:700;margin:0 0 16px}.muted{color:var(--muted);font-size:14px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:640px){.pair{grid-template-columns:1fr}}.upload{border:2px dashed #bfc5cc;border-radius:16px;padding:20px;background:#fafafa}.upload h3{margin:0 0 6px;font-size:18px}.pickers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.pick-btn{border:1px solid #d5d9df;border-radius:12px;padding:12px 8px;background:#fff;color:#111;font:inherit;font-size:15px;font-weight:800;cursor:pointer;text-align:center}.pick-btn:active{transform:scale(.98)}.hidden-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.filename{margin-top:10px;font-size:14px;font-weight:700;word-break:break-all;min-height:20px}.filename.selected{color:#157347}.primary{width:100%;border:0;border-radius:12px;padding:15px;font-size:17px;font-weight:800;margin-top:16px;background:#111;color:#fff;cursor:pointer}.secondary{width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:800;margin-top:10px;background:#eceef1;color:#111;cursor:pointer}.queue-item{padding:14px 0;border-bottom:1px solid #e4e7eb}.queue-item:last-child{border-bottom:0}.status{display:inline-block;border-radius:999px;padding:4px 8px;background:#e9f9ee;font-size:12px;font-weight:800;margin-top:6px}.rule{padding:10px 0;border-bottom:1px solid #eee}.footer-note{font-size:13px;color:#667085;line-height:1.6}
-</style>
-</head>
-<body>
-<header>銘板図面変換アプリ</header>
-<main>
-<section class="card">
-<h1>まず1枚目をどうぞ</h1>
-<p class="lead">客先図面と、村上で作り直した図面をセットで入れてください。こちらで違いを見て、変換の法則を読み取っていきます。</p>
-<div class="pair">
-  <div class="upload">
-    <h3>① 客先図面</h3>
-    <div class="muted">お客さんから来た元のAIデータ・PDF・写真</div>
-    <div class="pickers">
-      <button class="pick-btn" type="button" id="sourcePhotoBtn">📷 写真から選ぶ</button>
-      <button class="pick-btn" type="button" id="sourceFileBtn">📁 ファイルから選ぶ</button>
-    </div>
-    <input id="sourcePhoto" class="hidden-input" type="file" accept="image/*">
-    <input id="sourceFile" class="hidden-input" type="file" accept=".ai,.pdf,image/*,application/pdf">
-    <div id="sourceName" class="filename"></div>
-  </div>
-  <div class="upload">
-    <h3>② 村上図面</h3>
-    <div class="muted">社員さんがIllustratorで作り直した完成AI・PDF・写真</div>
-    <div class="pickers">
-      <button class="pick-btn" type="button" id="finishedPhotoBtn">📷 写真から選ぶ</button>
-      <button class="pick-btn" type="button" id="finishedFileBtn">📁 ファイルから選ぶ</button>
-    </div>
-    <input id="finishedPhoto" class="hidden-input" type="file" accept="image/*">
-    <input id="finishedFile" class="hidden-input" type="file" accept=".ai,.pdf,image/*,application/pdf">
-    <div id="finishedName" class="filename"></div>
-  </div>
-</div>
-<button class="primary" id="savePair">この2枚を1組として登録する</button>
-</section>
-
-<section class="card">
-<h2>登録した図面セット</h2>
-<div id="queue"><p class="muted">まだ登録はありません。まず上の2枚を入れてください。</p></div>
-</section>
-
-<section class="card">
-<h2>このアプリでこれからやること</h2>
-<p class="footer-note">客先図面と村上図面を何組か見比べて、「何を消すのか」「何を追加するのか」「寸法・文字・線・材質表記をどう変えるのか」など、御社独自の図面変換ルールを整理します。そのルールが固まったら、ChatGPTとIllustratorをつないで、客先図面から製造用図面を自動で作る方向へ進めます。</p>
-<div id="rules"></div>
-</section>
-</main>
-<script>
-const PAIR_KEY='nameplateDrawingPairsV2';
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-let pairs=JSON.parse(localStorage.getItem(PAIR_KEY)||'[]');
-let selectedSource=null;
-let selectedFinished=null;
-const starterRules=['不要な寸法・注記の整理','外形線・穴・切欠きの整理','材質・板厚表記の統一','文字・書体・位置の調整','色・アルマイト・接着指定の整理'];
-function render(){
-  $('queue').innerHTML=pairs.length?pairs.slice().reverse().map((p,i)=>`<div class="queue-item"><strong>図面セット ${pairs.length-i}</strong><br><span class="muted">客先図面：${esc(p.source)}<br>村上図面：${esc(p.finished)}</span><br><span class="status">登録済み</span></div>`).join(''):'<p class="muted">まだ登録はありません。まず上の2枚を入れてください。</p>';
-  $('rules').innerHTML='<div class="muted" style="margin-top:14px">今後読み取る主なポイント</div>'+starterRules.map(x=>`<div class="rule">・${esc(x)}</div>`).join('');
-}
-function showSelected(nameId,file){
-  const el=$(nameId);
-  el.textContent=file?`✅ ${file.name}`:'';
-  el.classList.toggle('selected',!!file);
-}
-function selectSource(file){selectedSource=file||null;showSelected('sourceName',selectedSource)}
-function selectFinished(file){selectedFinished=file||null;showSelected('finishedName',selectedFinished)}
-$('sourcePhotoBtn').onclick=()=>$('sourcePhoto').click();
-$('sourceFileBtn').onclick=()=>$('sourceFile').click();
-$('finishedPhotoBtn').onclick=()=>$('finishedPhoto').click();
-$('finishedFileBtn').onclick=()=>$('finishedFile').click();
-$('sourcePhoto').onchange=function(){selectSource(this.files[0])};
-$('sourceFile').onchange=function(){selectSource(this.files[0])};
-$('finishedPhoto').onchange=function(){selectFinished(this.files[0])};
-$('finishedFile').onchange=function(){selectFinished(this.files[0])};
-$('savePair').onclick=()=>{
-  const s=selectedSource,f=selectedFinished;
-  if(!s)return alert('まず客先図面を選んでください');
-  if(!f)return alert('次に村上図面を選んでください');
-  pairs.push({id:Date.now(),source:s.name,finished:f.name,createdAt:new Date().toISOString()});
-  localStorage.setItem(PAIR_KEY,JSON.stringify(pairs));
-  ['sourcePhoto','sourceFile','finishedPhoto','finishedFile'].forEach(id=>$(id).value='');
-  selectedSource=null;selectedFinished=null;showSelected('sourceName',null);showSelected('finishedName',null);
-  render();alert('1組登録しました。次の図面セットをどうぞ。');
-};
-render();
-</script>
-</body>
-</html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>銘板図面変換アプリ</title><style>
+:root{--bg:#f5f6f8;--card:#fff;--text:#1f2328;--muted:#667085;--line:#dfe3e8}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);padding:16px 18px;font-size:22px;font-weight:800}main{max-width:900px;margin:auto;padding:16px}.card{background:#fff;border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 2px 10px #0000000d}h1{font-size:24px;margin:0 0 8px}h2{font-size:20px;margin:0 0 12px}h3{margin:0 0 6px}.lead{font-size:17px;font-weight:700;line-height:1.6}.muted{color:var(--muted);font-size:14px;line-height:1.5}.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:640px){.pair{grid-template-columns:1fr}}.upload{border:2px dashed #bfc5cc;border-radius:16px;padding:20px;background:#fafafa}.pickers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.pick-btn{border:1px solid #d5d9df;border-radius:12px;padding:12px 7px;background:#fff;font:inherit;font-weight:800}.hidden{position:absolute;width:1px;height:1px;opacity:0}.filename{margin-top:10px;font-size:14px;font-weight:700;min-height:20px;word-break:break-all;color:#157347}.primary{width:100%;border:0;border-radius:12px;padding:16px;font-size:17px;font-weight:800;margin-top:16px;background:#111;color:#fff}.primary:disabled{opacity:.45}.queue-item,.change,.rule{padding:13px 0;border-bottom:1px solid #e7e9ed}.status{display:inline-block;border-radius:999px;padding:4px 8px;background:#e9f9ee;font-size:12px;font-weight:800;margin-top:6px}.score{font-weight:800}.result{margin-top:14px;padding:14px;border-radius:12px;background:#f7f8fa}.error{background:#fff1f1;color:#a40000}.rule strong{display:block;margin-bottom:4px}.pill{font-size:12px;background:#eef2ff;border-radius:999px;padding:3px 7px;margin-left:5px}.note{font-size:13px;line-height:1.6;color:#667085}
+</style></head><body><header>銘板図面変換アプリ</header><main>
+<section class="card"><h1>正解ペアから変換法則を学習</h1><p class="lead">客先図面と、村上で作り直した完成図面を1組としてAIが実際に比較します。図面が増えるほど、共通する変換ルールを蓄積します。</p><div class="pair">
+<div class="upload"><h3>① 客先図面</h3><div class="muted">元のPDF・写真（AIファイルはPDF保存して選択）</div><div class="pickers"><button class="pick-btn" id="sourcePhotoBtn">📷 写真から選ぶ</button><button class="pick-btn" id="sourceFileBtn">📁 ファイルから選ぶ</button></div><input id="sourcePhoto" class="hidden" type="file" accept="image/*"><input id="sourceFile" class="hidden" type="file" accept=".pdf,image/*,application/pdf"><div id="sourceName" class="filename"></div></div>
+<div class="upload"><h3>② 村上図面（正解）</h3><div class="muted">Illustratorで作り直した完成PDF・写真</div><div class="pickers"><button class="pick-btn" id="finishedPhotoBtn">📷 写真から選ぶ</button><button class="pick-btn" id="finishedFileBtn">📁 ファイルから選ぶ</button></div><input id="finishedPhoto" class="hidden" type="file" accept="image/*"><input id="finishedFile" class="hidden" type="file" accept=".pdf,image/*,application/pdf"><div id="finishedName" class="filename"></div></div></div>
+<button class="primary" id="analyzeBtn">この2枚をAIで比較・学習する</button><div id="progress"></div><div id="latest"></div></section>
+<section class="card"><h2>現在学習した変換法則</h2><div class="muted">同じ変更が複数の図面で確認されるほど、法則としての信頼度が上がります。</div><div id="rules"></div></section>
+<section class="card"><h2>比較済みの図面セット</h2><div id="queue"></div></section>
+</main><script>
+const API='https://vnnvuxccazkdzwqjmntz.supabase.co/functions/v1/drawing-rule-ai',PAIR_KEY='drawingPairsAIv1',RULE_KEY='drawingRulesAIv1';const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));let source=null,finished=null,pairs=JSON.parse(localStorage.getItem(PAIR_KEY)||'[]'),rules=JSON.parse(localStorage.getItem(RULE_KEY)||'[]');
+function choose(which,file){if(which==='s')source=file;else finished=file;$(which==='s'?'sourceName':'finishedName').textContent=file?'✅ '+file.name:''}function wire(btn,input,which){$(btn).onclick=()=>$(input).click();$(input).onchange=function(){choose(which,this.files[0]||null)}}wire('sourcePhotoBtn','sourcePhoto','s');wire('sourceFileBtn','sourceFile','s');wire('finishedPhotoBtn','finishedPhoto','f');wire('finishedFileBtn','finishedFile','f');
+function file64(file){return new Promise((res,rej)=>{if(file.size>18*1024*1024)return rej(new Error('1ファイル18MB以下にしてください'));const r=new FileReader();r.onload=()=>res({name:file.name,mime:file.type||(/\.pdf$/i.test(file.name)?'application/pdf':'application/octet-stream'),data:String(r.result).split(',')[1]});r.onerror=()=>rej(new Error('ファイルを読めませんでした'));r.readAsDataURL(file)})}
+function mergeRules(a){for(const x of a?.changes||[]){if(!x.rule)continue;let hit=rules.find(r=>r.rule===x.rule);if(hit){hit.count++;hit.confidence=Math.max(hit.confidence||0,Number(x.confidence)||0)}else rules.push({rule:x.rule,category:x.category||'その他',count:1,confidence:Number(x.confidence)||0})}for(const x of a?.confirmedRules||[]){if(!x.rule)continue;let hit=rules.find(r=>r.rule===x.rule);if(hit){hit.count++;hit.confidence=Math.max(hit.confidence||0,Number(x.confidence)||0)}else rules.push({rule:x.rule,category:'共通ルール',count:1,confidence:Number(x.confidence)||0})}localStorage.setItem(RULE_KEY,JSON.stringify(rules));}
+function render(){rules.sort((a,b)=>(b.count-a.count)||(b.confidence-a.confidence));$('rules').innerHTML=rules.length?rules.map(r=>`<div class="rule"><strong>${esc(r.rule)}</strong><span class="pill">${esc(r.category)}</span><span class="pill">確認 ${r.count}回</span><span class="pill">AI信頼度 ${r.confidence}%</span></div>`).join(''):'<p class="muted">まだ法則はありません。最初の正解ペアをAI比較してください。</p>';$('queue').innerHTML=pairs.length?pairs.slice().reverse().map((p,i)=>`<div class="queue-item"><strong>図面セット ${pairs.length-i}</strong><br><span class="muted">客先：${esc(p.source)}<br>正解：${esc(p.finished)}</span><br><span class="status">AI比較済み</span><div class="note">${esc(p.summary||'')}</div></div>`).join(''):'<p class="muted">まだAI比較済みのセットはありません。</p>'}
+$('analyzeBtn').onclick=async()=>{if(!source)return alert('客先図面を選んでください');if(!finished)return alert('村上図面を選んでください');const btn=$('analyzeBtn');btn.disabled=true;$('progress').innerHTML='<div class="result">AIが2枚を比較しています… 外形・穴・寸法・文字・注記・材質・レイアウトを確認中です。</div>';$('latest').innerHTML='';try{const [s,f]=await Promise.all([file64(source),file64(finished)]);const prior=rules.map(r=>r.rule);const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'compare',source:s,finished:f,priorRules:prior})});const d=await r.json();if(!r.ok||d.error)throw new Error(d.error||'AI比較に失敗しました');const a=d.analysis||{};mergeRules(a);pairs.push({id:Date.now(),source:source.name,finished:finished.name,summary:a.summary||'',createdAt:new Date().toISOString()});localStorage.setItem(PAIR_KEY,JSON.stringify(pairs));$('latest').innerHTML=`<div class="result"><h3>今回AIが見つけた違い</h3><p>${esc(a.summary||'')}</p>${(a.changes||[]).map(x=>`<div class="change"><strong>${esc(x.category)}</strong> <span class="score">${Number(x.confidence)||0}%</span><br><span class="muted">客先：</span>${esc(x.before)}<br><span class="muted">完成：</span>${esc(x.after)}<br><b>→ ${esc(x.rule)}</b><div class="note">根拠：${esc(x.evidence)}</div></div>`).join('')}${(a.needsMoreExamples||[]).length?`<h3 style="margin-top:16px">まだ断定しない点</h3>${a.needsMoreExamples.map(x=>`<div class="note">・${esc(x)}</div>`).join('')}`:''}</div>`;$('progress').innerHTML='';render();}catch(e){$('progress').innerHTML=`<div class="result error">${esc(e.message||e)}</div>`}finally{btn.disabled=false}};render();
+</script></body></html>
