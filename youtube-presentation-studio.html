@@ -7,13 +7,19 @@
 <title>プレゼン動画スタジオ</title>
 <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#eef1f5;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:#17213a}.wrap{max-width:820px;margin:auto;padding-bottom:calc(280px + env(safe-area-inset-bottom))}.top{position:sticky;top:0;z-index:20;background:#16233f;color:white;padding:calc(9px + env(safe-area-inset-top)) 14px 10px}.top h1{font-size:18px;margin:0}.top p{font-size:11px;margin:3px 0 0;opacity:.8}.frame{width:100%;height:calc(100vh - 74px);border:0;background:white}.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(8px + env(safe-area-inset-bottom));z-index:30;width:min(790px,calc(100% - 16px));max-height:min(430px,62vh);overflow:auto;background:rgba(255,255,255,.98);border:1px solid #ccd4df;border-radius:18px;box-shadow:0 12px 35px rgba(0,0,0,.18);padding:12px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.btn{border:0;border-radius:12px;min-height:44px;padding:9px;font-size:13px;font-weight:900;background:#eef1f5;color:#17213a}.primary{background:#2366b1;color:#fff}.green{background:#147a55;color:#fff}.danger{background:#8f1d24;color:#fff}.file{width:100%;font-size:12px}.audio{width:100%;height:38px;margin-top:8px}.now{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:8px 0;font-weight:900}.page{font-size:18px}.time{font-family:monospace;font-size:14px;color:#526078}.cuts{font-size:11px;line-height:1.45;color:#526078;max-height:42px;overflow:auto;margin-top:6px}.hint{font-size:11px;line-height:1.45;color:#657187;margin-top:6px}.ok{color:#147a55;font-weight:800}.err{color:#a33;font-weight:800}.extract{border:1px solid #d7dde6;border-radius:13px;padding:10px;margin-bottom:10px;background:#f8fafc}.extract summary{font-size:13px;font-weight:900;cursor:pointer}.extract-body{margin-top:10px}.label{font-size:12px;font-weight:900;margin:7px 0 5px}.download{display:none;text-align:center;text-decoration:none}.mini-note{font-size:10px;color:#6b7280;margin-top:5px;line-height:1.4}@media(max-width:520px){.row{grid-template-columns:1fr 1fr}.dock{padding:10px}.frame{height:calc(100vh - 65px)}}
+*{box-sizing:border-box}body{margin:0;background:#eef1f5;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:#17213a}.wrap{max-width:820px;margin:auto;padding-bottom:calc(320px + env(safe-area-inset-bottom))}.top{position:sticky;top:0;z-index:20;background:#16233f;color:white;padding:calc(9px + env(safe-area-inset-top)) 14px 10px}.top h1{font-size:18px;margin:0}.top p{font-size:11px;margin:3px 0 0;opacity:.8}.frame{width:100%;height:calc(100vh - 74px);border:0;background:white}.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(8px + env(safe-area-inset-bottom));z-index:30;width:min(790px,calc(100% - 16px));max-height:min(480px,66vh);overflow:auto;background:rgba(255,255,255,.98);border:1px solid #ccd4df;border-radius:18px;box-shadow:0 12px 35px rgba(0,0,0,.18);padding:12px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.btn{border:0;border-radius:12px;min-height:44px;padding:9px;font-size:13px;font-weight:900;background:#eef1f5;color:#17213a}.primary{background:#2366b1;color:#fff}.green{background:#147a55;color:#fff}.file{width:100%;font-size:12px}.audio{width:100%;height:38px;margin-top:8px}.now{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:8px 0;font-weight:900}.page{font-size:18px}.time{font-family:monospace;font-size:14px;color:#526078}.cuts{font-size:11px;line-height:1.45;color:#526078;max-height:42px;overflow:auto;margin-top:6px}.hint{font-size:11px;line-height:1.45;color:#657187;margin-top:6px}.ok{color:#147a55;font-weight:800}.err{color:#a33;font-weight:800}.extract,.diag{border:1px solid #d7dde6;border-radius:13px;padding:10px;margin-bottom:10px;background:#f8fafc}.extract summary,.diag summary{font-size:13px;font-weight:900;cursor:pointer}.extract-body{margin-top:10px}.label{font-size:12px;font-weight:900;margin:7px 0 5px}.download{display:none;text-align:center;text-decoration:none}.mini-note{font-size:10px;color:#6b7280;margin-top:5px;line-height:1.4}.diagbox{margin-top:8px;padding:10px;border-radius:10px;background:#eef1f5;font-size:12px;line-height:1.55;white-space:pre-wrap;word-break:break-word}.diagbox.error{background:#fff0f0;border:1px solid #d99;color:#8f1d24;font-weight:800}.diagbox.success{background:#edf8f2;border:1px solid #9cccb5;color:#126445;font-weight:800}.diagbox.working{background:#fff8e6;border:1px solid #e7cf8a;color:#765b10;font-weight:800}@media(max-width:520px){.row{grid-template-columns:1fr 1fr}.dock{padding:10px}.frame{height:calc(100vh - 65px)}}
 </style>
 </head>
 <body>
-<div class="wrap"><div class="top"><h1>🎞️ プレゼン動画スタジオ</h1><p>PDF＋長い音声の手動ページ切替／動画からMP3抽出</p></div><iframe id="app" class="frame" src="youtube-presentation.html?v=manual2"></iframe></div>
+<div class="wrap"><div class="top"><h1>🎞️ プレゼン動画スタジオ</h1><p>PDF＋長い音声の手動ページ切替／動画からMP3抽出</p></div><iframe id="app" class="frame" src="youtube-presentation.html?v=ttsdiag1"></iframe></div>
 <div class="dock">
-  <details class="extract" open>
+  <details class="diag" open>
+    <summary>🔎 Google AI音声の状態</summary>
+    <div id="ttsDiag" class="diagbox">「AI音声を作る」または「声を試聴」を押すと、Googleからの結果をここに表示します。</div>
+    <div class="mini-note">エラーの場合は、HTTP番号とGoogle/Supabaseから返った内容をそのまま表示します。これで課金・APIキー・TTSモデルのどこで止まったか判別できます。</div>
+  </details>
+
+  <details class="extract">
     <summary>🎥 動画からMP3を取り出す</summary>
     <div class="extract-body">
       <div class="label">元の動画を選ぶ</div>
@@ -25,7 +31,7 @@
         <a id="downloadMp3" class="btn green download">MP3を保存</a>
         <button id="useExtracted" class="btn green" disabled>このMP3をプレゼンに使う</button>
       </div>
-      <div class="mini-note">「このMP3をプレゼンに使う」を押すと、下の長い音声へそのまま渡します。保存して選び直す必要はありません。</div>
+      <div class="mini-note">「このMP3をプレゼンに使う」を押すと、下の長い音声へそのまま渡します。</div>
     </div>
   </details>
 
@@ -40,16 +46,56 @@
     <button class="btn green" id="apply" disabled>この区切りで反映</button>
   </div>
   <div id="cuts" class="cuts"></div>
-  <div id="msg" class="hint">使い方：PDFを本体で読み込む → 長い音声を選ぶ → 再生しながらページが変わる場所で「ここで次ページ」。動画から取り出したMP3も、そのままここへ渡せます。</div>
+  <div id="msg" class="hint">使い方：PDFを本体で読み込む → 長い音声を選ぶ → 再生しながらページが変わる場所で「ここで次ページ」。</div>
 </div>
 <script>
 const $=id=>document.getElementById(id),frame=$('app'),player=$('player');let file=null,cuts=[],previewTimer=null,extractedMp3File=null,extractedMp3Url='';
+function setDiag(text,type=''){let d=$('ttsDiag');d.textContent=text;d.className='diagbox'+(type?' '+type:'')}
 function fmt(s){s=Math.max(0,s||0);let m=Math.floor(s/60),x=(s-m*60).toFixed(1).padStart(4,'0');return`${m}:${x}`}
 function child(){return frame.contentWindow}
 function pageCount(){try{return frame.contentDocument.querySelectorAll('.slide').length}catch{return 0}}
 function currentPage(){let n=pageCount();if(!n)return 0;let t=player.currentTime,i=0;while(i<cuts.length&&t>=cuts[i])i++;return Math.min(n,i+1)}
 function update(){let n=pageCount(),p=currentPage();$('timeNow').textContent=fmt(player.currentTime);$('pageNow').textContent=n?`現在 PAGE ${p} / ${n}`:'PDFを先に読み込んでください';$('cuts').textContent=cuts.length?`区切り：${cuts.map((t,i)=>`PAGE ${i+1}→${i+2} ${fmt(t)}`).join(' ｜ ')}`:'区切りはまだありません';let ready=!!file&&n>0;$('cut').disabled=!ready||cuts.length>=Math.max(0,n-1);$('undo').disabled=!cuts.length;$('preview').disabled=!ready;$('apply').disabled=!ready||cuts.length!==Math.max(0,n-1)}
 setInterval(update,150);
+
+frame.addEventListener('load',()=>{
+  try{
+    const w=frame.contentWindow;
+    if(w.__ttsDiagnosticInstalled)return;
+    w.__ttsDiagnosticInstalled=true;
+    const originalFetch=w.fetch.bind(w);
+    w.fetch=async function(input,init){
+      const url=typeof input==='string'?input:(input&&input.url)||'';
+      let isTts=false;
+      try{if(url.includes('youtube-video-maker-safe')&&init?.body){let b=JSON.parse(init.body);isTts=b?.action==='generateTts'}}catch{}
+      if(!isTts)return originalFetch(input,init);
+      const started=new Date();
+      setDiag(`Google AI音声へ送信中…\n${started.toLocaleTimeString('ja-JP')}\nSupabase → Gemini TTS を確認しています。`,'working');
+      try{
+        const r=await originalFetch(input,init);
+        const clone=r.clone();
+        const raw=await clone.text();
+        let detail=raw;
+        try{let j=JSON.parse(raw);detail=j.error||j.message||raw}catch{}
+        if(r.ok){
+          setDiag(`✅ AI音声APIは正常です。\nHTTP ${r.status}\nGoogle Gemini TTSから音声データが返りました。`,'success');
+        }else{
+          let hint='';
+          const low=String(detail).toLowerCase();
+          if(low.includes('prepayment')||low.includes('depleted')||r.status===429)hint='\n\n判定候補：Google側の課金・クレジット反映またはレート制限。';
+          else if(low.includes('api key')||low.includes('permission')||r.status===401||r.status===403)hint='\n\n判定候補：APIキーまたは権限。';
+          else if(low.includes('model')||low.includes('not found'))hint='\n\n判定候補：TTSモデル名・提供状態。';
+          setDiag(`❌ AI音声APIエラー\nHTTP ${r.status}\n${detail}${hint}`,'error');
+        }
+        return r;
+      }catch(e){
+        setDiag(`❌ 通信エラー\n${e?.message||e}\n\nSupabaseへ到達する前、または通信途中で止まっています。`,'error');
+        throw e;
+      }
+    };
+  }catch(e){setDiag('診断機能の初期化エラー：'+(e?.message||e),'error')}
+});
+
 function setLongAudio(f,sourceLabel=''){file=f||null;cuts=[];if(file){player.src=URL.createObjectURL(file);$('msg').textContent=`${sourceLabel||'音声'}「${file.name}」を読み込みました。再生して、次のページへ変わる瞬間で「ここで次ページ」を押してください。`}update()}
 $('longAudio').onchange=()=>setLongAudio($('longAudio').files[0]||null,'音声');
 $('cut').onclick=()=>{let n=pageCount();if(!file||!n)return;let t=player.currentTime;if(cuts.length&&t<=cuts[cuts.length-1]+.1){$('msg').innerHTML='<span class="err">前の区切りより後の位置で押してください。</span>';return}cuts.push(t);$('msg').innerHTML=`<span class="ok">PAGE ${cuts.length} → PAGE ${cuts.length+1} を ${fmt(t)} に記録しました。</span>`;update()};
