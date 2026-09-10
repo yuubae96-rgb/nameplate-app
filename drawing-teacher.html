@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>育てる図面変換｜先生モード</title>
+<style>
+:root{--bg:#f3f4f6;--card:#fff;--ink:#111827;--muted:#667085;--line:#d9dee7;--green:#17803d;--blue:#175cd3;--orange:#b54708;--soft:#f8fafc}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}button,input,textarea{font:inherit}
+header{position:sticky;top:0;z-index:20;background:#111827;color:#fff;padding:14px 24px;box-shadow:0 2px 10px #0002}.head{max-width:1280px;margin:auto;display:flex;align-items:center;gap:16px}.head h1{font-size:21px;margin:0}.head .sub{font-size:13px;color:#cbd5e1}.badge{margin-left:auto;background:#243046;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:800}
+.layout{max-width:1280px;margin:0 auto;padding:20px;display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:18px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 14px #1118270a}.card h2{font-size:20px;margin:0 0 8px}.lead{font-size:16px;line-height:1.7;font-weight:700;margin:0}.muted{font-size:13px;color:var(--muted);line-height:1.65}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 4px}.step{padding:10px;border-radius:10px;background:#eef1f5;font-size:12px;font-weight:800;text-align:center;color:#667085}.step.on{background:#111827;color:#fff}.step.done{background:#eaf8ee;color:#176b2c}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}.drop{border:2px dashed #b7c0cc;border-radius:14px;padding:20px;background:#fafbfc;min-height:190px;display:flex;flex-direction:column;justify-content:center;text-align:center;transition:.15s}.drop.over{border-color:#175cd3;background:#eef4ff}.drop.ok{border-style:solid;border-color:#9bd1aa;background:#f3fbf5}.drop h3{margin:0 0 6px;font-size:17px}.pick{border:1px solid #cfd6df;background:#fff;border-radius:10px;padding:10px 13px;font-weight:800;cursor:pointer}.file{margin-top:10px;color:#176b2c;font-weight:800;font-size:13px;word-break:break-all}.hidden{display:none}.primary,.secondary{width:100%;border:0;border-radius:12px;padding:14px 16px;font-weight:900;cursor:pointer}.primary{background:#111827;color:#fff;margin-top:14px}.secondary{background:#eef1f5;color:#111827;margin-top:9px}.primary:disabled{opacity:.45;cursor:not-allowed}.result{margin-top:14px;padding:15px;border-radius:12px;background:#f7f8fa;line-height:1.65}.good{background:#eef9f1;color:#176b2c}.warn{background:#fff7ed;color:#9a3412}.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.chip{border:1px solid #d5dae2;background:#fff;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:800;cursor:pointer}.chip.selected{border-color:#111827;background:#111827;color:#fff}.question{margin-top:14px;padding:16px;border:2px solid #111827;border-radius:14px}.question label{display:block;font-weight:900;margin-bottom:7px}.question textarea{width:100%;min-height:92px;border:1px solid #cfd6df;border-radius:10px;padding:11px;resize:vertical}.cloud{padding:11px 13px;border-radius:10px;background:#eef8f0;color:#176b2c;font-size:13px;font-weight:800}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.stat{background:#f7f8fa;border-radius:10px;padding:10px;text-align:center;font-weight:900}.stat span{display:block;font-size:11px;color:#667085;margin-top:3px;font-weight:700}
+.assistant{position:sticky;top:82px}.assistant .face{font-size:34px}.assistant h2{margin:6px 0 8px}.say{background:#f4f7fb;border-radius:14px;padding:14px;line-height:1.7;font-size:14px}.assistant ol{padding-left:20px;color:#344054;font-size:13px;line-height:1.75}.tip{margin-top:12px;background:#fff7ed;border-left:4px solid #f79009;padding:11px 12px;font-size:12px;line-height:1.65}.helpbtn{width:100%;border:1px solid #cfd6df;background:#fff;border-radius:10px;padding:10px;font-weight:800;margin-top:10px;cursor:pointer}.history{max-height:300px;overflow:auto}.row{padding:11px 0;border-bottom:1px solid #eceff3}.pill{display:inline-block;border-radius:999px;background:#eef2ff;padding:3px 7px;font-size:11px;font-weight:800;margin-right:5px}.fixed{background:#fff3cd;color:#704c00}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.assistant{position:static}.pair{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}}@media(max-width:560px){.layout{padding:12px}.stats{grid-template-columns:1fr 1fr}.head .sub{display:none}}
+</style>
+</head>
+<body>
+<header><div class="head"><div><h1>育てる図面変換</h1><div class="sub">原稿担当者向け・先生モード</div></div><div class="badge">Macデスクトップ対応</div></div></header>
+<div class="layout">
+<main>
+<section class="card">
+<h2>今日の仕事を、そのままAIの教材にします</h2>
+<p class="lead">普段どおり原稿を作ったら、客先図面と完成原稿の2つをここへ入れてください。AIが違いを見つけ、会社のルールを少しずつ覚えます。</p>
+<div class="steps"><div class="step on" id="st1">1 客先図面</div><div class="step" id="st2">2 完成原稿</div><div class="step" id="st3">3 AI比較</div><div class="step" id="st4">4 理由を教える</div></div>
+<div class="cloud" id="cloud">☁️ 学習データを読み込み中…</div>
+<div class="stats"><div class="stat" id="sPairs">0<span>正解ペア</span></div><div class="stat" id="sRules">0<span>AI法則</span></div><div class="stat" id="sFixed">0<span>固定ルール</span></div><div class="stat" id="sLevel">1<span>成長レベル</span></div></div>
+</section>
+<section class="card">
+<h2>① 正解ペアを登録</h2>
+<p class="muted">MacではPDFをFinderからこの枠へドラッグ＆ドロップできます。Illustrator原稿は、まずPDFで保存して入れてください。</p>
+<div class="pair">
+<div class="drop" id="sourceDrop"><h3>客先図面</h3><div class="muted">PDF / JPG / PNG</div><button class="pick" id="sourcePick">ファイルを選ぶ</button><input class="hidden" id="sourceInput" type="file" accept=".pdf,image/*"><div class="file" id="sourceName"></div></div>
+<div class="drop" id="finishedDrop"><h3>完成した村上原稿</h3><div class="muted">正解のPDF / JPG / PNG</div><button class="pick" id="finishedPick">ファイルを選ぶ</button><input class="hidden" id="finishedInput" type="file" accept=".pdf,image/*"><div class="file" id="finishedName"></div></div>
+</div>
+<button class="primary" id="compareBtn" disabled>2つを比較してAIに教える</button>
+<div id="progress"></div><div id="analysis"></div>
+</section>
+<section class="card" id="teachCard">
+<h2>② AIに「なぜそうしたか」を教える</h2>
+<p class="muted">難しい文章は不要です。「シルク印刷だから」「後工程で切断するため」くらいで十分です。</p>
+<div class="question"><label>今回、原稿にどんな処理をしましたか？</label><div class="chips" id="chips">
+<button class="chip" data-text="トンボを付けた">トンボ</button><button class="chip" data-text="後工程の切断用に二重線を付けた">切断用二重線</button><button class="chip" data-text="シルク印刷用の版として処理した">シルク印刷版</button><button class="chip" data-text="文字や図柄を反転した">反転</button><button class="chip" data-text="版用の余白を付けた">版余白</button><button class="chip" data-text="穴や外形を製作用に調整した">穴・外形</button><button class="chip" data-text="その他の処理">その他</button></div></div>
+<div class="question"><label>その処理をした理由・条件を一言で教えてください</label><textarea id="reason" placeholder="例：シルク印刷で、印刷後に外形を切断するため。トンボは製品外形から○mm外側。"></textarea><button class="primary" id="saveRuleBtn">この理由を会社ルールとして覚えさせる</button></div>
+<div id="saveResult"></div>
+</section>
+<section class="card"><h2>覚えた会社ルール</h2><div id="ruleList" class="history"><p class="muted">まだありません。</p></div></section>
+<section class="card"><h2>これまで教えた正解例</h2><div id="pairList" class="history"><p class="muted">まだありません。</p></div></section>
+</main>
+<aside class="assistant">
+<section class="card"><div class="face">👩‍🏫</div><h2>原稿AIアシスタント</h2><div class="say" id="assistantSay">まず、今日処理した仕事の<strong>客先図面</strong>を左の枠へ入れてください。Finderからドラッグするだけでも大丈夫です。</div><ol><li>普段どおりIllustratorで原稿を完成</li><li>完成原稿をPDF保存</li><li>客先図面＋完成PDFを登録</li><li>AIが見つけた違いを確認</li><li>「なぜそうしたか」を一言だけ入力</li></ol><div class="tip"><strong>大事：</strong>AIのために新しい資料を作る必要はありません。普段の仕事そのものを教材にしてください。</div><button class="helpbtn" id="helpBtn">今なにをすればいい？</button><button class="helpbtn" id="resetBtn">次の仕事を教える</button></section>
+</aside>
+</div>
+<script>
+const API='https://vnnvuxccazkdzwqjmntz.supabase.co/functions/v1/drawing-rule-ai';
+const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+let source=null,finished=null,pairs=[],rules=[],manualRules=[],lastAnalysis=null,selected=[];
+async function api(body){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok||d.error)throw new Error(d.error||'処理に失敗しました');return d}
+function file64(file){return new Promise((res,rej)=>{if(file.size>18*1024*1024)return rej(new Error('1ファイル18MB以下にしてください'));const fr=new FileReader();fr.onload=()=>res({name:file.name,mime:file.type||(/\.pdf$/i.test(file.name)?'application/pdf':'application/octet-stream'),data:String(fr.result).split(',')[1]});fr.onerror=()=>rej(new Error('ファイルを読めませんでした'));fr.readAsDataURL(file)})}
+function level(){return Math.max(1,Math.min(10,1+Math.floor((pairs.length+manualRules.length*2)/5)))}
+function say(html){$('assistantSay').innerHTML=html}
+function steps(){['st1','st2','st3','st4'].forEach(id=>$(id).className='step');if(source){$('st1').className='step done'}else $('st1').className='step on';if(source&&finished){$('st2').className='step done';$('st3').className='step on'}else if(source)$('st2').className='step on';if(lastAnalysis){$('st3').className='step done';$('st4').className='step on'}$('compareBtn').disabled=!(source&&finished)}
+function render(){
+$('sPairs').innerHTML=`${pairs.length}<span>正解ペア</span>`;$('sRules').innerHTML=`${rules.length}<span>AI法則</span>`;$('sFixed').innerHTML=`${manualRules.length}<span>固定ルール</span>`;$('sLevel').innerHTML=`${level()}<span>成長レベル</span>`;
+$('ruleList').innerHTML=manualRules.length?manualRules.slice().reverse().map(r=>`<div class="row"><span class="pill fixed">会社ルール</span><strong>${esc(r.text||r)}</strong></div>`).join(''):'<p class="muted">まだありません。</p>';
+$('pairList').innerHTML=pairs.length?pairs.slice().reverse().slice(0,30).map((p,i)=>`<div class="row"><strong>正解例 ${pairs.length-i}</strong><div class="muted">客先：${esc(p.source||'')}<br>完成：${esc(p.finished||'')}<br>${esc(p.summary||'')}</div></div>`).join(''):'<p class="muted">まだありません。</p>';
+steps()}
+function setFile(kind,file){if(!file)return;const ok=/pdf|image/i.test(file.type)||/\.(pdf|png|jpe?g)$/i.test(file.name);if(!ok)return alert('PDF・JPG・PNGを選んでください');if(kind==='source'){source=file;$('sourceName').textContent='✅ '+file.name;$('sourceDrop').classList.add('ok');say('次に、あなたがIllustratorで完成させた<strong>正解の原稿</strong>をPDFで保存して、右の枠へ入れてください。')}else{finished=file;$('finishedName').textContent='✅ '+file.name;$('finishedDrop').classList.add('ok');say('2つそろいました。黒い<strong>「2つを比較してAIに教える」</strong>を押してください。AIが差を探します。')}steps()}
+function wireDrop(kind,dropId,inputId,pickId){const d=$(dropId),i=$(inputId);$(pickId).onclick=()=>i.click();i.onchange=()=>setFile(kind,i.files[0]);['dragenter','dragover'].forEach(ev=>d.addEventListener(ev,e=>{e.preventDefault();d.classList.add('over')}));['dragleave','drop'].forEach(ev=>d.addEventListener(ev,e=>{e.preventDefault();d.classList.remove('over')}));d.addEventListener('drop',e=>setFile(kind,e.dataTransfer.files[0]))}
+wireDrop('source','sourceDrop','sourceInput','sourcePick');wireDrop('finished','finishedDrop','finishedInput','finishedPick');
+async function load(){try{const d=await api({action:'load'}),s=d.state||{};pairs=Array.isArray(s.pairs)?s.pairs:[];rules=Array.isArray(s.rules)?s.rules:[];manualRules=Array.isArray(s.manualRules)?s.manualRules:[];$('cloud').textContent=`☁️ 学習データ読込済み｜正解ペア ${pairs.length}組・AI法則 ${rules.length}件・固定 ${manualRules.length}件`;render()}catch(e){$('cloud').textContent='⚠️ 学習データの読込に失敗：'+e.message;render()}}
+$('compareBtn').onclick=async()=>{const b=$('compareBtn');b.disabled=true;$('progress').innerHTML='<div class="result">AIが2つの図面を比較しています。少し待ってください…</div>';$('analysis').innerHTML='';try{const [s,f]=await Promise.all([file64(source),file64(finished)]),d=await api({action:'compare',source:s,finished:f});lastAnalysis=d.analysis||{};const st=d.state||{};pairs=Array.isArray(st.pairs)?st.pairs:pairs;rules=Array.isArray(st.rules)?st.rules:rules;manualRules=Array.isArray(st.manualRules)?st.manualRules:manualRules;$('progress').innerHTML='';const changes=Array.isArray(lastAnalysis.changes)?lastAnalysis.changes:[];$('analysis').innerHTML=`<div class="result good"><strong>AIが今回の正解例を保存しました。</strong><br>${esc(lastAnalysis.summary||'2つの図面の違いを学習しました。')}${changes.length?'<br><br><strong>見つけた変化</strong><br>'+changes.map(x=>'・'+esc(typeof x==='string'?x:(x.description||x.change||JSON.stringify(x)))).join('<br>'):''}</div>`;$('cloud').textContent=`☁️ 保存済み｜正解ペア ${pairs.length}組`;render();say('比較できました。次は<strong>「なぜこの処理をしたか」</strong>を教えてください。下の候補を押して、一言だけ理由を書けばOKです。');$('teachCard').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){$('progress').innerHTML=`<div class="result warn">${esc(e.message)}</div>`;say('比較でエラーが出ました。ファイルがPDFまたは画像か確認して、もう一度試してください。')}finally{b.disabled=!(source&&finished)}};
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{c.classList.toggle('selected');const t=c.dataset.text;if(c.classList.contains('selected'))selected.push(t);else selected=selected.filter(x=>x!==t);const base=selected.join('。');if(base&&!$('reason').value.trim())$('reason').value=base+'。理由：'});
+$('saveRuleBtn').onclick=async()=>{let text=$('reason').value.trim();if(!text&&selected.length)text=selected.join('。');if(!text)return alert('理由や条件を一言入力してください');const b=$('saveRuleBtn');b.disabled=true;try{const d=await api({action:'addManualRule',rule:text});const st=d.state||{};pairs=Array.isArray(st.pairs)?st.pairs:pairs;rules=Array.isArray(st.rules)?st.rules:rules;manualRules=Array.isArray(st.manualRules)?st.manualRules:manualRules;$('saveResult').innerHTML='<div class="result good"><strong>覚えました。</strong> 次回からこの会社ルールをAIが優先して参照します。</div>';render();say('ありがとうございます。これで1件終了です。<strong>「次の仕事を教える」</strong>を押して、次の正解例を続けて登録できます。')}catch(e){$('saveResult').innerHTML=`<div class="result warn">${esc(e.message)}</div>`}finally{b.disabled=false}};
+function reset(){source=null;finished=null;lastAnalysis=null;selected=[];$('sourceName').textContent='';$('finishedName').textContent='';$('sourceInput').value='';$('finishedInput').value='';$('sourceDrop').classList.remove('ok');$('finishedDrop').classList.remove('ok');$('progress').innerHTML='';$('analysis').innerHTML='';$('reason').value='';$('saveResult').innerHTML='';document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));steps();say('次の仕事です。まず<strong>客先図面</strong>を左の枠へ入れてください。')}
+$('resetBtn').onclick=reset;$('helpBtn').onclick=()=>{if(!source)say('今は<strong>客先図面</strong>を入れるところです。左の枠へFinderからPDFをドラッグしてください。');else if(!finished)say('次は<strong>完成原稿</strong>です。IllustratorからPDF保存した正解原稿を右の枠へ入れてください。');else if(!lastAnalysis)say('2つそろっています。<strong>「2つを比較してAIに教える」</strong>を押してください。');else say('最後に、今回なぜその処理をしたかを一言入力して<strong>会社ルールとして覚えさせる</strong>を押してください。')};
+load();
+</script>
+</body>
+</html>
