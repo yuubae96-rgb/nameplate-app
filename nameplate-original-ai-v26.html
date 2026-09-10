@@ -1,39 +1,34 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-store,no-cache,must-revalidate,max-age=0"><title>銘板原稿AI2｜直接トレース試験版</title></head><body><div style="padding:32px;text-align:center;font-weight:700">銘板原稿AI2・直接トレース試験版を読み込み中…</div><script>(async()=>{try{const base='https://raw.githubusercontent.com/yuubae96-rgb/nameplate-app/main/nameplate-original-ai-v25.html';const r=await fetch(base,{cache:'no-store'});if(!r.ok)throw new Error('元画面の読込失敗');let h=await r.text();h=h.replace("https://emauqxftmauvsffdjvyh.supabase.co/functions/v1/read-nameplate-drawing","https://emauqxftmauvsffdjvyh.supabase.co/functions/v1/read-nameplate-direct-trace-v2");h=h.replace('銘板原稿AI　テスト版59・板外形／表面加工領域を分離','銘板原稿AI2　直接トレース試験版・穴座標から四隅えぐりを作図');h=h.replace('板そのもの・穴・黒ベタや塗装等の加工領域・文字を別々に読み取ります。','元図の文字位置を優先し、四隅の黒地えぐりはAI任せにせず穴座標から幾何作図します。');const patch=`<script>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-store,no-cache,must-revalidate,max-age=0"><title>銘板原稿AI2｜直接トレース＋自動比較</title></head><body><div style="padding:32px;text-align:center;font-weight:700">銘板原稿AI2・直接トレース＋自動比較版を読み込み中…</div><script>(async()=>{try{const base='https://raw.githubusercontent.com/yuubae96-rgb/nameplate-app/main/nameplate-original-ai-v25.html';const r=await fetch(base,{cache:'no-store'});if(!r.ok)throw new Error('元画面の読込失敗');let h=await r.text();h=h.replace("https://emauqxftmauvsffdjvyh.supabase.co/functions/v1/read-nameplate-drawing","https://emauqxftmauvsffdjvyh.supabase.co/functions/v1/read-nameplate-direct-trace-v2");h=h.replace('銘板原稿AI　テスト版59・板外形／表面加工領域を分離','銘板原稿AI2　直接トレース＋元図自動比較');h=h.replace('板そのもの・穴・黒ベタや塗装等の加工領域・文字を別々に読み取ります。','元図を直接トレースし、校正原稿完成後にAIが元図と自動比較します。');const patch=`<style>
+.compare-card{background:#fff;border-radius:14px;padding:18px;margin:16px 0}.compare-title{font-size:22px;font-weight:800;margin:0 0 12px}.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.compare-box{border:1px solid #d7dde3;border-radius:10px;padding:10px;background:#fafbfc}.compare-box b{display:block;margin-bottom:8px}.compare-box img,.compare-box svg{display:block;max-width:100%;height:auto;margin:auto}.score{font-size:32px;font-weight:900}.cmp-ok{background:#eaf7ee;border:1px solid #77bd89;padding:12px;border-radius:9px}.cmp-warn{background:#fff3a6;border:2px solid #e0a800;padding:12px;border-radius:9px}.cmp-ng{background:#ffe8e8;border:2px solid #d44;padding:12px;border-radius:9px}.cmp-issues{margin:10px 0 0;padding-left:20px;line-height:1.55}@media(max-width:650px){.compare-grid{grid-template-columns:1fr}}
+</style>
+<script>
 (function(){
- const NS='http://www.w3.org/2000/svg';
  const oldProof=proof;
- function qn(v){const n=Number(v);return Number.isFinite(n)?n:null}
- function addDeterministicGround(svgEl){
-  const W=qn(ai.width_mm),H=qn(ai.height_mm),D=qn(ai.hole_diameter_mm);
-  const hp=Array.isArray(ai.hole_positions)?ai.hole_positions.map(p=>({x:qn(p.x_mm),y:qn(p.y_mm)})).filter(p=>p.x!=null&&p.y!=null):[];
-  if(!W||!H||hp.length!==4||!D)return;
-  const black=/black|黒/i.test(String(ai.ground_color||''))||/black|黒/i.test(String(ai.text_line_color||''))===false&&((ai.surface_regions||[]).some(r=>/black|黒/i.test(String(r.color||''))));
-  if(!black)return;
-  const rootGroup=svgEl.querySelector('g[clip-path]');if(!rootGroup)return;
-  const plate=[...svgEl.children].find(el=>el.tagName&&el.tagName.toLowerCase()==='rect');
-  if(plate)plate.setAttribute('fill','#ddd');
-  [...rootGroup.querySelectorAll('rect')].forEach(el=>{const fill=(el.getAttribute('fill')||'').toLowerCase(),ww=qn(el.getAttribute('width'))||0,hh=qn(el.getAttribute('height'))||0;if((fill==='#111'||fill==='#000'||fill==='black')&&ww>W*.7&&hh>H*.7)el.remove()});
-  const defs=svgEl.querySelector('defs')||svgEl.insertBefore(document.createElementNS(NS,'defs'),svgEl.firstChild);
-  const mask=document.createElementNS(NS,'mask');mask.setAttribute('id','ai2GroundMask');
-  const white=document.createElementNS(NS,'rect');white.setAttribute('x','0');white.setAttribute('y','0');white.setAttribute('width',String(W));white.setAttribute('height',String(H));white.setAttribute('fill','white');mask.appendChild(white);
-  const edge=Math.min(...hp.map(p=>Math.min(p.x,p.y,W-p.x,H-p.y)).filter(v=>v>0));
-  const fallback=Math.max(D/2+2,edge||8);
-  let cut=8;
-  const sr=(Array.isArray(ai.surface_regions)?ai.surface_regions:[]).find(r=>String(r.corner_style||'')==='concave'||String(r.shape||'')==='corner_cutout_rect');
-  const rr=qn(sr?.radius_mm);if(rr&&rr>D/2)cut=rr;else if(fallback>0)cut=fallback;
-  hp.forEach(p=>{const c=document.createElementNS(NS,'circle');c.setAttribute('cx',String(p.x));c.setAttribute('cy',String(p.y));c.setAttribute('r',String(cut));c.setAttribute('fill','black');mask.appendChild(c)});defs.appendChild(mask);
-  const ground=document.createElementNS(NS,'rect');ground.setAttribute('x','0');ground.setAttribute('y','0');ground.setAttribute('width',String(W));ground.setAttribute('height',String(H));ground.setAttribute('fill','#111');ground.setAttribute('mask','url(#ai2GroundMask)');ground.setAttribute('data-ai2-ground','deterministic');
-  const firstHole=rootGroup.querySelector('circle');rootGroup.insertBefore(ground,firstHole||rootGroup.firstChild);
- }
+ const CMP='https://emauqxftmauvsffdjvyh.supabase.co/functions/v1/compare-nameplate-proof';
+ function esc2(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
  function refineTrace(){
-  const svgEl=document.querySelector('#art svg'); if(!svgEl) return;
-  addDeterministicGround(svgEl);
+  const svgEl=document.querySelector('#art svg');if(!svgEl)return;
   const textNodes=[...svgEl.querySelectorAll('text')];
   const textEls=(Array.isArray(ai.layout?.elements)?ai.layout.elements:[]).filter(e=>e.type==='text');
   const H=Number(ai.height_mm)||100;
-  textNodes.forEach((node,i)=>{const e=textEls[i]||{};node.removeAttribute('textLength');node.removeAttribute('lengthAdjust');const fp=Number(e.font_size_pct);if(Number.isFinite(fp)&&fp>0)node.setAttribute('font-size',String(H*fp/100));node.setAttribute('font-family','Hiragino Maru Gothic ProN, Yu Gothic, Meiryo, sans-serif');});
-  const old=document.querySelector('.trace-note');if(old)old.remove();const tag=document.createElement('div');tag.className='trace-note';tag.style.cssText='margin-top:10px;font-size:12px;color:#5a6772';tag.textContent='AI2：四隅の黒地えぐりは、確定した穴中心座標からプログラムで固定作図しています。';const art=document.getElementById('art');if(art)art.insertAdjacentElement('afterend',tag);
+  textNodes.forEach((node,i)=>{const e=textEls[i]||{};node.removeAttribute('textLength');node.removeAttribute('lengthAdjust');const fp=Number(e.font_size_pct);if(Number.isFinite(fp)&&fp>0)node.setAttribute('font-size',String(H*fp/100));node.setAttribute('font-family','Hiragino Maru Gothic ProN, Yu Gothic, Meiryo, sans-serif')});
+  // If AI supplied 4 hole centers, use them deterministically for a concave black-ground mask.
+  const hp=Array.isArray(ai.hole_positions)?ai.hole_positions:[];const regs=Array.isArray(ai.surface_regions)?ai.surface_regions:[];
+  const black=regs.find(x=>/black|黒/i.test(String(x.color||'')));
+  if(black&&hp.length===4){
+   const old=svgEl.querySelector('[data-auto-cutout-mask]');if(old)old.remove();
+   const w=Number(ai.width_mm)||100,h=Number(ai.height_mm)||100,rr=Math.max((Number(ai.hole_diameter_mm)||0)/2+2,Number(black.radius_mm)||8);
+   const ns='http://www.w3.org/2000/svg',defs=svgEl.querySelector('defs')||svgEl.insertBefore(document.createElementNS(ns,'defs'),svgEl.firstChild),mask=document.createElementNS(ns,'mask');mask.id='autoCornerCutouts';mask.setAttribute('data-auto-cutout-mask','1');
+   const rect=document.createElementNS(ns,'rect');rect.setAttribute('x','0');rect.setAttribute('y','0');rect.setAttribute('width',String(w));rect.setAttribute('height',String(h));rect.setAttribute('fill','white');mask.appendChild(rect);
+   hp.forEach(q=>{const c=document.createElementNS(ns,'circle');c.setAttribute('cx',String(q.x_mm));c.setAttribute('cy',String(q.y_mm));c.setAttribute('r',String(rr));c.setAttribute('fill','black');mask.appendChild(c)});defs.appendChild(mask);
+   // Apply only to the first large black fill region, never to text/hole layers.
+   const shapes=[...svgEl.querySelectorAll('g > rect,g > polygon')].filter(n=>{const f=(n.getAttribute('fill')||'').toLowerCase();return f==='#111'||f==='black'||f==='#000'});if(shapes[0])shapes[0].setAttribute('mask','url(#autoCornerCutouts)');
+  }
  }
- proof=function(){oldProof();requestAnimationFrame(refineTrace)};const b=document.getElementById('proofBtn');if(b)b.onclick=proof;const s=document.getElementById('status');if(s)s.textContent='AI2：穴位置が確定したら四隅の黒地えぐりを幾何計算で作図します。';
+ function dataURL(file){return new Promise((ok,ng)=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.onerror=ng;fr.readAsDataURL(file)})}
+ async function svgPngData(){const s=document.querySelector('#art svg');if(!s)throw Error('校正原稿がありません');const xml=new XMLSerializer().serializeToString(s),blob=new Blob([xml],{type:'image/svg+xml'}),url=URL.createObjectURL(blob);try{const img=new Image();await new Promise((ok,ng)=>{img.onload=ok;img.onerror=ng;img.src=url});const scale=3,c=document.createElement('canvas');c.width=Math.max(500,img.width*scale);c.height=Math.max(500,img.height*scale);const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/png')}finally{URL.revokeObjectURL(url)}}
+ function ensureCard(){let c=document.getElementById('autoCompare');if(c)return c;c=document.createElement('div');c.id='autoCompare';c.className='card compare-card';c.innerHTML='<h2 class="compare-title">6. 元図と校正原稿をAIが自動比較</h2><div id="compareStatus" class="note">比較準備中…</div><div id="compareViews" class="compare-grid" style="display:none"><div class="compare-box"><b>元図</b><img id="srcPreview"></div><div class="compare-box"><b>生成原稿</b><div id="proofPreview"></div></div><div id="compareResult" style="grid-column:1/-1"></div>';document.querySelector('main').appendChild(c);return c}
+ async function compareNow(){const card=ensureCard(),st=document.getElementById('compareStatus'),views=document.getElementById('compareViews'),res=document.getElementById('compareResult');try{const f=document.getElementById('file').files[0];if(!f)throw Error('元図ファイルがありません');st.textContent='元図と生成原稿をAIが自動比較中…';const src=await dataURL(f),proof=await svgPngData();if(f.type.startsWith('image/'))document.getElementById('srcPreview').src=src;else document.getElementById('srcPreview').outerHTML='<div class="note">PDF原本をAI比較に使用しています。</div>';document.getElementById('proofPreview').innerHTML=document.getElementById('art').innerHTML;views.style.display='grid';const rr=await fetch(CMP,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_data:src,source_type:f.type,source_name:f.name,proof_data:proof})}),j=await rr.json();if(!rr.ok||j.error)throw Error(j.error||'比較失敗');const x=j.result||{},score=Number(x.score)||0,cls=x.verdict==='OK'?'cmp-ok':x.verdict==='大きく不一致'?'cmp-ng':'cmp-warn';const issues=Array.isArray(x.issues)?x.issues:[];res.className=cls;res.innerHTML='<div><span class="score">'+score+'点</span>　<b>'+esc2(x.verdict||'要確認')+'</b></div><div>'+esc2(x.summary||'')+'</div>'+(issues.length?'<ul class="cmp-issues">'+issues.map(i=>'<li><b>'+esc2(i.item||'')+'</b>：'+esc2(i.difference||'')+(i.suggested_fix?' → '+esc2(i.suggested_fix):'')+'</li>').join('')+'</ul>':'')+'<div style="margin-top:8px;font-weight:800">製作用判定：'+(x.can_use_for_production?'使用可':'まだ使用しない')+'</div>';st.textContent='自動比較完了。スクリーンショットを送らなくても、ここに差分が出ます。';card.scrollIntoView({behavior:'smooth'})}catch(e){st.textContent='自動比較エラー：'+e.message}}
+ proof=function(){oldProof();requestAnimationFrame(()=>{refineTrace();setTimeout(compareNow,250)})};const b=document.getElementById('proofBtn');if(b)b.onclick=proof;const s=document.getElementById('status');if(s)s.textContent='AI2直接トレース＋自動比較：校正原稿を作ると、元図との差をAIが自動判定します。';
 })();
 <\/script>`;h=h.replace('</body>',patch+'</body>');document.open();document.write(h);document.close()}catch(e){document.body.innerHTML='<div style="padding:32px;color:#b00">AI2試験版の読込に失敗しました。元版は保持されています。</div>'}})();</script></body></html>
