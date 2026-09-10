@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#111827" />
+<link rel="manifest" href="manifest.json" />
+<title>AI着せ替え</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111827;background:#f4f6f8}
+*{box-sizing:border-box}body{margin:0}.wrap{max-width:720px;margin:auto;padding:calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+h1{font-size:28px;margin:8px 0 4px}.sub{color:#6b7280;margin:0 0 18px;line-height:1.5}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 2px 14px #0000000f}.num{font-weight:800;font-size:14px;color:#6b7280}.label{font-size:20px;font-weight:800;margin:4px 0 8px}.help{font-size:13px;color:#6b7280;line-height:1.45;margin:0 0 12px}.pick{display:block;border:2px dashed #cbd5e1;border-radius:14px;padding:18px;text-align:center;font-weight:700;cursor:pointer;background:#fafafa}.pick input{display:none}.preview{width:100%;max-height:360px;object-fit:contain;border-radius:14px;margin-top:12px;display:none;background:#eef2f7}.seg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.seg button{border:1px solid #d1d5db;background:#fff;padding:11px 8px;border-radius:10px;font-weight:700}.seg button.active{background:#111827;color:#fff}.go{width:100%;border:0;border-radius:14px;padding:16px;font-size:18px;font-weight:900;background:#111827;color:#fff}.go:disabled{opacity:.4}.status{text-align:center;color:#4b5563;font-weight:700;min-height:24px;margin:10px 0}.result{display:none}.result img{width:100%;border-radius:16px;background:#eee}.actions{display:flex;gap:10px;margin-top:12px}.actions button,.actions a{flex:1;text-align:center;text-decoration:none;border-radius:12px;padding:13px;font-weight:800;border:1px solid #d1d5db;color:#111827;background:white}.note{font-size:13px;color:#6b7280;line-height:1.5}.badge{display:inline-block;background:#eef2ff;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:800;margin-bottom:8px}.mini{font-size:12px;color:#6b7280;margin-top:8px}
+</style>
+</head>
+<body><main class="wrap">
+<h1>AI着せ替え</h1>
+<p class="sub">人物Aに、別の人物Bが着ている服だけをAIで着せ替えます。</p>
+<section class="card"><div class="num">STEP 1</div><div class="label">着せたい人物 A</div><p class="help">完成写真の顔・髪型・体型・ポーズは、できるだけこの人物を基準にします。</p><label class="pick">人物Aの写真を選ぶ<input id="personA" type="file" accept="image/*"></label><img id="personAPreview" class="preview" alt="人物Aプレビュー"></section>
+<section class="card"><div class="num">STEP 2</div><div class="label">服の参考にする人物 B</div><p class="help">人物B本人を移すのではなく、Bが着ている服の色・柄・形・襟・袖などを参考にします。</p><label class="pick">人物Bの写真を選ぶ<input id="personB" type="file" accept="image/*"></label><img id="personBPreview" class="preview" alt="人物Bプレビュー"></section>
+<section class="card"><div class="num">STEP 3</div><div class="label">どこまで着せ替える？</div><div class="seg" id="scopeSeg"><button type="button" data-scope="top" class="active">上半身だけ</button><button type="button" data-scope="full">全身の服</button><button type="button" data-scope="full_shoes">靴まで</button><button type="button" data-scope="outer">上着だけ</button></div></section>
+<section class="card"><div class="num">STEP 4</div><div class="label">仕上がり</div><div class="seg" id="modeSeg"><button type="button" data-mode="natural" class="active">自然</button><button type="button" data-mode="faithful">服を忠実に</button></div><div class="mini">背景や顔はAを優先し、Bの顔や体型はコピーしません。</div></section>
+<button id="generate" class="go" disabled>Bの服をAに着せる</button><div id="status" class="status"></div>
+<section id="result" class="card result"><span class="badge">AI生成</span><div class="label">完成</div><img id="resultImage" alt="完成画像"><div class="actions"><a id="save" download="ai-kisekae.png">画像を保存</a><button id="retry" type="button">もう一度</button></div></section>
+<p class="note">本人または使用許可のある写真を使ってください。AI生成のため、服の細部や顔・体型が完全一致しない場合があります。</p>
+</main>
+<script>
+const a=document.querySelector('#personA'),b=document.querySelector('#personB'),btn=document.querySelector('#generate');const statusEl=document.querySelector('#status'),result=document.querySelector('#result'),resultImage=document.querySelector('#resultImage'),save=document.querySelector('#save');let mode='natural',scope='top';
+function preview(input,img){const f=input.files?.[0];if(!f){img.style.display='none';return;}img.src=URL.createObjectURL(f);img.style.display='block';btn.disabled=!(a.files?.[0]&&b.files?.[0]);}
+a.onchange=()=>preview(a,document.querySelector('#personAPreview'));b.onchange=()=>preview(b,document.querySelector('#personBPreview'));
+document.querySelectorAll('[data-mode]').forEach(x=>x.onclick=()=>{document.querySelectorAll('[data-mode]').forEach(y=>y.classList.remove('active'));x.classList.add('active');mode=x.dataset.mode});document.querySelectorAll('[data-scope]').forEach(x=>x.onclick=()=>{document.querySelectorAll('[data-scope]').forEach(y=>y.classList.remove('active'));x.classList.add('active');scope=x.dataset.scope});
+async function run(){if(!(a.files?.[0]&&b.files?.[0]))return;btn.disabled=true;result.style.display='none';statusEl.textContent='AIが人物Bの服を読み取り、人物Aへ着せ替えています…';const fd=new FormData();fd.append('personA',a.files[0]);fd.append('personB',b.files[0]);fd.append('mode',mode);fd.append('scope',scope);try{const r=await fetch('https://vnnvuxccazkdzwqjmntz.supabase.co/functions/v1/virtual-tryon',{method:'POST',body:fd});const j=await r.json();if(!r.ok)throw new Error(j.error||'生成に失敗しました');const src=`data:${j.mime||'image/png'};base64,${j.image}`;resultImage.src=src;save.href=src;result.style.display='block';statusEl.textContent='完成しました';result.scrollIntoView({behavior:'smooth'});}catch(e){statusEl.textContent='エラー: '+e.message;}finally{btn.disabled=false}}
+btn.onclick=run;document.querySelector('#retry').onclick=run;
+</script></body></html>
