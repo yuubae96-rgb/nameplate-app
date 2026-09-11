@@ -7,110 +7,28 @@
 <title>プレゼン動画スタジオ</title>
 <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#eef1f5;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:#17213a}.wrap{max-width:820px;margin:auto;padding-bottom:calc(320px + env(safe-area-inset-bottom))}.top{position:sticky;top:0;z-index:20;background:#16233f;color:white;padding:calc(9px + env(safe-area-inset-top)) 14px 10px}.top h1{font-size:18px;margin:0}.top p{font-size:11px;margin:3px 0 0;opacity:.8}.frame{width:100%;height:calc(100vh - 74px);border:0;background:white}.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(8px + env(safe-area-inset-bottom));z-index:30;width:min(790px,calc(100% - 16px));max-height:min(480px,66vh);overflow:auto;background:rgba(255,255,255,.98);border:1px solid #ccd4df;border-radius:18px;box-shadow:0 12px 35px rgba(0,0,0,.18);padding:12px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.btn{border:0;border-radius:12px;min-height:44px;padding:9px;font-size:13px;font-weight:900;background:#eef1f5;color:#17213a}.primary{background:#2366b1;color:#fff}.green{background:#147a55;color:#fff}.file{width:100%;font-size:12px}.audio{width:100%;height:38px;margin-top:8px}.now{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:8px 0;font-weight:900}.page{font-size:18px}.time{font-family:monospace;font-size:14px;color:#526078}.cuts{font-size:11px;line-height:1.45;color:#526078;max-height:42px;overflow:auto;margin-top:6px}.hint{font-size:11px;line-height:1.45;color:#657187;margin-top:6px}.ok{color:#147a55;font-weight:800}.err{color:#a33;font-weight:800}.extract,.diag{border:1px solid #d7dde6;border-radius:13px;padding:10px;margin-bottom:10px;background:#f8fafc}.extract summary,.diag summary{font-size:13px;font-weight:900;cursor:pointer}.extract-body{margin-top:10px}.label{font-size:12px;font-weight:900;margin:7px 0 5px}.download{display:none;text-align:center;text-decoration:none}.mini-note{font-size:10px;color:#6b7280;margin-top:5px;line-height:1.4}.diagbox{margin-top:8px;padding:10px;border-radius:10px;background:#eef1f5;font-size:12px;line-height:1.55;white-space:pre-wrap;word-break:break-word}.diagbox.error{background:#fff0f0;border:1px solid #d99;color:#8f1d24;font-weight:800}.diagbox.success{background:#edf8f2;border:1px solid #9cccb5;color:#126445;font-weight:800}.diagbox.working{background:#fff8e6;border:1px solid #e7cf8a;color:#765b10;font-weight:800}@media(max-width:520px){.row{grid-template-columns:1fr 1fr}.dock{padding:10px}.frame{height:calc(100vh - 65px)}}
+*{box-sizing:border-box}body{margin:0;background:#eef1f5;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:#17213a}.wrap{max-width:820px;margin:auto;padding-bottom:calc(82px + env(safe-area-inset-bottom))}.top{position:sticky;top:0;z-index:20;background:#16233f;color:white;padding:calc(9px + env(safe-area-inset-top)) 14px 10px}.top h1{font-size:18px;margin:0}.top p{font-size:11px;margin:3px 0 0;opacity:.8}.frame{width:100%;height:calc(100vh - 74px);border:0;background:white}.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(8px + env(safe-area-inset-bottom));z-index:30;width:min(790px,calc(100% - 16px))}.tools{background:rgba(255,255,255,.98);border:1px solid #ccd4df;border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.17);overflow:hidden}.tools>summary{list-style:none;cursor:pointer;min-height:48px;padding:13px 16px;font-size:14px;font-weight:900;background:#16233f;color:#fff;display:flex;align-items:center;justify-content:space-between}.tools>summary::-webkit-details-marker{display:none}.tools>summary:after{content:'開く';font-size:11px;opacity:.8}.tools[open]>summary:after{content:'閉じる'}.tools-body{padding:10px;max-height:min(500px,66vh);overflow:auto}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.btn{border:0;border-radius:12px;min-height:44px;padding:9px;font-size:13px;font-weight:900;background:#eef1f5;color:#17213a}.primary{background:#2366b1;color:#fff}.green{background:#147a55;color:#fff}.file{width:100%;font-size:12px}.audio{width:100%;height:38px;margin-top:8px}.now{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:8px 0;font-weight:900}.page{font-size:18px}.time{font-family:monospace;font-size:14px;color:#526078}.cuts{font-size:11px;line-height:1.45;color:#526078;max-height:42px;overflow:auto;margin-top:6px}.hint{font-size:11px;line-height:1.45;color:#657187;margin-top:6px}.ok{color:#147a55;font-weight:800}.err{color:#a33;font-weight:800}.extract,.diag{border:1px solid #d7dde6;border-radius:13px;padding:10px;margin-bottom:10px;background:#f8fafc}.extract summary,.diag summary{font-size:13px;font-weight:900;cursor:pointer}.extract-body{margin-top:10px}.label{font-size:12px;font-weight:900;margin:7px 0 5px}.download{display:none;text-align:center;text-decoration:none}.mini-note{font-size:10px;color:#6b7280;margin-top:5px;line-height:1.4}.diagbox{margin-top:8px;padding:10px;border-radius:10px;background:#eef1f5;font-size:12px;line-height:1.55;white-space:pre-wrap;word-break:break-word}.diagbox.error{background:#fff0f0;border:1px solid #d99;color:#8f1d24;font-weight:800}.diagbox.success{background:#edf8f2;border:1px solid #9cccb5;color:#126445;font-weight:800}.diagbox.working{background:#fff8e6;border:1px solid #e7cf8a;color:#765b10;font-weight:800}@media(max-width:520px){.row{grid-template-columns:1fr 1fr}.frame{height:calc(100vh - 65px)}}
 </style>
 </head>
 <body>
-<div class="wrap"><div class="top"><h1>🎞️ プレゼン動画スタジオ</h1><p>PDF＋長い音声の手動ページ切替／動画からMP3抽出</p></div><iframe id="app" class="frame" src="youtube-presentation.html?v=syncpreview1"></iframe></div>
-<div class="dock">
-  <details class="diag" open>
-    <summary>🔎 Google AI音声の状態</summary>
-    <div id="ttsDiag" class="diagbox">「AI音声を作る」または「声を試聴」を押すと、Googleからの結果をここに表示します。</div>
-    <div class="mini-note">エラーの場合は、HTTP番号とGoogle/Supabaseから返った内容をそのまま表示します。これで課金・APIキー・TTSモデルのどこで止まったか判別できます。</div>
-  </details>
-
-  <details class="extract">
-    <summary>🎥 動画からMP3を取り出す</summary>
-    <div class="extract-body">
-      <div class="label">元の動画を選ぶ</div>
-      <input id="videoFile" class="file" type="file" accept="video/*">
-      <button class="btn primary" id="extractMp3" style="width:100%;margin-top:8px" disabled>動画からMP3を取り出す</button>
-      <div id="extractMsg" class="hint">MP4・MOVなどの動画を選ぶと、映像を使わず音声だけをMP3にします。</div>
-      <audio id="extractedPlayer" class="audio" controls style="display:none"></audio>
-      <div class="row" style="margin-top:7px">
-        <a id="downloadMp3" class="btn green download">MP3を保存</a>
-        <button id="useExtracted" class="btn green" disabled>このMP3をプレゼンに使う</button>
-      </div>
-      <div class="mini-note">「このMP3をプレゼンに使う」を押すと、下の長い音声へそのまま渡します。</div>
-    </div>
-  </details>
-
-  <div class="label">プレゼンに使う1本の長い音声</div>
-  <input id="longAudio" class="file" type="file" accept="audio/*">
-  <audio id="player" class="audio" controls></audio>
-  <div class="now"><div class="page" id="pageNow">PDFを先に読み込んでください</div><div class="time" id="timeNow">0:00.0</div></div>
-  <div class="row">
-    <button class="btn primary" id="cut" disabled>ここで次ページ</button>
-    <button class="btn" id="undo" disabled>1つ戻す</button>
-    <button class="btn" id="preview" disabled>切替を確認</button>
-    <button class="btn green" id="apply" disabled>この区切りで反映</button>
-  </div>
-  <div id="cuts" class="cuts"></div>
-  <div id="msg" class="hint">使い方：PDFを本体で読み込む → 長い音声を選ぶ → 再生しながらページが変わる場所で「ここで次ページ」。</div>
-</div>
+<div class="wrap"><div class="top"><h1>🎞️ プレゼン動画スタジオ</h1><p>PDF＋長い音声の手動ページ切替／動画からMP3抽出</p></div><iframe id="app" class="frame" src="youtube-presentation.html?v=syncpreview2"></iframe></div>
+<div class="dock"><details class="tools" id="tools"><summary>🧰 長い音声・MP3・診断ツール</summary><div class="tools-body">
+  <details class="diag"><summary>🔎 Google AI音声の状態</summary><div id="ttsDiag" class="diagbox">「AI音声を作る」または「声を試聴」を押すと、Googleからの結果をここに表示します。</div><div class="mini-note">普段は閉じたままでOKです。エラー時だけ開いて確認できます。</div></details>
+  <details class="extract"><summary>🎥 動画からMP3を取り出す</summary><div class="extract-body"><div class="label">元の動画を選ぶ</div><input id="videoFile" class="file" type="file" accept="video/*"><button class="btn primary" id="extractMp3" style="width:100%;margin-top:8px" disabled>動画からMP3を取り出す</button><div id="extractMsg" class="hint">MP4・MOVなどの動画を選ぶと、映像を使わず音声だけをMP3にします。</div><audio id="extractedPlayer" class="audio" controls style="display:none"></audio><div class="row" style="margin-top:7px"><a id="downloadMp3" class="btn green download">MP3を保存</a><button id="useExtracted" class="btn green" disabled>このMP3をプレゼンに使う</button></div></div></details>
+  <div class="label">プレゼンに使う1本の長い音声</div><input id="longAudio" class="file" type="file" accept="audio/*"><audio id="player" class="audio" controls></audio><div class="now"><div class="page" id="pageNow">PDFを先に読み込んでください</div><div class="time" id="timeNow">0:00.0</div></div><div class="row"><button class="btn primary" id="cut" disabled>ここで次ページ</button><button class="btn" id="undo" disabled>1つ戻す</button><button class="btn" id="preview" disabled>切替を確認</button><button class="btn green" id="apply" disabled>この区切りで反映</button></div><div id="cuts" class="cuts"></div><div id="msg" class="hint">必要なときだけここを開いて使います。</div>
+</div></details></div>
 <script>
 const $=id=>document.getElementById(id),frame=$('app'),player=$('player');let file=null,cuts=[],previewTimer=null,extractedMp3File=null,extractedMp3Url='';
 function setDiag(text,type=''){let d=$('ttsDiag');d.textContent=text;d.className='diagbox'+(type?' '+type:'')}
 function fmt(s){s=Math.max(0,s||0);let m=Math.floor(s/60),x=(s-m*60).toFixed(1).padStart(4,'0');return`${m}:${x}`}
-function child(){return frame.contentWindow}
-function pageCount(){try{return frame.contentDocument.querySelectorAll('.slide').length}catch{return 0}}
-function currentPage(){let n=pageCount();if(!n)return 0;let t=player.currentTime,i=0;while(i<cuts.length&&t>=cuts[i])i++;return Math.min(n,i+1)}
-function update(){let n=pageCount(),p=currentPage();$('timeNow').textContent=fmt(player.currentTime);$('pageNow').textContent=n?`現在 PAGE ${p} / ${n}`:'PDFを先に読み込んでください';$('cuts').textContent=cuts.length?`区切り：${cuts.map((t,i)=>`PAGE ${i+1}→${i+2} ${fmt(t)}`).join(' ｜ ')}`:'区切りはまだありません';let ready=!!file&&n>0;$('cut').disabled=!ready||cuts.length>=Math.max(0,n-1);$('undo').disabled=!cuts.length;$('preview').disabled=!ready;$('apply').disabled=!ready||cuts.length!==Math.max(0,n-1)}
-setInterval(update,150);
-
-frame.addEventListener('load',()=>{
-  try{
-    const w=frame.contentWindow;
-    if(w.__ttsDiagnosticInstalled)return;
-    w.__ttsDiagnosticInstalled=true;
-    const originalFetch=w.fetch.bind(w);
-    w.fetch=async function(input,init){
-      const url=typeof input==='string'?input:(input&&input.url)||'';
-      let isTts=false;
-      try{if(url.includes('youtube-video-maker-safe')&&init?.body){let b=JSON.parse(init.body);isTts=b?.action==='generateTts'}}catch{}
-      if(!isTts)return originalFetch(input,init);
-      const started=new Date();
-      setDiag(`Google AI音声へ送信中…\n${started.toLocaleTimeString('ja-JP')}\nSupabase → Gemini TTS を確認しています。`,'working');
-      try{
-        const r=await originalFetch(input,init);
-        const clone=r.clone();
-        const raw=await clone.text();
-        let detail=raw;
-        try{let j=JSON.parse(raw);detail=j.error||j.message||raw}catch{}
-        if(r.ok){
-          setDiag(`✅ AI音声APIは正常です。\nHTTP ${r.status}\nGoogle Gemini TTSから音声データが返りました。`,'success');
-        }else{
-          let hint='';
-          const low=String(detail).toLowerCase();
-          if(low.includes('prepayment')||low.includes('depleted')||r.status===429)hint='\n\n判定候補：Google側の課金・クレジット反映またはレート制限。';
-          else if(low.includes('api key')||low.includes('permission')||r.status===401||r.status===403)hint='\n\n判定候補：APIキーまたは権限。';
-          else if(low.includes('model')||low.includes('not found'))hint='\n\n判定候補：TTSモデル名・提供状態。';
-          setDiag(`❌ AI音声APIエラー\nHTTP ${r.status}\n${detail}${hint}`,'error');
-        }
-        return r;
-      }catch(e){
-        setDiag(`❌ 通信エラー\n${e?.message||e}\n\nSupabaseへ到達する前、または通信途中で止まっています。`,'error');
-        throw e;
-      }
-    };
-  }catch(e){setDiag('診断機能の初期化エラー：'+(e?.message||e),'error')}
-});
-
-function setLongAudio(f,sourceLabel=''){file=f||null;cuts=[];if(file){player.src=URL.createObjectURL(file);$('msg').textContent=`${sourceLabel||'音声'}「${file.name}」を読み込みました。再生して、次のページへ変わる瞬間で「ここで次ページ」を押してください。`}update()}
-$('longAudio').onchange=()=>setLongAudio($('longAudio').files[0]||null,'音声');
-$('cut').onclick=()=>{let n=pageCount();if(!file||!n)return;let t=player.currentTime;if(cuts.length&&t<=cuts[cuts.length-1]+.1){$('msg').innerHTML='<span class="err">前の区切りより後の位置で押してください。</span>';return}cuts.push(t);$('msg').innerHTML=`<span class="ok">PAGE ${cuts.length} → PAGE ${cuts.length+1} を ${fmt(t)} に記録しました。</span>`;update()};
-$('undo').onclick=()=>{let t=cuts.pop();if(t!=null){player.currentTime=t;$('msg').textContent=`最後の区切り ${fmt(t)} を取り消しました。`}update()};
-$('preview').onclick=async()=>{let n=pageCount();if(!file||!n)return;$('msg').textContent='切替プレビュー中。下の本体画面のPDFページも切り替えて確認できます。';clearInterval(previewTimer);await player.play();previewTimer=setInterval(()=>{let p=currentPage();try{let img=frame.contentDocument.querySelector(`#slides .slide:nth-child(${p}) .thumb img`);if(img){let pv=frame.contentDocument.getElementById('previewImg');if(pv)pv.src=img.src}}catch{}if(player.ended){clearInterval(previewTimer)}},100)};
-
-function floatTo16BitPCM(samples){let out=new Int16Array(samples.length);for(let i=0;i<samples.length;i++){let s=Math.max(-1,Math.min(1,samples[i]));out[i]=s<0?s*32768:s*32767}return out}
-function mixToMono(buf){let len=buf.length;if(buf.numberOfChannels===1)return buf.getChannelData(0);let mono=new Float32Array(len);for(let ch=0;ch<buf.numberOfChannels;ch++){let d=buf.getChannelData(ch);for(let i=0;i<len;i++)mono[i]+=d[i]/buf.numberOfChannels}return mono}
-async function encodeMp3FromVideo(videoFile){let AC=window.AudioContext||window.webkitAudioContext,ac=new AC;let buf;try{buf=await ac.decodeAudioData(await videoFile.arrayBuffer())}catch(e){await ac.close();throw Error('この動画形式はブラウザで直接音声を読み取れません。MP4（AAC音声）またはMOVで試してください。')}let mono=mixToMono(buf),pcm=floatTo16BitPCM(mono),encoder=new lamejs.Mp3Encoder(1,buf.sampleRate,128),block=1152,parts=[];for(let i=0;i<pcm.length;i+=block){let mp3=encoder.encodeBuffer(pcm.subarray(i,Math.min(i+block,pcm.length)));if(mp3.length)parts.push(new Int8Array(mp3));if(i%(block*400)===0){$('extractMsg').textContent=`MP3変換中… ${Math.min(100,Math.round(i/pcm.length*100))}%`;await new Promise(r=>setTimeout(r,0))}}let end=encoder.flush();if(end.length)parts.push(new Int8Array(end));await ac.close();return new Blob(parts,{type:'audio/mpeg'})}
-$('videoFile').onchange=()=>{$('extractMp3').disabled=!$('videoFile').files[0];$('extractMsg').textContent=$('videoFile').files[0]?`「${$('videoFile').files[0].name}」を選びました。`:'動画を選んでください。'};
-$('extractMp3').onclick=async()=>{let vf=$('videoFile').files[0];if(!vf)return;let b=$('extractMp3');b.disabled=true;$('useExtracted').disabled=true;$('downloadMp3').style.display='none';$('extractMsg').textContent='動画の音声を読み取り中…';try{let blob=await encodeMp3FromVideo(vf),base=vf.name.replace(/\.[^.]+$/,'')||'video-audio';extractedMp3File=new File([blob],`${base}.mp3`,{type:'audio/mpeg'});if(extractedMp3Url)URL.revokeObjectURL(extractedMp3Url);extractedMp3Url=URL.createObjectURL(blob);$('extractedPlayer').src=extractedMp3Url;$('extractedPlayer').style.display='block';$('downloadMp3').href=extractedMp3Url;$('downloadMp3').download=extractedMp3File.name;$('downloadMp3').style.display='block';$('useExtracted').disabled=false;$('extractMsg').innerHTML=`<span class="ok">MP3を取り出しました：${extractedMp3File.name}</span>`}catch(e){$('extractMsg').innerHTML=`<span class="err">MP3抽出エラー：${e.message}</span>`}finally{b.disabled=false}};
-$('useExtracted').onclick=()=>{if(!extractedMp3File)return;setLongAudio(extractedMp3File,'動画から取り出したMP3');$('msg').innerHTML=`<span class="ok">抽出したMP3「${extractedMp3File.name}」をプレゼン用の長い音声へ渡しました。</span> 再生しながら「ここで次ページ」を押してください。`};
-
-async function decodeFile(f){let AC=window.AudioContext||window.webkitAudioContext,ac=new AC,buf=await ac.decodeAudioData(await f.arrayBuffer());return{ac,buf}}
-function wavBlob(buf,startSec,endSec){let sr=buf.sampleRate,start=Math.max(0,Math.floor(startSec*sr)),end=Math.min(buf.length,Math.floor(endSec*sr)),len=Math.max(0,end-start),ab=new ArrayBuffer(44+len*2),dv=new DataView(ab),w=(o,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i))};w(0,'RIFF');dv.setUint32(4,36+len*2,true);w(8,'WAVE');w(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);dv.setUint32(24,sr,true);dv.setUint32(28,sr*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);w(36,'data');dv.setUint32(40,len*2,true);let data=buf.getChannelData(0),o=44;for(let i=start;i<end;i++){let x=Math.max(-1,Math.min(1,data[i]));dv.setInt16(o,x<0?x*0x8000:x*0x7fff,true);o+=2}return new Blob([ab],{type:'audio/wav'})}
-$('apply').onclick=async()=>{let n=pageCount();if(!file||!n)return;if(cuts.length!==n-1){$('msg').innerHTML=`<span class="err">${n}ページなので区切りは${n-1}か所必要です。</span>`;return}$('apply').disabled=true;$('msg').textContent='長い音声をページごとに割り当て中…';try{let {ac,buf}=await decodeFile(file),pts=[0,...cuts,buf.duration];for(let i=0;i<n;i++){let blob=wavBlob(buf,pts[i],pts[i+1]),seg=new File([blob],`manual-page-${String(i+1).padStart(2,'0')}.wav`,{type:'audio/wav'});if(typeof child().setPageAudio!=='function')throw Error('本体アプリの音声割り当て機能を確認できません。');child().setPageAudio(i,seg);await new Promise(r=>setTimeout(r,40))}await ac.close();$('msg').innerHTML='<span class="ok">手動の区切りを全ページへ反映しました。本体の「プレビュー再生」→「1本の動画を完成させる」へ進めます。</span>'}catch(e){$('msg').innerHTML=`<span class="err">反映エラー：${e.message}</span>`}finally{$('apply').disabled=false;update()}};
+function child(){return frame.contentWindow}function pageCount(){try{return frame.contentDocument.querySelectorAll('.slide').length}catch{return 0}}function currentPage(){let n=pageCount();if(!n)return 0;let t=player.currentTime,i=0;while(i<cuts.length&&t>=cuts[i])i++;return Math.min(n,i+1)}
+function update(){let n=pageCount(),p=currentPage();$('timeNow').textContent=fmt(player.currentTime);$('pageNow').textContent=n?`現在 PAGE ${p} / ${n}`:'PDFを先に読み込んでください';$('cuts').textContent=cuts.length?`区切り：${cuts.map((t,i)=>`PAGE ${i+1}→${i+2} ${fmt(t)}`).join(' ｜ ')}`:'区切りはまだありません';let ready=!!file&&n>0;$('cut').disabled=!ready||cuts.length>=Math.max(0,n-1);$('undo').disabled=!cuts.length;$('preview').disabled=!ready;$('apply').disabled=!ready||cuts.length!==Math.max(0,n-1)}setInterval(update,150);
+frame.addEventListener('load',()=>{try{const w=frame.contentWindow;if(!w.__subtitleVisibilityInstalled){w.__subtitleVisibilityInstalled=true;const oldPreview=w.previewPage;if(typeof oldPreview==='function'){w.previewPage=async function(i){let r=oldPreview(i);setTimeout(()=>{let box=w.document.getElementById(`capStage-${i}`);if(box)box.scrollIntoView({behavior:'smooth',block:'center'});let st=w.document.getElementById(`status-${i}`);if(st)st.textContent='音声に合わせて、上の字幕が順番に切り替わります。';},120);return r}}}if(w.__ttsDiagnosticInstalled)return;w.__ttsDiagnosticInstalled=true;const originalFetch=w.fetch.bind(w);w.fetch=async function(input,init){const url=typeof input==='string'?input:(input&&input.url)||'';let isTts=false;try{if(url.includes('youtube-video-maker-safe')&&init?.body){let b=JSON.parse(init.body);isTts=b?.action==='generateTts'}}catch{}if(!isTts)return originalFetch(input,init);setDiag('Google AI音声へ送信中…','working');try{const r=await originalFetch(input,init),raw=await r.clone().text();let detail=raw;try{let j=JSON.parse(raw);detail=j.error||j.message||raw}catch{}if(r.ok)setDiag(`✅ AI音声APIは正常です。\nHTTP ${r.status}`,'success');else setDiag(`❌ AI音声APIエラー\nHTTP ${r.status}\n${detail}`,'error');return r}catch(e){setDiag(`❌ 通信エラー\n${e?.message||e}`,'error');throw e}}}catch(e){setDiag('初期化エラー：'+(e?.message||e),'error')}});
+function setLongAudio(f,sourceLabel=''){file=f||null;cuts=[];if(file){player.src=URL.createObjectURL(file);$('msg').textContent=`${sourceLabel||'音声'}「${file.name}」を読み込みました。`}update()}$('longAudio').onchange=()=>setLongAudio($('longAudio').files[0]||null,'音声');$('cut').onclick=()=>{let n=pageCount();if(!file||!n)return;let t=player.currentTime;if(cuts.length&&t<=cuts[cuts.length-1]+.1)return;cuts.push(t);update()};$('undo').onclick=()=>{let t=cuts.pop();if(t!=null)player.currentTime=t;update()};$('preview').onclick=async()=>{if(!file||!pageCount())return;clearInterval(previewTimer);await player.play();previewTimer=setInterval(()=>{let p=currentPage();try{let img=frame.contentDocument.querySelector(`#slides .slide:nth-child(${p}) .thumb img`),pv=frame.contentDocument.getElementById('previewImg');if(img&&pv)pv.src=img.src}catch{}if(player.ended)clearInterval(previewTimer)},100)};
+function floatTo16BitPCM(samples){let out=new Int16Array(samples.length);for(let i=0;i<samples.length;i++){let s=Math.max(-1,Math.min(1,samples[i]));out[i]=s<0?s*32768:s*32767}return out}function mixToMono(buf){if(buf.numberOfChannels===1)return buf.getChannelData(0);let mono=new Float32Array(buf.length);for(let ch=0;ch<buf.numberOfChannels;ch++){let d=buf.getChannelData(ch);for(let i=0;i<buf.length;i++)mono[i]+=d[i]/buf.numberOfChannels}return mono}
+async function encodeMp3FromVideo(videoFile){let AC=window.AudioContext||window.webkitAudioContext,ac=new AC,buf=await ac.decodeAudioData(await videoFile.arrayBuffer()),pcm=floatTo16BitPCM(mixToMono(buf)),encoder=new lamejs.Mp3Encoder(1,buf.sampleRate,128),parts=[];for(let i=0;i<pcm.length;i+=1152){let mp3=encoder.encodeBuffer(pcm.subarray(i,Math.min(i+1152,pcm.length)));if(mp3.length)parts.push(new Int8Array(mp3))}let end=encoder.flush();if(end.length)parts.push(new Int8Array(end));await ac.close();return new Blob(parts,{type:'audio/mpeg'})}
+$('videoFile').onchange=()=>{$('extractMp3').disabled=!$('videoFile').files[0]};$('extractMp3').onclick=async()=>{let vf=$('videoFile').files[0];if(!vf)return;let b=$('extractMp3');b.disabled=true;try{let blob=await encodeMp3FromVideo(vf),base=vf.name.replace(/\.[^.]+$/,'')||'video-audio';extractedMp3File=new File([blob],`${base}.mp3`,{type:'audio/mpeg'});if(extractedMp3Url)URL.revokeObjectURL(extractedMp3Url);extractedMp3Url=URL.createObjectURL(blob);$('extractedPlayer').src=extractedMp3Url;$('extractedPlayer').style.display='block';$('downloadMp3').href=extractedMp3Url;$('downloadMp3').download=extractedMp3File.name;$('downloadMp3').style.display='block';$('useExtracted').disabled=false;$('extractMsg').innerHTML='<span class="ok">MP3を取り出しました。</span>'}catch(e){$('extractMsg').innerHTML=`<span class="err">MP3抽出エラー：${e.message}</span>`}finally{b.disabled=false}};$('useExtracted').onclick=()=>{if(extractedMp3File)setLongAudio(extractedMp3File,'動画から取り出したMP3')};
+async function decodeFile(f){let AC=window.AudioContext||window.webkitAudioContext,ac=new AC,buf=await ac.decodeAudioData(await f.arrayBuffer());return{ac,buf}}function wavBlob(buf,startSec,endSec){let sr=buf.sampleRate,start=Math.floor(startSec*sr),end=Math.min(buf.length,Math.floor(endSec*sr)),len=end-start,ab=new ArrayBuffer(44+len*2),dv=new DataView(ab),w=(o,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i))};w(0,'RIFF');dv.setUint32(4,36+len*2,true);w(8,'WAVE');w(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);dv.setUint32(24,sr,true);dv.setUint32(28,sr*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);w(36,'data');dv.setUint32(40,len*2,true);let data=buf.getChannelData(0),o=44;for(let i=start;i<end;i++){let x=Math.max(-1,Math.min(1,data[i]));dv.setInt16(o,x<0?x*0x8000:x*0x7fff,true);o+=2}return new Blob([ab],{type:'audio/wav'})}
+$('apply').onclick=async()=>{let n=pageCount();if(!file||!n||cuts.length!==n-1)return;try{let {ac,buf}=await decodeFile(file),pts=[0,...cuts,buf.duration];for(let i=0;i<n;i++){let seg=new File([wavBlob(buf,pts[i],pts[i+1])],`manual-page-${String(i+1).padStart(2,'0')}.wav`,{type:'audio/wav'});child().setPageAudio(i,seg)}await ac.close();$('msg').innerHTML='<span class="ok">全ページへ反映しました。</span>'}catch(e){$('msg').innerHTML=`<span class="err">反映エラー：${e.message}</span>`}};
 </script>
 </body></html>
