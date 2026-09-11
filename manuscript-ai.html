@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>育てる原稿AI</title>
+<style>
+:root{--bg:#f3f4f6;--card:#fff;--ink:#111827;--muted:#667085;--line:#d7dde5;--green:#17803d;--blue:#175cd3;--soft:#f8fafc;--orange:#b54708}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}button,input{font:inherit}
+header{position:sticky;top:0;z-index:20;background:#111827;color:#fff;padding:14px 22px;box-shadow:0 2px 10px #0002}.head{max-width:1180px;margin:auto;display:flex;align-items:center;gap:14px}.head h1{font-size:22px;margin:0}.head p{margin:3px 0 0;font-size:12px;color:#cbd5e1}.head .badge{margin-left:auto;background:#273449;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:800}
+main{max-width:1180px;margin:0 auto;padding:20px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 14px #1118270a}.card h2{margin:0 0 8px;font-size:20px}.sub{color:var(--muted);font-size:13px;line-height:1.65}.topstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#f7f8fa;border-radius:12px;padding:13px;text-align:center;font-weight:900;font-size:22px}.stat span{display:block;font-size:11px;color:#667085;margin-top:3px}
+.files{display:grid;grid-template-columns:1fr 1fr;gap:14px}.drop{border:2px dashed #b9c2cd;border-radius:14px;min-height:185px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#fafbfc;transition:.15s}.drop.over{border-color:var(--blue);background:#eef4ff}.drop.ok{border-style:solid;border-color:#89c99c;background:#f1fbf4}.drop h3{margin:0 0 6px;font-size:18px}.pick{margin-top:12px;border:1px solid #cfd6df;background:#fff;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer}.filename{margin-top:10px;font-size:13px;font-weight:800;color:#176b2c;word-break:break-all}.hidden{display:none}
+.section-title{font-weight:900;margin:18px 0 9px}.choices{display:flex;flex-wrap:wrap;gap:8px}.choice{border:1px solid #cfd6df;background:#fff;border-radius:10px;padding:10px 13px;font-weight:800;cursor:pointer;user-select:none}.choice.selected{background:#111827;color:#fff;border-color:#111827}.choice.process.selected{background:#175cd3;border-color:#175cd3}.add{border-style:dashed;color:#344054}.addbox{display:none;margin-top:10px;gap:8px;align-items:center}.addbox.show{display:flex}.addbox input{border:1px solid #cfd6df;border-radius:10px;padding:10px;min-width:220px}.addbox button{border:0;background:#111827;color:#fff;border-radius:9px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{width:100%;border:0;border-radius:13px;padding:16px;background:#111827;color:#fff;font-weight:900;font-size:17px;cursor:pointer;margin-top:18px}.primary:disabled{opacity:.45;cursor:not-allowed}.status{margin-top:12px;padding:14px;border-radius:12px;background:#f7f8fa;line-height:1.65}.good{background:#eef9f1;color:#176b2c}.warn{background:#fff7ed;color:#9a3412}.tiny{font-size:12px;color:#667085}.rules-head{display:flex;align-items:center;gap:10px}.rules-head button{margin-left:auto;border:1px solid #cfd6df;background:#fff;border-radius:9px;padding:7px 10px;font-weight:800;cursor:pointer}.rules{display:none;margin-top:12px}.rules.show{display:block}.rule{padding:12px 0;border-bottom:1px solid #eceff3}.rule strong{display:block;margin-bottom:4px}.pill{display:inline-block;background:#eef2ff;border-radius:999px;padding:3px 7px;font-size:11px;font-weight:800;margin-right:5px}.evidence{color:#667085;font-size:12px}.recent{max-height:320px;overflow:auto}.recentrow{padding:10px 0;border-bottom:1px solid #eceff3;font-size:13px;line-height:1.55}
+@media(max-width:760px){main{padding:12px}.files{grid-template-columns:1fr}.topstats{grid-template-columns:1fr 1fr}.head p{display:none}.head .badge{display:none}}
+</style>
+</head>
+<body>
+<header><div class="head"><div><h1>育てる原稿AI</h1><p>原稿担当は事実だけポチポチ。法則を見つけるのはAI。</p></div><div class="badge">原稿工程 学習用</div></div></header>
+<main>
+<section class="card">
+  <div class="topstats">
+    <div class="stat" id="totalStat">0<span>登録した仕事</span></div>
+    <div class="stat" id="ruleStat">0<span>AIが見つけた法則</span></div>
+    <div class="stat" id="todayStat">0<span>今回の登録</span></div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>① 客先図面　② 製作した図面</h2>
+  <div class="sub">普段の仕事で使った2つを入れるだけです。PDF / JPG / PNG対応。IllustratorデータはPDF保存したものを入れてください。</div>
+  <div class="files" style="margin-top:14px">
+    <div class="drop" id="sourceDrop"><h3>① 客先図面</h3><div class="tiny">FinderからドラッグでもOK</div><button class="pick" id="sourcePick">ファイルを選ぶ</button><input id="sourceInput" class="hidden" type="file" accept=".pdf,image/*"><div class="filename" id="sourceName"></div></div>
+    <div class="drop" id="finishedDrop"><h3>② 製作した図面</h3><div class="tiny">校正図・原版用・デジタル用など実際の正解</div><button class="pick" id="finishedPick">ファイルを選ぶ</button><input id="finishedInput" class="hidden" type="file" accept=".pdf,image/*"><div class="filename" id="finishedName"></div></div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>③〜⑤ 事実だけ選択</h2>
+  <div class="section-title">③ 材料</div><div class="choices" id="materials"></div><div class="addbox" id="materialAdd"><input id="materialNew" placeholder="例：PET、塩ビ"><button data-add="material">追加</button></div>
+  <div class="section-title">④ 厚み（mm）</div><div class="choices" id="thicknesses"></div><div class="addbox" id="thicknessAdd"><input id="thicknessNew" inputmode="decimal" placeholder="例：0.12"><button data-add="thickness">追加</button></div>
+  <div class="section-title">⑤ 意識した工程（複数選択OK）</div><div class="choices" id="processes"></div><div class="addbox" id="processAdd"><input id="processNew" placeholder="例：アルマイト、レーザー"><button data-add="process">追加</button></div>
+  <button class="primary" id="saveBtn" disabled>この仕事をAIに覚えさせる</button>
+  <div id="status"></div>
+</section>
+
+<section class="card">
+  <div class="rules-head"><div><h2 style="margin:0">AIが見つけた法則</h2><div class="sub">原稿担当者は見なくても大丈夫です。AIが事例から勝手に蓄積します。</div></div><button id="rulesToggle">見る</button></div>
+  <div class="rules" id="rules"></div>
+</section>
+
+<section class="card">
+  <h2>最近覚えた仕事</h2><div class="recent" id="recent"><div class="sub">まだありません。</div></div>
+</section>
+</main>
+<script>
+const API='https://vnnvuxccazkdzwqjmntz.supabase.co/functions/v1/manuscript-learning-ai';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZubnZ1eGNjYXprZHp3cWptbnR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjAzNjQsImV4cCI6MjEwMjM5NjM2NH0.TCHI-zmLY_8521Sfq1llcGov3G432iWrmim5fq8KTeQ';
+const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+let source=null,finished=null,options=[],rules=[],examples=[],selectedMaterial='',selectedThickness='',selectedProcesses=[],savedThisSession=0;
+async function api(body){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+KEY},body:JSON.stringify(body)});const d=await r.json();if(!r.ok||d.error)throw new Error(d.error||'処理に失敗しました');return d}
+function file64(file){return new Promise((res,rej)=>{if(file.size>18*1024*1024)return rej(new Error('1ファイル18MB以下にしてください'));const fr=new FileReader();fr.onload=()=>res({name:file.name,mime:file.type||(/\.pdf$/i.test(file.name)?'application/pdf':'application/octet-stream'),data:String(fr.result).split(',')[1]});fr.onerror=()=>rej(new Error('ファイルを読めませんでした'));fr.readAsDataURL(file)})}
+function valid(){const ok=!!(source&&finished&&selectedMaterial&&selectedThickness&&selectedProcesses.length);$('saveBtn').disabled=!ok;return ok}
+function setFile(kind,file){if(!file)return;const ok=/pdf|image/i.test(file.type)||/\.(pdf|png|jpe?g)$/i.test(file.name);if(!ok)return alert('PDF・JPG・PNGを選んでください');if(kind==='source'){source=file;$('sourceName').textContent='✅ '+file.name;$('sourceDrop').classList.add('ok')}else{finished=file;$('finishedName').textContent='✅ '+file.name;$('finishedDrop').classList.add('ok')}valid()}
+function wireDrop(kind,dropId,inputId,pickId){const d=$(dropId),i=$(inputId);$(pickId).onclick=()=>i.click();i.onchange=()=>setFile(kind,i.files[0]);['dragenter','dragover'].forEach(ev=>d.addEventListener(ev,e=>{e.preventDefault();d.classList.add('over')}));['dragleave','drop'].forEach(ev=>d.addEventListener(ev,e=>{e.preventDefault();d.classList.remove('over')}));d.addEventListener('drop',e=>setFile(kind,e.dataTransfer.files[0]))}
+wireDrop('source','sourceDrop','sourceInput','sourcePick');wireDrop('finished','finishedDrop','finishedInput','finishedPick');
+function grouped(type){return options.filter(x=>x.option_type===type)}
+function renderChoices(){
+ const renderOne=(type,target,selected,multi=false)=>{const arr=grouped(type);$(target).innerHTML=arr.map(o=>`<button class="choice ${multi?'process':''} ${(multi?selected.includes(o.value):selected===o.value)?'selected':''}" data-type="${type}" data-value="${esc(o.value)}">${esc(o.value)}</button>`).join('')+`<button class="choice add" data-open="${type}">＋ その他を追加</button>`};
+ renderOne('material','materials',selectedMaterial);renderOne('thickness','thicknesses',selectedThickness);renderOne('process','processes',selectedProcesses,true);
+ document.querySelectorAll('.choice[data-type]').forEach(b=>b.onclick=()=>{const t=b.dataset.type,v=b.dataset.value;if(t==='material')selectedMaterial=v;else if(t==='thickness')selectedThickness=v;else{selectedProcesses=selectedProcesses.includes(v)?selectedProcesses.filter(x=>x!==v):[...selectedProcesses,v]}renderChoices();valid()});
+ document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>$(b.dataset.open+'Add').classList.toggle('show'));
+}
+async function addOption(type){const id=type==='material'?'materialNew':type==='thickness'?'thicknessNew':'processNew';const val=$(id).value.trim();if(!val)return;try{const d=await api({action:'addOption',optionType:type,value:val});options=d.options||options;$(id).value='';$(type+'Add').classList.remove('show');if(type==='material')selectedMaterial=val;else if(type==='thickness')selectedThickness=val;else if(!selectedProcesses.includes(val))selectedProcesses.push(val);renderChoices();valid()}catch(e){alert(e.message)}}
+document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>addOption(b.dataset.add));
+function renderRules(){
+ $('ruleStat').innerHTML=`${rules.length}<span>AIが見つけた法則</span>`;
+ $('rules').innerHTML=rules.length?rules.slice().sort((a,b)=>(Number(b.confidence)||0)-(Number(a.confidence)||0)).map(r=>{const c=r.conditions||{};const cond=[...(c.materials||[]),...(c.thicknesses||[]).map(x=>x+'mm'),...(c.processes||[])].map(x=>`<span class="pill">${esc(x)}</span>`).join('');return `<div class="rule"><strong>${esc(r.pattern||r.rule||'')}</strong><div>${cond}</div><div class="evidence">${esc(r.status||'候補')}｜事例 ${Number(r.evidenceCount)||1}件｜信頼度 ${Math.round((Number(r.confidence)||0)*100)}%</div></div>`}).join(''):'<div class="sub">まだ法則候補はありません。事例が増えるとAIが共通点を見つけます。</div>';
+}
+function renderRecent(){
+ $('recent').innerHTML=examples.length?examples.slice(0,25).map(e=>`<div class="recentrow"><strong>${esc(e.material)} ${esc(e.thickness)}mm</strong>　${(e.processes||[]).map(x=>`<span class="pill">${esc(x)}</span>`).join('')}<br><span class="tiny">${esc(e.source_name)} → ${esc(e.finished_name)}</span>${e.ai_summary?`<br>${esc(e.ai_summary)}`:''}</div>`).join(''):'<div class="sub">まだありません。</div>';
+}
+function applyLoad(d){options=d.options||[];rules=d.rules||[];examples=d.examples||[];$('totalStat').innerHTML=`${d.total||examples.length}<span>登録した仕事</span>`;$('todayStat').innerHTML=`${savedThisSession}<span>今回の登録</span>`;renderChoices();renderRules();renderRecent();valid()}
+async function load(){try{const d=await api({action:'load'});applyLoad(d)}catch(e){$('status').innerHTML=`<div class="status warn">学習データの読込に失敗：${esc(e.message)}</div>`}}
+function resetForm(){source=null;finished=null;selectedMaterial='';selectedThickness='';selectedProcesses=[];$('sourceName').textContent='';$('finishedName').textContent='';$('sourceInput').value='';$('finishedInput').value='';$('sourceDrop').classList.remove('ok');$('finishedDrop').classList.remove('ok');renderChoices();valid()}
+$('saveBtn').onclick=async()=>{if(!valid())return;const b=$('saveBtn');b.disabled=true;$('status').innerHTML='<div class="status">AIが2つの図面を見比べて、今回の仕事を覚えています…</div>';try{const [s,f]=await Promise.all([file64(source),file64(finished)]);const d=await api({action:'compareAndSave',source:s,finished:f,material:selectedMaterial,thickness:selectedThickness,processes:selectedProcesses});savedThisSession++;rules=d.rules||rules;$('totalStat').innerHTML=`${d.total||0}<span>登録した仕事</span>`;$('todayStat').innerHTML=`${savedThisSession}<span>今回の登録</span>`;renderRules();const nf=(d.analysis?.newFindings||[]).slice(0,3);$('status').innerHTML=`<div class="status good"><strong>✅ 1件覚えました。これで終わりです。</strong>${nf.length?'<br><span class="tiny">AIの気付き：'+nf.map(esc).join(' ／ ')+'</span>':''}</div>`;await new Promise(r=>setTimeout(r,700));const fresh=await api({action:'load'});applyLoad(fresh);resetForm()}catch(e){$('status').innerHTML=`<div class="status warn"><strong>保存できませんでした。</strong><br>${esc(e.message)}</div>`}finally{valid()}};
+$('rulesToggle').onclick=()=>{const el=$('rules');el.classList.toggle('show');$('rulesToggle').textContent=el.classList.contains('show')?'閉じる':'見る'};
+load();
+</script>
+</body>
+</html>
