@@ -11,7 +11,7 @@
 </style>
 </head>
 <body>
-<div class="wrap"><div class="top"><h1>🎞️ プレゼン動画スタジオ</h1><p>PDF＋長い音声の手動ページ切替／動画からMP3抽出</p></div><iframe id="app" class="frame" src="youtube-presentation.html?v=audioprogress1"></iframe></div>
+<div class="wrap"><div class="top"><h1>🎞️ プレゼン動画スタジオ</h1><p>PDF＋長い音声の手動ページ切替／動画からMP3抽出</p></div><iframe id="app" class="frame" src="youtube-presentation.html?v=nocaptionpreview1"></iframe></div>
 <div class="dock"><details class="tools" id="tools"><summary>🧰 長い音声・MP3・診断ツール</summary><div class="tools-body">
   <details class="diag"><summary>🔎 Google AI音声の状態</summary><div id="ttsDiag" class="diagbox">「AI音声を作る」または「声を試聴」を押すと、Googleからの結果をここに表示します。</div><div class="mini-note">普段は閉じたままでOKです。エラー時だけ開いて確認できます。</div></details>
   <details class="extract"><summary>🎥 動画からMP3を取り出す</summary><div class="extract-body"><div class="label">元の動画を選ぶ</div><input id="videoFile" class="file" type="file" accept="video/*"><button class="btn primary" id="extractMp3" style="width:100%;margin-top:8px" disabled>動画からMP3を取り出す</button><div id="extractMsg" class="hint">MP4・MOVなどの動画を選ぶと、映像を使わず音声だけをMP3にします。</div><audio id="extractedPlayer" class="audio" controls style="display:none"></audio><div class="row" style="margin-top:7px"><a id="downloadMp3" class="btn green download">MP3を保存</a><button id="useExtracted" class="btn green" disabled>このMP3をプレゼンに使う</button></div></div></details>
