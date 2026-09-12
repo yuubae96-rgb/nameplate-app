@@ -1,7 +1,7 @@
 {
-  "name":"人体透視AI",
-  "short_name":"人体透視AI",
-  "start_url":"./anatomy-view.html?v=1",
+  "name":"骨格・内臓学習アプリ",
+  "short_name":"骨格・内臓学習",
+  "start_url":"./anatomy-view.html?v=learning1",
   "display":"standalone",
   "background_color":"#eef2f7",
   "theme_color":"#0f172a",
