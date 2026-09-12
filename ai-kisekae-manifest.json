@@ -1,0 +1,11 @@
+{
+  "name": "AI着せ替え",
+  "short_name": "AI着せ替え",
+  "description": "人物Aに、別の人物Bが着ている服をAIで着せ替えるアプリ",
+  "start_url": "./ai-kisekae.html?v=home1",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f6f8",
+  "theme_color": "#111827"
+}
