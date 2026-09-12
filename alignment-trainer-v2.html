@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#087a45">
+<title>育てる位置合わせ v2</title>
+<style>
+:root{--g:#087a45;--r:#c62828;--y:#a86f00;--ink:#142019;--line:#d8e2dc;--bg:#f4f8f5}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
+header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top) + 10px) 14px 10px}h1{margin:0;font-size:22px}.sub{font-size:12px;color:#647168;margin-top:3px}
+main{max-width:760px;margin:auto;padding:12px 12px calc(90px + env(safe-area-inset-bottom))}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px;margin-bottom:11px;box-shadow:0 2px 8px #0000000a}
+.stage{position:relative;overflow:hidden;border-radius:14px;background:#111;aspect-ratio:4/3;touch-action:none}.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.stage canvas{z-index:3}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}button{border:0;border-radius:12px;padding:13px 10px;font-size:15px;font-weight:850;background:#17251c;color:#fff}button.green{background:var(--g)}button.red{background:var(--r)}button.light{background:#e9f2ec;color:#164b2e}button:disabled{opacity:.4}
+.mode{margin-top:9px;padding:9px 11px;border-radius:10px;background:#edf5ef;font-size:13px;font-weight:800}.result{margin-top:10px;border:2px solid #ced9d2;border-radius:16px;padding:16px;text-align:center;font-weight:900}.result .big{font-size:42px;line-height:1.05}.result .detail{font-size:15px;margin-top:8px;line-height:1.55}.result.ok{background:#e8f8ee;border-color:#35a662;color:#075f2e}.result.ng{background:#ffeded;border-color:#df5656;color:#a61b1b}.result.wait{background:#f5f5f5;color:#647068}.result.search{background:#fff8e6;border-color:#d5a43c;color:#755000}
+.row{display:flex;gap:9px;flex-wrap:wrap}.row label{flex:1;min-width:135px;font-size:13px;font-weight:750}input{width:100%;margin-top:5px;padding:10px;border:1px solid #ccd8d0;border-radius:10px;font-size:16px;background:#fff}.small{font-size:12px;color:#68766d;line-height:1.5}.badge{display:inline-block;padding:5px 8px;border-radius:999px;background:#edf5ef;font-size:12px;font-weight:800;margin:2px}.history div{padding:8px 0;border-top:1px solid #eef2ef;font-size:13px}
+.switch{display:flex;align-items:center;gap:9px;font-weight:850;font-size:15px}.switch input{width:22px;height:22px;margin:0}.warn{background:#fff7e4;border:1px solid #eed49d;border-radius:12px;padding:10px;font-size:12px;line-height:1.5;color:#6f500e}
+footer{position:fixed;left:0;right:0;bottom:0;z-index:11;background:#ffffffed;backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom));font-size:11px;text-align:center;color:#68766d}
+</style>
+</head><body>
+<header><h1>育てる位置合わせ</h1><div class="sub">穴マーク × 抜き型中心｜自動追尾・リアルタイム判定 v2</div></header>
+<main>
+<section class="card">
+ <div class="stage" id="stage"><video id="video" playsinline muted></video><canvas id="overlay"></canvas></div>
+ <div class="controls"><button class="green" id="camBtn">📷 カメラ開始</button><button id="teachBtn" disabled>🧠 正解を教える</button><button class="green" id="autoBtn" disabled>▶ 自動判定開始</button><button class="red" id="stopBtn" disabled>■ 自動判定停止</button></div>
+ <div class="mode" id="mode">カメラを開始してください。</div>
+</section>
+<section class="card">
+ <h2 style="font-size:17px;margin:0 0 10px">判定条件</h2>
+ <div class="row"><label>仕事名<input id="job" value="穴あけ1号"></label><label>許容差(mm)<input id="tol" type="number" value="0.5" min="0.05" step="0.05"></label><label>基準長さ(mm)<input id="calMm" type="number" value="10" min="0.1" step="0.1"></label></div>
+ <div class="controls"><button class="light" id="calBtn" disabled>📏 mm校正</button><button class="light" id="resetBtn">学習を消す</button></div>
+ <div class="small" id="status">正解を教えると、抜き型中心と穴マークの周辺画像を端末内に保存して追尾します。</div>
+</section>
+<section class="card">
+ <label class="switch"><input id="stableOnly" type="checkbox" checked>3回連続で同じ判定になった時だけ OK / NG を確定</label>
+ <div class="small" style="margin-top:6px">手ブレや一瞬の誤検出で判定がちらつくのを抑えます。</div>
+ <div class="result wait" id="result"><div class="big">待機</div><div class="detail">正解位置を登録して自動判定を開始してください。</div></div>
+</section>
+<section class="card"><h2 style="font-size:17px;margin:0 0 8px">判定履歴</h2><div class="history" id="history"></div><button class="light" id="clearHistory" style="margin-top:8px">履歴を消す</button></section>
+<section class="warn"><b>安全：</b>これは位置確認の補助アプリです。穴あけ機・プレス・断裁機などの起動回路には接続しません。OK表示だけで機械を自動起動させず、最終確認と操作は人が行ってください。</section>
+</main><footer>育てる位置合わせ v2｜カメラ自動追尾・機械制御なし</footer>
+<canvas id="work" style="display:none"></canvas>
+<script>
+const video=document.getElementById('video'),ov=document.getElementById('overlay'),octx=ov.getContext('2d'),work=document.getElementById('work'),wctx=work.getContext('2d');
+const mode=document.getElementById('mode'),result=document.getElementById('result'),statusEl=document.getElementById('status');
+const camBtn=document.getElementById('camBtn'),teachBtn=document.getElementById('teachBtn'),autoBtn=document.getElementById('autoBtn'),stopBtn=document.getElementById('stopBtn'),calBtn=document.getElementById('calBtn');
+const job=document.getElementById('job'),tol=document.getElementById('tol'),calMm=document.getElementById('calMm'),stableOnly=document.getElementById('stableOnly');
+let stream=null,running=false,tapMode=null,taps=[],learn=JSON.parse(localStorage.getItem('align_v2_learn')||'null'),pxPerMm=+localStorage.getItem('align_v2_ppm')||0;
+let hist=JSON.parse(localStorage.getItem('align_v2_hist')||'[]'),lastA=null,lastB=null,streakKey='',streak=0,lastLogged='';
+const PATCH=17,SEARCH=44,SCALE=.5;
+function size(){const r=ov.getBoundingClientRect();ov.width=Math.round(r.width*devicePixelRatio);ov.height=Math.round(r.height*devicePixelRatio);octx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)}window.addEventListener('resize',size);
+async function camera(){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});video.srcObject=stream;await video.play();size();teachBtn.disabled=false;calBtn.disabled=false;autoBtn.disabled=!learn;mode.textContent=learn?'学習済みです。自動判定を開始できます。':'まず「正解を教える」を押してください。';status()}catch(e){alert('カメラ開始エラー: '+e.message);mode.textContent='Safariのカメラ許可を確認してください。'}}
+function frame(){if(!video.videoWidth)return false;work.width=Math.max(1,Math.round(video.videoWidth*SCALE));work.height=Math.max(1,Math.round(video.videoHeight*SCALE));wctx.drawImage(video,0,0,work.width,work.height);return true}
+function viewToImage(p){const r=ov.getBoundingClientRect(),vw=video.videoWidth,vh=video.videoHeight;if(!vw)return null;const s=Math.min(r.width/vw,r.height/vh),dw=vw*s,dh=vh*s,ox=(r.width-dw)/2,oy=(r.height-dh)/2;return{x:(p.x-ox)/s,y:(p.y-oy)/s}}
+function imageToView(p){const r=ov.getBoundingClientRect(),vw=video.videoWidth,vh=video.videoHeight,s=Math.min(r.width/vw,r.height/vh),dw=vw*s,dh=vh*s,ox=(r.width-dw)/2,oy=(r.height-dh)/2;return{x:ox+p.x*s,y:oy+p.y*s}}
+function grayPatch(cx,cy){frame();cx=Math.round(cx*SCALE);cy=Math.round(cy*SCALE);const rr=Math.floor(PATCH/2),arr=[];for(let y=-rr;y<=rr;y++)for(let x=-rr;x<=rr;x++){const xx=Math.max(0,Math.min(work.width-1,cx+x)),yy=Math.max(0,Math.min(work.height-1,cy+y)),d=wctx.getImageData(xx,yy,1,1).data;arr.push((d[0]*.299+d[1]*.587+d[2]*.114)|0)}return arr}
+function patchAt(data,W,cx,cy){const rr=Math.floor(PATCH/2),a=[];for(let y=-rr;y<=rr;y++)for(let x=-rr;x<=rr;x++){const xx=Math.max(0,Math.min(W-1,cx+x)),yy=Math.max(0,Math.min(data.height-1,cy+y)),i=(yy*W+xx)*4;a.push((data.data[i]*.299+data.data[i+1]*.587+data.data[i+2]*.114)|0)}return a}
+function sad(a,b){let s=0;for(let i=0;i<a.length;i++)s+=Math.abs(a[i]-b[i]);return s/a.length}
+function track(template,around){frame();const img=wctx.getImageData(0,0,work.width,work.height),ax=Math.round(around.x*SCALE),ay=Math.round(around.y*SCALE),rad=Math.round(SEARCH*SCALE);let best={s:1e9,x:ax,y:ay};for(let y=ay-rad;y<=ay+rad;y+=2)for(let x=ax-rad;x<=ax+rad;x+=2){const sc=sad(template,patchAt(img,work.width,x,y));if(sc<best.s)best={s:sc,x,y}}return{x:best.x/SCALE,y:best.y/SCALE,score:best.s}}
+function cross(p,color,label){const q=imageToView(p);octx.save();octx.strokeStyle=color;octx.fillStyle=color;octx.lineWidth=3;octx.beginPath();octx.arc(q.x,q.y,13,0,Math.PI*2);octx.moveTo(q.x-19,q.y);octx.lineTo(q.x+19,q.y);octx.moveTo(q.x,q.y-19);octx.lineTo(q.x,q.y+19);octx.stroke();octx.font='bold 14px sans-serif';octx.fillText(label,q.x+15,q.y-14);octx.restore()}
+function clearOverlay(){octx.clearRect(0,0,ov.width/devicePixelRatio,ov.height/devicePixelRatio)}
+ov.addEventListener('click',e=>{if(!tapMode)return;const r=ov.getBoundingClientRect(),im=viewToImage({x:e.clientX-r.left,y:e.clientY-r.top});if(!im)return;taps.push(im);clearOverlay();taps.forEach((p,i)=>cross(p,i?'#ffdf00':'#00e676',i?'印':'型'));if(tapMode==='teach'&&taps.length===1)mode.textContent='② 穴マーク中心をタップしてください。';if(tapMode==='cal'&&taps.length===1)mode.textContent='② 基準長さの反対側をタップしてください。';if(taps.length===2)finishTap()});
+function beginTeach(){stop();tapMode='teach';taps=[];mode.textContent='① 抜き型（工具）の中心をタップしてください。'}
+function beginCal(){stop();tapMode='cal';taps=[];mode.textContent='① 実寸が分かる基準の1点目をタップしてください。'}
+function finishTap(){if(tapMode==='cal'){const mm=+calMm.value;if(mm>0){pxPerMm=Math.hypot(taps[1].x-taps[0].x,taps[1].y-taps[0].y)/mm;localStorage.setItem('align_v2_ppm',pxPerMm);mode.textContent='mm校正を保存しました。';status()}tapMode=null;return}if(tapMode==='teach'){const a=taps[0],b=taps[1];learn={name:job.value.trim()||'位置合わせ',a,b,dx:b.x-a.x,dy:b.y-a.y,tplA:grayPatch(a.x,a.y),tplB:grayPatch(b.x,b.y),tol:+tol.value||.5,created:new Date().toISOString()};localStorage.setItem('align_v2_learn',JSON.stringify(learn));lastA={...a};lastB={...b};tapMode=null;autoBtn.disabled=false;mode.textContent='正解を覚えました。「自動判定開始」を押してください。';status()}}
+function status(){statusEl.innerHTML=(learn?`<span class="badge">${learn.name}</span><span class="badge">正解学習済み</span>`:'<span class="badge">未学習</span>')+(pxPerMm?`<span class="badge">1mm=${pxPerMm.toFixed(1)}px</span>`:'<span class="badge">mm未校正</span>')}
+function startAuto(){if(!learn)return;running=true;lastA={...learn.a};lastB={...learn.b};teachBtn.disabled=true;calBtn.disabled=true;autoBtn.disabled=true;stopBtn.disabled=false;mode.textContent='自動追尾中。材料をゆっくり動かしてください。';loop()}
+function stop(){running=false;teachBtn.disabled=!stream;calBtn.disabled=!stream;autoBtn.disabled=!learn||!stream;stopBtn.disabled=true;if(stream)mode.textContent='自動判定を停止しました。'}
+function loop(){if(!running)return;try{const A=track(learn.tplA,lastA),B=track(learn.tplB,lastB);lastA={x:A.x,y:A.y};lastB={x:B.x,y:B.y};clearOverlay();cross(lastA,'#00e676','型');cross(lastB,'#ffdf00','印');const quality=Math.max(A.score,B.score);if(quality>48){showSearch(quality)}else judge(lastA,lastB,quality)}catch(e){mode.textContent='追尾中にエラー: '+e.message}setTimeout(loop,180)}
+function showSearch(q){result.className='result search';result.innerHTML=`<div class="big">🔎 探索中</div><div class="detail">マークを見失っています。照明・ピント・カメラ固定を確認してください。<br>追尾値 ${q.toFixed(0)}</div>`}
+function judge(a,b,q){const dx=(b.x-a.x)-learn.dx,dy=(b.y-a.y)-learn.dy,dpx=Math.hypot(dx,dy),dmm=pxPerMm?dpx/pxPerMm:null,tolerance=+tol.value||learn.tol||.5,ok=pxPerMm?dmm<=tolerance:dpx<=8;const key=ok?'ok':'ng';if(key===streakKey)streak++;else{streakKey=key;streak=1}const confirmed=!stableOnly.checked||streak>=3;if(!confirmed){result.className='result search';result.innerHTML=`<div class="big">判定中…</div><div class="detail">${streak}/3 回一致</div>`;return}let dirs=[];const xx=pxPerMm?dx/pxPerMm:dx,yy=pxPerMm?dy/pxPerMm:dy,unit=pxPerMm?'mm':'px';if(Math.abs(xx)>(pxPerMm?.05:1))dirs.push(xx>0?`マークを左へ ${Math.abs(xx).toFixed(pxPerMm?2:0)}${unit}`:`マークを右へ ${Math.abs(xx).toFixed(pxPerMm?2:0)}${unit}`);if(Math.abs(yy)>(pxPerMm?.05:1))dirs.push(yy>0?`マークを上へ ${Math.abs(yy).toFixed(pxPerMm?2:0)}${unit}`:`マークを下へ ${Math.abs(yy).toFixed(pxPerMm?2:0)}${unit}`);result.className='result '+(ok?'ok':'ng');result.innerHTML=`<div class="big">${ok?'🟢 OK':'🔴 NG'}</div><div class="detail">ズレ：${pxPerMm?dmm.toFixed(2)+' mm':dpx.toFixed(1)+' px'}<br>${ok?'許容範囲内です。':dirs.join(' ／ ')}<br><span class="small">追尾品質 ${q.toFixed(1)}</span></div>`;const logKey=key+':'+Math.round(dpx/2);if(logKey!==lastLogged){lastLogged=logKey;hist.unshift({t:new Date().toLocaleString('ja-JP'),ok,d:pxPerMm?dmm.toFixed(2)+'mm':dpx.toFixed(1)+'px',name:learn.name});hist=hist.slice(0,100);localStorage.setItem('align_v2_hist',JSON.stringify(hist));renderHist()}}
+function renderHist(){const el=document.getElementById('history');el.innerHTML=hist.length?hist.map(h=>`<div>${h.ok?'🟢':'🔴'} <b>${h.name}</b>　${h.d}<br><span class="small">${h.t}</span></div>`).join(''):'<span class="small">履歴はまだありません。</span>'}
+camBtn.onclick=camera;teachBtn.onclick=beginTeach;calBtn.onclick=beginCal;autoBtn.onclick=startAuto;stopBtn.onclick=stop;document.getElementById('resetBtn').onclick=()=>{if(confirm('学習した正解位置を消しますか？')){learn=null;localStorage.removeItem('align_v2_learn');autoBtn.disabled=true;status();result.className='result wait';result.innerHTML='<div class="big">待機</div><div class="detail">正解位置を登録してください。</div>'}};document.getElementById('clearHistory').onclick=()=>{hist=[];localStorage.removeItem('align_v2_hist');renderHist()};
+status();renderHist();size();
+</script></body></html>
