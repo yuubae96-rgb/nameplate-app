@@ -1,5 +1,3 @@
-(node:5) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
-(Use `node --trace-warnings ...` to show where the warning was created)
 <!doctype html>
 <html lang="ja">
 <head>
@@ -58,7 +56,25 @@ function line(a,b,w,color){if(!a||!b)return;ctx.strokeStyle=color;ctx.lineWidth=
 function joint(a,r,fill,stroke='#9b8c78'){if(!a)return;ctx.fillStyle=fill;ctx.strokeStyle=stroke;ctx.lineWidth=Math.max(1,r*.12);ctx.beginPath();ctx.arc(a.x,a.y,r,0,Math.PI*2);ctx.fill();ctx.stroke()}
 function local(B,fn){ctx.save();ctx.translate(B.shoulders.x,B.shoulders.y);ctx.rotate(B.angle);fn();ctx.restore()}
 function path(fill,stroke,draw){ctx.beginPath();draw();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.stroke()}}
-function realSkeleton(B,a){const art=anatomyArt.skeleton;if(!art.complete||!art.naturalWidth){drawSkeleton(B,a);return}const ankles=[p(27),p(28)].filter(Boolean),bottom=ankles.length?Math.max(...ankles.map(q=>q.y)):B.hips.y+B.len*1.85,top=B.nose.y-B.headR*1.05,h=Math.max(B.len*2.1,bottom-top),w=h*(art.naturalWidth/art.naturalHeight),cx=(B.shoulders.x+B.hips.x)/2;ctx.save();ctx.globalAlpha=a;ctx.translate(cx,B.nose.y);ctx.rotate(B.angle);ctx.drawImage(art,-w/2,-B.headR*1.05,w,h);ctx.restore()}
+function visiblePoint(i,min=.52){const q=landmarks?.[i];return q&&q.visibility>=min&&q.x>=0&&q.x<=1&&q.y>=0&&q.y<=1?{x:q.x*canvas.width,y:q.y*canvas.height}:null}
+function cropBetween(art,src,A,C,outW,a){if(!A||!C)return;const dx=C.x-A.x,dy=C.y-A.y,L=Math.hypot(dx,dy);if(L<8)return;ctx.save();ctx.globalAlpha=a;ctx.translate((A.x+C.x)/2,(A.y+C.y)/2);ctx.rotate(Math.atan2(dy,dx)-Math.PI/2);ctx.drawImage(art,src[0],src[1],src[2],src[3],-outW/2,-L*.56,outW,L*1.12);ctx.restore()}
+function realSkeleton(B,a){const art=anatomyArt.skeleton;if(!art.complete||!art.naturalWidth){drawSkeleton(B,a);return}
+  const L=visiblePoint(11,.35),R=visiblePoint(12,.35),HL=visiblePoint(23,.42),HR=visiblePoint(24,.42),shoulders=L&&R?mid(L,R):B.shoulders,hips=HL&&HR?mid(HL,HR):B.hips;
+  ctx.save();ctx.globalAlpha=a;
+  // 頭・胸郭・骨盤はそれぞれ独立して、顔と胴体の中心へ合わせる。
+  ctx.save();ctx.translate(B.nose.x,B.nose.y);ctx.rotate(B.angle);ctx.drawImage(art,270,0,170,170,-B.headR*.83,-B.headR*1.08,B.headR*1.66,B.headR*2.05);ctx.restore();
+  const torsoLen=Math.min(B.sw*1.45,Math.max(B.sw*.8,dist(shoulders,hips)));ctx.save();ctx.translate(shoulders.x,shoulders.y);ctx.rotate(B.angle);ctx.drawImage(art,190,150,325,340,-B.sw*.56,-B.sw*.10,B.sw*1.12,torsoLen*.83);ctx.restore();
+  if(HL&&HR){ctx.save();ctx.translate(hips.x,hips.y);ctx.rotate(B.angle);ctx.drawImage(art,205,455,300,205,-B.hw*.72,-torsoLen*.20,B.hw*1.44,torsoLen*.36);ctx.restore()}
+  // 写真上で信頼して検出できた関節の区間だけを描く。写真外の脚は作らない。
+  cropBetween(art,[155,175,105,285],visiblePoint(11),visiblePoint(13),B.sw*.22,a);
+  cropBetween(art,[90,405,135,300],visiblePoint(13),visiblePoint(15),B.sw*.25,a);
+  cropBetween(art,[447,175,105,285],visiblePoint(12),visiblePoint(14),B.sw*.22,a);
+  cropBetween(art,[480,405,135,300],visiblePoint(14),visiblePoint(16),B.sw*.25,a);
+  cropBetween(art,[220,570,115,310],visiblePoint(23,.58),visiblePoint(25,.58),B.sw*.28,a);
+  cropBetween(art,[230,830,120,365],visiblePoint(25,.60),visiblePoint(27,.60),B.sw*.27,a);
+  cropBetween(art,[372,570,115,310],visiblePoint(24,.58),visiblePoint(26,.58),B.sw*.28,a);
+  cropBetween(art,[357,830,120,365],visiblePoint(26,.60),visiblePoint(28,.60),B.sw*.27,a);
+  ctx.restore()}
 function realOrgans(B,a){const art=anatomyArt.organs;if(!art.complete||!art.naturalWidth){drawOrgans(B,a);return}const w=B.sw*.86,h=B.len*.93;ctx.save();ctx.globalAlpha=a;ctx.translate(B.shoulders.x,B.shoulders.y+B.len*.08);ctx.rotate(B.angle);ctx.drawImage(art,-w/2,0,w,h);ctx.restore()}
 function drawSkeleton(B,a=1){ctx.save();ctx.globalAlpha=a;const ivory='#f1ead5',edge='#897f70';
   const neck={x:B.shoulders.x,y:B.shoulders.y-B.sw*.12};line(B.nose,neck,B.sw*.07,ivory);line(B.shoulders,B.hips,B.sw*.055,ivory);
