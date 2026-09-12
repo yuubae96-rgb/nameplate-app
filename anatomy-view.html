@@ -54,7 +54,7 @@ function path(fill,stroke,draw){ctx.beginPath();draw();if(fill){ctx.fillStyle=fi
 function drawSkeleton(B,a=1){ctx.save();ctx.globalAlpha=a;const ivory='#f1ead5',edge='#897f70';
   const neck={x:B.shoulders.x,y:B.shoulders.y-B.sw*.12};line(B.nose,neck,B.sw*.07,ivory);line(B.shoulders,B.hips,B.sw*.055,ivory);
   const limbs=[[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[24,26],[26,28]];limbs.forEach(([i,j])=>{const A=p(i),C=p(j);line(A,C,Math.max(5,B.sw*.048),ivory);line(A,C,Math.max(1,B.sw*.009),edge)});
-  [11,12,13,14,15,16,23,24,25,26,27,28].forEach(i=>joint(p(i),Math.max(3,B.sw*(i===23||i===24?.035:.026)),ivory));
+  [11,12,13,14,15,16,23,24,25,26,27,28].forEach(i=>joint(p(i),Math.max(3,B.sw*((i===23||i===24)?.035:.026)),ivory));
   local(B,()=>{ctx.lineWidth=Math.max(2,B.sw*.014);ctx.strokeStyle=ivory;for(let i=0;i<7;i++){const y=B.len*(.08+i*.075),wide=B.sw*(.38-i*.018);path(null,ivory,()=>{ctx.moveTo(0,y-B.len*.035);ctx.bezierCurveTo(-wide*.22,y-B.len*.09,-wide,y-B.len*.08,-wide,y);ctx.bezierCurveTo(-wide,y+B.len*.07,-wide*.25,y+B.len*.055,0,y+B.len*.075);ctx.bezierCurveTo(wide*.25,y+B.len*.055,wide,y+B.len*.07,wide,y);ctx.bezierCurveTo(wide,y-B.len*.08,wide*.22,y-B.len*.09,0,y-B.len*.035)})}
     ctx.lineWidth=B.sw*.045;line({x:0,y:B.len*.02},{x:0,y:B.len*.89},B.sw*.045,ivory);
     path(ivory,edge,()=>{ctx.moveTo(-B.hw*.55,B.len*.82);ctx.bezierCurveTo(-B.sw*.5,B.len*.92,-B.sw*.34,B.len*1.12,0,B.len*1.04);ctx.bezierCurveTo(B.sw*.34,B.len*1.12,B.sw*.5,B.len*.92,B.hw*.55,B.len*.82);ctx.lineTo(B.hw*.22,B.len*.72);ctx.quadraticCurveTo(0,B.len*.86,-B.hw*.22,B.len*.72);ctx.closePath()})});
