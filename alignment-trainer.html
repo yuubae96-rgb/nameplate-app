@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0b6b3a">
+<title>育てる位置合わせ</title>
+<style>
+:root{--green:#087a45;--red:#c62828;--amber:#b77900;--ink:#132018;--line:#d7e2db;--bg:#f5f8f6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
+header{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top) + 12px) 16px 12px}
+h1{font-size:22px;margin:0}.sub{font-size:12px;color:#5c6c62;margin-top:3px}
+main{max-width:760px;margin:auto;padding:14px 14px calc(90px + env(safe-area-inset-bottom))}
+.card{background:white;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px #0000000a}
+.stage{position:relative;background:#101410;border-radius:14px;overflow:hidden;aspect-ratio:4/3;touch-action:none}
+video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}canvas{z-index:2}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+button{border:0;border-radius:12px;padding:13px 10px;font-weight:800;font-size:15px;background:#15251b;color:#fff}button.green{background:var(--green)}button.red{background:var(--red)}button.light{background:#e9f2ec;color:#144b2d}button:disabled{opacity:.42}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row>label{flex:1;min-width:140px;font-size:13px;font-weight:700}
+input{width:100%;font-size:16px;padding:10px;border:1px solid #cbd7cf;border-radius:10px;margin-top:5px;background:#fff}
+.mode{font-size:14px;font-weight:800;padding:10px 12px;border-radius:10px;background:#edf5ef;margin-top:10px}
+.result{border-radius:16px;padding:18px;text-align:center;font-weight:900;margin-top:12px;border:2px solid #cad8cf}.result .big{font-size:42px;line-height:1}.result.ok{background:#e8f7ee;border-color:#39a765;color:#08602f}.result.ng{background:#ffeded;border-color:#e05959;color:#a81818}.result.wait{background:#f6f6f6;color:#667069}.detail{font-size:15px;margin-top:10px;line-height:1.6}
+.small{font-size:12px;color:#67766d;line-height:1.5}.badge{display:inline-block;background:#edf5ef;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800;margin:2px}
+.history{font-size:13px}.history div{padding:8px 0;border-top:1px solid #eef2ef}
+footer{position:fixed;bottom:0;left:0;right:0;z-index:6;background:#ffffffee;backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom));font-size:11px;text-align:center;color:#667069}
+</style>
+</head>
+<body>
+<header><h1>育てる位置合わせ</h1><div class="sub">穴マーク × 抜き型中心｜人が確認する第1段階</div></header>
+<main>
+<section class="card">
+  <div class="stage" id="stage"><video id="video" playsinline muted></video><canvas id="canvas"></canvas></div>
+  <div class="controls">
+    <button class="green" id="startBtn">📷 カメラ開始</button>
+    <button id="freezeBtn" disabled>⏸ 画像を止める</button>
+    <button class="light" id="resumeBtn" disabled>▶ ライブに戻す</button>
+    <button class="light" id="clearMarksBtn">印を消す</button>
+  </div>
+  <div class="mode" id="modeText">まずカメラを開始してください。</div>
+</section>
+
+<section class="card">
+ <h2 style="font-size:17px;margin:0 0 10px">1. mm換算を登録</h2>
+ <div class="row"><label>基準にする実寸(mm)<input id="calMm" type="number" value="10" step="0.1" min="0.1"></label></div>
+ <button class="light" id="calBtn">📏 画像上の2点をタップして校正</button>
+ <div class="small" id="calStatus">未校正でもpx単位で判定できます。mm表示したい場合だけ校正してください。</div>
+</section>
+
+<section class="card">
+ <h2 style="font-size:17px;margin:0 0 10px">2. 正解位置を覚えさせる</h2>
+ <div class="row">
+   <label>仕事名<input id="jobName" value="穴あけ1号"></label>
+   <label>許容差(mm)<input id="tolMm" type="number" value="0.5" step="0.1" min="0.05"></label>
+ </div>
+ <button class="green" id="learnBtn">🧠 正解位置を登録する</button>
+ <div class="small">止めた画像で、①抜き型中心 → ②穴マーク中心 の順にタップします。2点の相対位置を正解として保存します。</div>
+ <div id="learned" style="margin-top:8px"></div>
+</section>
+
+<section class="card">
+ <h2 style="font-size:17px;margin:0 0 10px">3. 判定する</h2>
+ <button class="green" id="judgeBtn">✅ 現在位置を判定</button>
+ <div class="small">画像を止めて、①抜き型中心 → ②穴マーク中心 の順にタップしてください。</div>
+ <div class="result wait" id="result"><div class="big">待機</div><div class="detail">正解位置を登録すると判定できます。</div></div>
+</section>
+
+<section class="card">
+ <h2 style="font-size:17px;margin:0 0 10px">判定履歴</h2>
+ <div class="history" id="history"></div>
+ <button class="light" id="clearHistoryBtn" style="margin-top:8px">履歴を消す</button>
+</section>
+
+<section class="card small"><b>安全について</b><br>この試作版は位置確認の補助です。穴あけ機・プレス等の起動回路には接続しません。最終判断と機械操作は必ず人が行ってください。</section>
+</main>
+<footer>育てる位置合わせ v1｜判定補助・機械制御なし</footer>
+<script>
+const video=document.getElementById('video'), canvas=document.getElementById('canvas'), ctx=canvas.getContext('2d');
+const modeText=document.getElementById('modeText'), result=document.getElementById('result');
+let stream=null,frozen=false,clickMode=null,points=[],pxPerMm=Number(localStorage.getItem('align_pxPerMm'))||0;
+let learned=JSON.parse(localStorage.getItem('align_learned')||'null');
+let history=JSON.parse(localStorage.getItem('align_history')||'[]');
+function resizeCanvas(){const r=canvas.getBoundingClientRect();canvas.width=Math.round(r.width*devicePixelRatio);canvas.height=Math.round(r.height*devicePixelRatio);ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);drawMarks()}
+window.addEventListener('resize',resizeCanvas);
+async function startCamera(){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});video.srcObject=stream;await video.play();frozen=false;resizeCanvas();modeText.textContent='カメラ映像を確認し、位置合わせ部分が大きく見えるよう固定してください。';freezeBtn.disabled=false;resumeBtn.disabled=true}catch(e){modeText.textContent='カメラを開始できません。Safariのカメラ許可を確認してください。';alert('カメラ開始エラー: '+e.message)}}
+function freeze(){if(!video.videoWidth)return;const rect=canvas.getBoundingClientRect();ctx.setTransform(1,0,0,1,0,0);canvas.width=Math.round(rect.width*devicePixelRatio);canvas.height=Math.round(rect.height*devicePixelRatio);ctx.drawImage(video,0,0,canvas.width,canvas.height);video.style.visibility='hidden';frozen=true;resumeBtn.disabled=false;modeText.textContent='画像を停止しました。登録または判定を選んでください。'}
+function resume(){video.style.visibility='visible';frozen=false;clickMode=null;points=[];resizeCanvas();resumeBtn.disabled=true;modeText.textContent='ライブ映像です。位置を合わせてから「画像を止める」。'}
+function drawMarks(){if(!frozen){ctx.clearRect(0,0,canvas.width,canvas.height)} points.forEach((p,i)=>{ctx.save();ctx.scale(devicePixelRatio,devicePixelRatio);ctx.beginPath();ctx.arc(p.x,p.y,12,0,Math.PI*2);ctx.lineWidth=3;ctx.strokeStyle=i===0?'#00e676':'#ffea00';ctx.stroke();ctx.beginPath();ctx.moveTo(p.x-18,p.y);ctx.lineTo(p.x+18,p.y);ctx.moveTo(p.x,p.y-18);ctx.lineTo(p.x,p.y+18);ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 14px sans-serif';ctx.fillText(i===0?'型':'印',p.x+14,p.y-14);ctx.restore()})}
+function clearMarks(){points=[];if(!frozen)ctx.clearRect(0,0,canvas.width,canvas.height);else freeze();}
+function tapPoint(e){if(!frozen||!clickMode)return;const r=canvas.getBoundingClientRect();const p={x:e.clientX-r.left,y:e.clientY-r.top};points.push(p);drawMarks();if(points.length===1){modeText.textContent=clickMode==='cal'?'2点目をタップしてください。':'次に「穴マーク中心」をタップしてください。'}if(points.length===2)finishTwoPoints()}
+function dist(a,b){return Math.hypot(b.x-a.x,b.y-a.y)}
+function finishTwoPoints(){const a=points[0],b=points[1];if(clickMode==='cal'){const mm=parseFloat(calMm.value);if(mm>0){pxPerMm=dist(a,b)/mm;localStorage.setItem('align_pxPerMm',pxPerMm);calStatus.textContent=`校正済み：1mm = ${pxPerMm.toFixed(2)}px`;modeText.textContent='mm換算を登録しました。'}clickMode=null;return}
+ const dx=b.x-a.x,dy=b.y-a.y;
+ if(clickMode==='learn'){learned={name:jobName.value.trim()||'位置合わせ',dx,dy,tolMm:parseFloat(tolMm.value)||0.5,pxPerMm,created:new Date().toISOString()};localStorage.setItem('align_learned',JSON.stringify(learned));renderLearned();modeText.textContent='この2点の位置関係を「正解」として覚えました。';clickMode=null;return}
+ if(clickMode==='judge'){judge(dx,dy);clickMode=null;}
+}
+function begin(mode){if(!frozen){alert('先に「画像を止める」を押してください。');return} if(mode!=='cal'&&!learned&&mode==='judge'){alert('先に正解位置を登録してください。');return}points=[];clickMode=mode;freeze();points=[];modeText.textContent=mode==='cal'?'実寸が分かる2点のうち、1点目をタップしてください。':'まず「抜き型中心」をタップしてください。'}
+function judge(dx,dy){const pmm=pxPerMm||learned.pxPerMm||0;const ddx=dx-learned.dx,ddy=dy-learned.dy;const dpx=Math.hypot(ddx,ddy);const dmm=pmm?dpx/pmm:null;const tol=learned.tolMm||0.5;const ok=pmm?dmm<=tol:dpx<=8;let dir=[];const x=pmm?ddx/pmm:ddx,y=pmm?ddy/pmm:ddy;if(Math.abs(x)>(pmm?0.05:1))dir.push(x>0?`マークを左へ ${Math.abs(x).toFixed(pmm?2:0)}${pmm?'mm':'px'}`:`マークを右へ ${Math.abs(x).toFixed(pmm?2:0)}${pmm?'mm':'px'}`);if(Math.abs(y)>(pmm?0.05:1))dir.push(y>0?`マークを上へ ${Math.abs(y).toFixed(pmm?2:0)}${pmm?'mm':'px'}`:`マークを下へ ${Math.abs(y).toFixed(pmm?2:0)}${pmm?'mm':'px'}`);
+ result.className='result '+(ok?'ok':'ng');result.innerHTML=`<div class="big">${ok?'🟢 OK':'🔴 NG'}</div><div class="detail">ズレ：${pmm?dmm.toFixed(2)+' mm':dpx.toFixed(1)+' px'}<br>${ok?'許容範囲内です。':(dir.join(' ／ ')||'位置を調整してください。')}</div>`;
+ const rec={t:new Date().toLocaleString('ja-JP'),ok,delta:pmm?`${dmm.toFixed(2)}mm`:`${dpx.toFixed(1)}px`,name:learned.name};history.unshift(rec);history=history.slice(0,100);localStorage.setItem('align_history',JSON.stringify(history));renderHistory();modeText.textContent='判定しました。必要なら位置を直して、もう一度判定してください。';}
+function renderLearned(){learnedEl.innerHTML=learned?`<span class="badge">${learned.name}</span><span class="badge">許容差 ±${learned.tolMm}mm</span><span class="badge">正解保存済み</span>`:'<span class="small">まだ正解位置は登録されていません。</span>'}
+function renderHistory(){historyEl.innerHTML=history.length?history.map(h=>`<div>${h.ok?'🟢':'🔴'} <b>${h.name}</b>　${h.delta}<br><span class="small">${h.t}</span></div>`).join(''):'<span class="small">履歴はまだありません。</span>'}
+const startBtn=document.getElementById('startBtn'),freezeBtn=document.getElementById('freezeBtn'),resumeBtn=document.getElementById('resumeBtn'),clearMarksBtn=document.getElementById('clearMarksBtn'),calBtn=document.getElementById('calBtn'),learnBtn=document.getElementById('learnBtn'),judgeBtn=document.getElementById('judgeBtn'),calMm=document.getElementById('calMm'),calStatus=document.getElementById('calStatus'),jobName=document.getElementById('jobName'),tolMm=document.getElementById('tolMm'),learnedEl=document.getElementById('learned'),historyEl=document.getElementById('history');
+startBtn.onclick=startCamera;freezeBtn.onclick=freeze;resumeBtn.onclick=resume;clearMarksBtn.onclick=clearMarks;calBtn.onclick=()=>begin('cal');learnBtn.onclick=()=>begin('learn');judgeBtn.onclick=()=>begin('judge');canvas.addEventListener('click',tapPoint);document.getElementById('clearHistoryBtn').onclick=()=>{if(confirm('判定履歴を消しますか？')){history=[];localStorage.removeItem('align_history');renderHistory()}};
+if(pxPerMm)calStatus.textContent=`校正済み：1mm = ${pxPerMm.toFixed(2)}px`;renderLearned();renderHistory();resizeCanvas();
+</script>
+</body>
+</html>
