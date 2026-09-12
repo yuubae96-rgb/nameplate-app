@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0F6E5F">
+<title>結局なに？AI</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#172033;--muted:#687386;--line:#dde3ea;--green:#0f6e5f;--green2:#e5f3ef;--red:#b42318;--red2:#fff0ee;--blue:#22577a;--blue2:#edf6fb;--amber:#8a5a00;--amber2:#fff7df}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink);padding:calc(18px + env(safe-area-inset-top)) 14px calc(44px + env(safe-area-inset-bottom))}.app{max-width:720px;margin:auto}h1{font-size:26px;margin:0 0 5px}.lead{color:var(--muted);font-size:14px;line-height:1.65;margin:0 0 16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:0 0 14px;box-shadow:0 2px 10px #1720330a}.notice{background:var(--amber2);color:#674400;border:1px solid #eed998}.notice strong{display:block;margin-bottom:5px}.label{font-size:12px;font-weight:800;color:var(--muted);margin-bottom:7px}.category{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0 16px}.cat{min-height:42px;border:1px solid var(--line);background:#fff;border-radius:11px;font-weight:700;color:var(--ink)}.cat.active{background:var(--ink);color:#fff;border-color:var(--ink)}.record{width:100%;min-height:78px;border:0;border-radius:18px;background:var(--green);color:white;font-weight:900;font-size:19px;box-shadow:0 5px 14px #0f6e5f35}.record.recording{background:var(--red);animation:pulse 1.3s infinite}@keyframes pulse{50%{opacity:.82}}.timer{text-align:center;font-size:30px;font-variant-numeric:tabular-nums;font-weight:800;margin:12px 0 5px}.status{text-align:center;color:var(--muted);font-size:13px;min-height:22px}.filebtn{display:block;width:100%;text-align:center;padding:13px;border:1px solid var(--line);border-radius:12px;background:#fff;font-weight:800;margin-top:10px}.filebtn input{display:none}.or{text-align:center;color:#9aa3b0;font-size:12px;margin:9px}.audio{width:100%;margin:12px 0 0}.analyze{width:100%;min-height:54px;border:0;border-radius:13px;background:#172033;color:#fff;font-size:16px;font-weight:900;margin-top:12px}.analyze:disabled{opacity:.38}.progress{display:none;background:var(--blue2);border:1px solid #cfe3ef;border-radius:13px;padding:12px;color:var(--blue);font-weight:800;text-align:center;margin-top:12px}.progress.show{display:block}.hidden{display:none!important}.result-head{background:var(--green2);border:1px solid #c6e4da;border-radius:15px;padding:15px;margin-bottom:12px}.result-head .cap{font-size:12px;color:#436f64;font-weight:800}.result-head .one{font-size:21px;line-height:1.5;font-weight:900;margin-top:5px}.section{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}.section h2{font-size:15px;margin:0 0 9px}.section ul{padding-left:21px;margin:0}.section li{margin:7px 0;line-height:1.6}.warn{background:var(--red2);border:1px solid #f0cbc6;border-radius:13px;padding:12px}.decision{background:var(--amber2);border:1px solid #f0dea0;border-radius:13px;padding:12px}.question{background:var(--blue2);border:1px solid #cfe3ef;border-radius:13px;padding:12px}.term{padding:9px 0;border-bottom:1px dashed var(--line)}.term:last-child{border:0}.term b{display:block;margin-bottom:3px}.number{padding:10px 0;border-bottom:1px dashed var(--line)}.number:last-child{border:0}.number .value{font-size:19px;font-weight:900}.number .why{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}.transcript{white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;line-height:1.65;max-height:280px;overflow:auto}.copy{width:100%;border:1px solid var(--line);background:#fff;border-radius:11px;padding:12px;font-weight:800;margin-top:10px}.small{font-size:11px;color:var(--muted);line-height:1.6;margin-top:8px}@media(max-width:430px){.category{grid-template-columns:repeat(2,1fr)}h1{font-size:24px}.result-head .one{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>結局なに？AI</h1>
+<p class="lead">長い説明を録音すると、専門用語をやさしい日本語へ変えて、「結局なにを言っているのか」「自分は何を決めればいいのか」まで整理します。</p>
+<div class="card notice"><strong>録音する前に</strong>会話を録音する場合は、相手に録音していることを伝えて使ってください。重要な契約・法律・税務・保険の判断は、元の書面も必ず確認してください。</div>
+<div class="card">
+<div class="label">話の種類（分からなければ「自動」でOK）</div>
+<div class="category" id="cats">
+<button class="cat active" data-v="自動">自動</button><button class="cat" data-v="不動産">不動産</button><button class="cat" data-v="保険">保険</button><button class="cat" data-v="銀行">銀行</button><button class="cat" data-v="税務">税務</button><button class="cat" data-v="法律">法律</button>
+</div>
+<button class="record" id="recordBtn">● 録音を始める</button>
+<div class="timer" id="timer">00:00</div><div class="status" id="status">録音ボタンを押して、iPhoneを机の上に置くだけです。</div>
+<div class="or">または</div>
+<label class="filebtn">ボイスメモ・音声ファイルを選ぶ<input id="audioFile" type="file" accept="audio/*"></label>
+<audio id="player" class="audio hidden" controls></audio>
+<button class="analyze" id="analyzeBtn" disabled>AIに「結局なに？」を聞く</button>
+<div class="progress" id="progress">音声を文字にして、やさしい言葉へ変換しています…</div>
+<div class="small">録音データは、解析のためAIへ送信されます。この画面では会話履歴をサーバー保存しません。</div>
+</div>
+<div id="resultCard" class="card hidden">
+<div class="result-head"><div class="cap">結局、一言でいうと</div><div class="one" id="oneLine"></div></div>
+<div class="section"><h2>相手が言っていること</h2><ul id="summary"></ul></div>
+<div class="section hidden" id="numbersSec"><h2>金額・率・期間・期限</h2><div id="numbers"></div></div>
+<div class="section hidden" id="termsSec"><h2>専門用語を普通の言葉にすると</h2><div id="terms"></div></div>
+<div class="section warn hidden" id="cautionsSec"><h2>⚠️ 注意しておくところ</h2><ul id="cautions"></ul></div>
+<div class="section decision hidden" id="decisionsSec"><h2>あなたが決めること</h2><ul id="decisions"></ul></div>
+<div class="section question hidden" id="questionsSec"><h2>次に相手へ聞くといいこと</h2><ul id="questions"></ul></div>
+<div class="section hidden" id="missingSec"><h2>この会話だけでは分からないこと</h2><ul id="missing"></ul></div>
+<div class="section"><h2>文字起こし</h2><div class="transcript" id="transcript"></div><button class="copy" id="copyBtn">結果をコピー</button></div>
+</div>
+</div>
+<script>
+const ENDPOINT='https://vnnvuxccazkdzwqjmntz.supabase.co/functions/v1/script-ai-compare';
+const APIKEY='sb_publishable_xG-tuBgxFGntT1vlbZzuVQ_AZ2Zl8QL';
+let category='自動', mediaRecorder=null, chunks=[], blob=null, startedAt=0, timerId=null, stream=null;
+const $=id=>document.getElementById(id); const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+$('cats').addEventListener('click',e=>{const b=e.target.closest('.cat');if(!b)return;document.querySelectorAll('.cat').forEach(x=>x.classList.remove('active'));b.classList.add('active');category=b.dataset.v});
+function setBlob(b){blob=b;$('analyzeBtn').disabled=!blob;if(blob){const u=URL.createObjectURL(blob);$('player').src=u;$('player').classList.remove('hidden');$('status').textContent='録音できました。再生して確認するか、そのままAI解析できます。'}}
+function tick(){const s=Math.floor((Date.now()-startedAt)/1000);$('timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+$('recordBtn').onclick=async()=>{if(mediaRecorder&&mediaRecorder.state==='recording'){mediaRecorder.stop();return}try{stream=await navigator.mediaDevices.getUserMedia({audio:true});const types=['audio/mp4','audio/webm;codecs=opus','audio/webm'];let mime=types.find(t=>MediaRecorder.isTypeSupported(t))||'';mediaRecorder=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);chunks=[];mediaRecorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};mediaRecorder.onstop=()=>{clearInterval(timerId);stream?.getTracks().forEach(t=>t.stop());const type=mediaRecorder.mimeType||'audio/webm';setBlob(new Blob(chunks,{type}));$('recordBtn').textContent='● もう一度録音する';$('recordBtn').classList.remove('recording')};mediaRecorder.start(1000);startedAt=Date.now();tick();timerId=setInterval(tick,500);$('recordBtn').textContent='■ 録音を止める';$('recordBtn').classList.add('recording');$('status').textContent='録音中です。会話が終わったら「録音を止める」を押してください。';$('analyzeBtn').disabled=true}catch(e){$('status').textContent='マイクを使えません。iPhoneの設定でSafariのマイクを許可してください。'}};
+$('audioFile').onchange=e=>{const f=e.target.files?.[0];if(f){setBlob(f);$('timer').textContent='音声選択済み'}};
+function list(el,arr){el.innerHTML=(arr||[]).map(x=>'<li>'+esc(x)+'</li>').join('')}
+function sec(id,show){$(id).classList.toggle('hidden',!show)}
+function render(data){const a=data.analysis||{};$('oneLine').textContent=a.oneLine||'要約できませんでした';list($('summary'),a.plainSummary);$('numbers').innerHTML=(a.numbers||[]).map(n=>`<div class="number"><div><b>${esc(n.label)}</b></div><div class="value">${esc(n.value)}</div><div class="why">${esc(n.why)}</div></div>`).join('');sec('numbersSec',a.numbers?.length);$('terms').innerHTML=(a.terms||[]).map(t=>`<div class="term"><b>${esc(t.term)}</b>${esc(t.meaning)}</div>`).join('');sec('termsSec',a.terms?.length);list($('cautions'),a.cautions);sec('cautionsSec',a.cautions?.length);list($('decisions'),a.decisions);sec('decisionsSec',a.decisions?.length);list($('questions'),a.questions);sec('questionsSec',a.questions?.length);list($('missing'),a.missing);sec('missingSec',a.missing?.length);$('transcript').textContent=data.transcript||'';$('resultCard').classList.remove('hidden');$('resultCard').scrollIntoView({behavior:'smooth',block:'start'})}
+$('analyzeBtn').onclick=async()=>{if(!blob)return;$('analyzeBtn').disabled=true;$('progress').classList.add('show');$('progress').textContent='音声を文字にして、やさしい言葉へ変換しています…';try{const fd=new FormData();fd.append('mode','plain-talk');fd.append('category',category);fd.append('audio',blob,blob.name||((blob.type||'').includes('mp4')?'recording.m4a':'recording.webm'));const r=await fetch(ENDPOINT,{method:'POST',headers:{apikey:APIKEY},body:fd});const d=await r.json();if(!r.ok)throw new Error(d.error||'解析に失敗しました');render(d);$('progress').textContent='✅ 解析できました'}catch(e){$('progress').textContent='エラー：'+e.message}finally{$('analyzeBtn').disabled=false;setTimeout(()=>$('progress').classList.remove('show'),5000)}};
+$('copyBtn').onclick=async()=>{const text=`【結局、一言でいうと】\n${$('oneLine').textContent}\n\n【相手が言っていること】\n${[...$('summary').children].map(x=>'・'+x.textContent).join('\n')}\n\n【注意点】\n${[...$('cautions').children].map(x=>'・'+x.textContent).join('\n')}\n\n【次に聞くこと】\n${[...$('questions').children].map(x=>'・'+x.textContent).join('\n')}`;await navigator.clipboard.writeText(text);$('copyBtn').textContent='コピーしました';setTimeout(()=>$('copyBtn').textContent='結果をコピー',1500)};
+</script>
+</body></html>
