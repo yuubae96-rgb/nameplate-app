@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16233f">
+<title>YouTube動画作成2</title>
+<style>
+html,body{margin:0;width:100%;height:100%;background:#f4f5f7}#host{position:fixed;inset:0;width:100%;height:100%;border:0;background:#f4f5f7}
+</style>
+</head>
+<body>
+<iframe id="host" src="youtube-video-2.html?v=tts-provider1" allow="microphone;camera"></iframe>
+<script>
+const host=document.getElementById('host');
+function base(){
+  try{
+    const a=host.contentDocument;if(!a)return null;
+    const core=a.getElementById('core');if(!core||!core.contentDocument)return null;
+    const b=core.contentDocument;
+    const app=b.getElementById('app');if(!app||!app.contentDocument)return null;
+    return {d:app.contentDocument,w:app.contentWindow};
+  }catch(e){return null}
+}
+function dataUrl(blob){return new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=reject;fr.readAsDataURL(blob)})}
+function trimSlash(s){return String(s||'').trim().replace(/\/$/,'')}
+function signature(s,provider,d){return [provider,String(s?.reading||s?.narration||''),d.getElementById('voice')?.value||'',d.getElementById('direction')?.value||'',d.getElementById('ttsSpeaker')?.value||''].join('||')}
+async function voicevox(endpoint,text,speaker){
+  endpoint=trimSlash(endpoint);if(!endpoint)throw Error('VOICEVOXの接続先を入力してください。');
+  const sp=encodeURIComponent(speaker||'3'),tx=encodeURIComponent(text);
+  const q=await fetch(endpoint+'/audio_query?text='+tx+'&speaker='+sp,{method:'POST'});
+  if(!q.ok)throw Error('VOICEVOX audio_query '+q.status);
+  const query=await q.json();
+  const r=await fetch(endpoint+'/synthesis?speaker='+sp,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(query)});
+  if(!r.ok)throw Error('VOICEVOX synthesis '+r.status);
+  return await r.blob();
+}
+async function piper(endpoint,text,voice){
+  endpoint=trimSlash(endpoint);if(!endpoint)throw Error('Piper Plusの接続先を入力してください。');
+  const r=await fetch(endpoint+'/synthesize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,voice:voice||''})});
+  if(!r.ok)throw Error('Piper Plus synthesize '+r.status);
+  return await r.blob();
+}
+function install(){
+  const x=base();if(!x){setTimeout(install,600);return}const {d,w}=x;
+  if(!d.getElementById('voice')||typeof w.genAudio!=='function'){setTimeout(install,600);return}
+  if(d.documentElement.dataset.ttsProviders==='1')return;
+  d.documentElement.dataset.ttsProviders='1';
+
+  const voice=d.getElementById('voice');
+  const voiceField=voice.closest('.field');
+  const box=d.createElement('div');box.className='field';box.id='ttsProviderField';
+  box.innerHTML='<label>完成音声の方式</label><select id="ttsProvider"><option value="google">Google Gemini TTS（高品質・API利用）</option><option value="voicevox">VOICEVOX（無料・社内PC）</option><option value="piper">Piper Plus（無料・社内PC）</option></select><div id="ttsLocalBox" style="display:none;margin-top:8px;padding:10px;border:1px solid #d8dee7;border-radius:12px;background:#f7f9fb"><input id="ttsEndpoint" placeholder="音声サーバーURL 例：https://192.168.1.10:50021" style="margin-bottom:7px"><input id="ttsSpeaker" placeholder="VOICEVOX話者ID / Piper音声名"><div id="ttsHelp" class="hint"></div></div><div id="ttsProviderStatus" class="hint"></div>';
+  voiceField.parentNode.insertBefore(box,voiceField);
+  const provider=d.getElementById('ttsProvider'),localBox=d.getElementById('ttsLocalBox'),endpoint=d.getElementById('ttsEndpoint'),speaker=d.getElementById('ttsSpeaker'),help=d.getElementById('ttsHelp'),status=d.getElementById('ttsProviderStatus');
+  try{provider.value=localStorage.getItem('yt2TtsProvider')||'google';endpoint.value=localStorage.getItem('yt2TtsEndpoint')||'';speaker.value=localStorage.getItem('yt2TtsSpeaker')||'3'}catch(_){provider.value='google';speaker.value='3'}
+  function syncUi(){
+    const p=provider.value;localBox.style.display=p==='google'?'none':'block';
+    voiceField.style.display=p==='google'?'':'none';
+    const dir=d.getElementById('direction')?.closest('.field');if(dir)dir.style.display=p==='google'?'':'none';
+    if(p==='google'){status.textContent='Google Gemini TTS：高品質。完成音声をAPIで生成します。';}
+    else if(p==='voicevox'){status.textContent='VOICEVOX：音声API料金0円。社内PC等でVOICEVOX Engineを起動して接続します。';help.textContent='VOICEVOX EngineのURLと話者IDを指定してください。iPhoneから使う場合は、iPhoneから到達できるHTTPSの接続先が必要です。';}
+    else{status.textContent='Piper Plus：音声API料金0円。ローカル音声サーバーへ接続します。';help.textContent='このアプリは /synthesize に JSON {text, voice} を送って音声を受け取る方式です。iPhoneから使う場合はHTTPSで到達できる接続先が必要です。';}
+    try{localStorage.setItem('yt2TtsProvider',p);localStorage.setItem('yt2TtsEndpoint',endpoint.value);localStorage.setItem('yt2TtsSpeaker',speaker.value)}catch(_){}
+    const all=d.getElementById('allAudio');if(all)all.textContent=p==='google'?'変更分だけ完成用AI音声を作る':'変更分だけ無料音声を作る';
+    const apply=d.getElementById('applyVoice');if(apply)apply.textContent=p==='google'?'全シーンをこの声で作る':'全シーンの無料音声を作る';
+  }
+  provider.onchange=syncUi;endpoint.oninput=syncUi;speaker.oninput=syncUi;syncUi();
+
+  const original=w.genAudio;
+  w.genAudio=async function(i){
+    const p=provider.value;if(p==='google'){
+      const s=w.project?.scenes?.[i];if(s){const sig=signature(s,p,d);if(s.audio&&s._audioSignature===sig)return true;const ok=await original(i);if(ok!==false&&s.audio)s._audioSignature=signature(s,p,d);return ok}return original(i)
+    }
+    if(typeof w.sync==='function')w.sync(i);
+    const s=w.project?.scenes?.[i];if(!s)throw Error('シーンがありません。');
+    const sig=signature(s,p,d);if(s.audio&&s._audioSignature===sig)return true;
+    const btn=d.getElementById('audioBtn-'+i);if(btn){btn.disabled=true;btn.textContent='音声生成中…'}
+    try{
+      const text=String(s.reading||s.narration||'').trim();if(!text)throw Error('ナレーションが空です。');
+      let blob,providerName;
+      if(p==='voicevox'){blob=await voicevox(endpoint.value,text,speaker.value);providerName='VOICEVOX・話者ID '+(speaker.value||'3')}
+      else{blob=await piper(endpoint.value,text,speaker.value);providerName='Piper Plus'+(speaker.value?'・'+speaker.value:'')}
+      s.audio=await dataUrl(blob);s.leadingSilenceMs=0;s.audioProvider=providerName;s._audioSignature=sig;
+      const a=d.getElementById('audio-'+i);if(a){a.src=s.audio;a.style.display='block'}
+      const tag=d.getElementById('audioProvider-'+i);if(tag){tag.textContent=providerName;tag.style.display='inline-block'}
+      if(typeof w.updateAiUsageSummary==='function')w.updateAiUsageSummary();
+      status.textContent='✅ '+providerName+'で音声を作成しました。API音声料金はかかりません。';
+      return true;
+    }finally{if(btn){btn.disabled=false;btn.textContent='音声を作る'}}
+  };
+
+  async function allAudio(){
+    if(!w.project?.scenes?.length)return;const b=d.getElementById('allAudio'),also=d.getElementById('applyVoice');if(b)b.disabled=true;if(also)also.disabled=true;
+    try{
+      const pending=[];for(let i=0;i<w.project.scenes.length;i++){if(typeof w.sync==='function')w.sync(i);const s=w.project.scenes[i],sig=signature(s,provider.value,d);if(!s.audio||s._audioSignature!==sig)pending.push(i)}
+      if(!pending.length){status.textContent='✅ 音声はすべて最新です。再生成していません。';return}
+      for(let n=0;n<pending.length;n++){const i=pending[n];if(b)b.textContent='音声生成中 '+(n+1)+'/'+pending.length;status.textContent='変更されたSCENE '+(i+1)+' の音声を作成中…';await w.genAudio(i)}
+      status.textContent='✅ 変更された '+pending.length+' シーンだけ音声を作成しました。';
+    }catch(e){status.textContent='音声生成エラー：'+(e?.message||e)}finally{if(b)b.disabled=false;if(also)also.disabled=false;syncUi()}
+  }
+  const all=d.getElementById('allAudio'),apply=d.getElementById('applyVoice');if(all)all.onclick=allAudio;if(apply)apply.onclick=allAudio;
+
+  const sample=d.getElementById('voiceSample');if(sample){const oldSample=sample.onclick;sample.onclick=async()=>{
+    if(provider.value==='google'){return oldSample&&oldSample()}
+    sample.disabled=true;const ss=d.getElementById('sampleStatus');if(ss)ss.textContent='無料音声を作成中…';
+    try{const txt='こんにちは。今日は歴史の物語を分かりやすくご紹介します。';let blob=provider.value==='voicevox'?await voicevox(endpoint.value,txt,speaker.value):await piper(endpoint.value,txt,speaker.value);const a=d.getElementById('sampleAudio');a.src=await dataUrl(blob);a.style.display='block';if(ss)ss.textContent='無料音声です。下の▶︎で試聴できます。'}catch(e){if(ss)ss.textContent='試聴エラー：'+(e?.message||e)}finally{sample.disabled=false}
+  }}
+}
+host.addEventListener('load',()=>{setTimeout(install,700);setTimeout(install,1600);setTimeout(install,3000)});setInterval(install,1800);setTimeout(install,500);
+</script>
+</body>
+</html>
