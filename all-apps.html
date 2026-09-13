@@ -1,0 +1,27 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="全アプリ"><meta name="theme-color" content="#0f6e5f"><title>全アプリ</title><style>*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;background:#f3f5f7;color:#172033;padding:calc(18px + env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom))}.wrap{max-width:720px;margin:auto}h1{font-size:25px;margin:4px 0 5px}p{margin:0 0 15px;color:#687386;font-size:13px}.search{width:100%;border:1px solid #d9dee6;border-radius:13px;background:#fff;padding:13px 14px;font-size:16px;margin-bottom:18px}.section{margin:19px 0 9px;font-size:14px;color:#5d6879;font-weight:800}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.app{background:#fff;border:1px solid #e0e4e9;border-radius:16px;padding:13px 7px 11px;text-decoration:none;color:#172033;text-align:center;min-height:118px;box-shadow:0 2px 8px #0000000a}.icon{width:58px;height:58px;margin:0 auto 8px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:31px;font-weight:800;background:#0f6e5f}.navy{background:#16233f}.black{background:#292929}.gold{background:#b47b20}.gray{background:#96999f}.name{font-size:12px;font-weight:700;line-height:1.25;word-break:keep-all}.hide{display:none}@media(max-width:350px){.grid{grid-template-columns:repeat(2,1fr)}}</style></head><body><div class="wrap"><h1>全アプリ</h1><p>会社・AI・YouTubeツールをここから開けます</p><input id="q" class="search" placeholder="アプリを検索"><div id="apps">
+<div class="section">会社・製造</div><div class="grid">
+<a class="app" href="index.html" data-n="銘板見積 会社 見積"><div class="icon gold">銘</div><div class="name">銘板見積</div></a>
+<a class="app" href="seal-estimate.html" data-n="シール見積"><div class="icon navy">シ</div><div class="name">シール見積</div></a>
+<a class="app" href="drawing-converter.html" data-n="育てる図面変換 図面"><div class="icon">図</div><div class="name">育てる図面変換</div></a>
+<a class="app" href="manuscript-ai.html" data-n="銘板原稿AI 原稿"><div class="icon gray">銘</div><div class="name">銘板原稿AI</div></a>
+<a class="app" href="growing-inspection-ai.html" data-n="育てる検品AI 検品"><div class="icon">育</div><div class="name">育てる検品AI</div></a>
+<a class="app" href="alignment-trainer-v2.html" data-n="育てる位置合わせ 位置"><div class="icon">育</div><div class="name">育てる位置合わせ</div></a>
+<a class="app" href="craft-skill-preserver.html" data-n="職人技能保存 職人"><div class="icon">職</div><div class="name">職人技能保存</div></a>
+<a class="app" href="drawing-teacher.html" data-n="図面 教える 学習"><div class="icon navy">教</div><div class="name">図面を教える</div></a>
+</div>
+<div class="section">AI・記録</div><div class="grid">
+<a class="app" href="kekkyoku-nani-ai.html" data-n="結局なに AI 録音 要約"><div class="icon">結</div><div class="name">結局なに？AI</div></a>
+<a class="app" href="ai-kisekae.html" data-n="AI着せ替え 着せ替え"><div class="icon navy">A</div><div class="name">AI着せ替え</div></a>
+<a class="app" href="nameplate-original-ai.html" data-n="名刺原本 原本"><div class="icon black">名</div><div class="name">名刺原本</div></a>
+<a class="app" href="anatomy-view.html" data-n="人体 解剖 anatomy"><div class="icon black">体</div><div class="name">人体ビュー</div></a>
+</div>
+<div class="section">YouTube・動画</div><div class="grid">
+<a class="app" href="youtube-video-2.html" data-n="YouTube動画作成2 youtube 動画"><div class="icon navy">Y</div><div class="name">YouTube動画作成2</div></a>
+<a class="app" href="youtube-presentation-studio.html" data-n="プレゼン動画スタジオ youtube"><div class="icon navy">動</div><div class="name">プレゼン動画スタジオ</div></a>
+<a class="app" href="youtube-presentation.html" data-n="プレゼン資料 動画 youtube"><div class="icon navy">資</div><div class="name">プレゼン資料→動画</div></a>
+<a class="app" href="youtube-outlier-ai.html" data-n="外れ値YouTube youtube"><div class="icon black">外</div><div class="name">外れ値YouTube</div></a>
+<a class="app" href="history-video-materials.html" data-n="歴史動画 素材"><div class="icon gold">歴</div><div class="name">歴史動画素材</div></a>
+<a class="app" href="video-colorizer.html" data-n="白黒映像 カラー化 動画"><div class="icon black">彩</div><div class="name">白黒映像カラー化</div></a>
+<a class="app" href="video-ai.html" data-n="動画AI"><div class="icon navy">V</div><div class="name">動画AI</div></a>
+</div>
+</div></div><script>const q=document.getElementById('q');q.addEventListener('input',()=>{const s=q.value.trim().toLowerCase();document.querySelectorAll('.app').forEach(a=>a.classList.toggle('hide',s&&!a.dataset.n.toLowerCase().includes(s)));document.querySelectorAll('.section').forEach(h=>{const g=h.nextElementSibling;h.classList.toggle('hide',![...g.querySelectorAll('.app')].some(a=>!a.classList.contains('hide')));});});</script></body></html>
