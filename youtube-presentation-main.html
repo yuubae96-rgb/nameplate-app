@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>プレゼン資料→YouTube動画</title></head><body style="margin:0;background:#f4f5f7"><div id="loading" style="padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Yu Gothic',sans-serif;color:#17213a">プレゼン動画を読み込み中…</div><script>
+(async()=>{
+  try{
+    const r=await fetch('youtube-presentation-core.html?v=subtitleband1',{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    let html=await r.text();
+    const style=`<style id="standardSubtitleBand">
+.caption,.live-caption{left:7.5%!important;right:7.5%!important;bottom:2.2%!important;line-height:1.25!important;background:rgba(0,0,0,.56)!important;padding:.28em .55em!important;border-radius:2px!important;color:#fff!important;font-weight:700!important;text-shadow:0 1px 2px rgba(0,0,0,.8)!important}
+</style>`;
+    const patch=`<script id="standardSubtitlePatch">(()=>{
+      try{
+        const setDefaults=()=>{
+          const size=document.getElementById('capSize'),weight=document.getElementById('capWeight'),stroke=document.getElementById('capStroke');
+          if(size)size.value='36';if(weight)weight.value='700';if(stroke)stroke.value='4';
+        };
+        setDefaults();
+        window.captionStyle=function(){return{font:document.getElementById('capFont')?.value||"-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif",size:Number(document.getElementById('capSize')?.value||36),weight:Number(document.getElementById('capWeight')?.value||700),color:document.getElementById('capColor')?.value||'#ffffff',stroke:Number(document.getElementById('capStroke')?.value||4),position:Number(document.getElementById('capPosition')?.value||4)}};
+        window.applyCaptionStyleTo=function(el,stage){if(!el)return;const s=window.captionStyle(),w=stage?.clientWidth||640,scale=w/1280;el.style.fontFamily=s.font;el.style.fontWeight='700';el.style.color=s.color;el.style.bottom='2.2%';el.style.left='7.5%';el.style.right='7.5%';el.style.fontSize=Math.max(11,Math.min(36,s.size)*scale)+'px';el.style.lineHeight='1.25';el.style.background='rgba(0,0,0,.56)';el.style.padding='.28em .55em';el.style.borderRadius='2px';el.style.textShadow='0 1px 2px rgba(0,0,0,.8)'};
+        window.draw=function(ctx,c,img,cap){ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);let sc=Math.min(c.width/img.width,c.height/img.height),w=img.width*sc,h=img.height*sc;ctx.drawImage(img,(c.width-w)/2,(c.height-h)/2,w,h);if(!cap)return;let s=window.captionStyle(),lines=String(cap).split('\\n').filter(Boolean),fs=Math.min(Number(s.size||36),36),maxW=c.width*.85;ctx.font='700 '+fs+'px '+s.font;ctx.textAlign='center';ctx.textBaseline='middle';let lh=fs*1.2,padY=fs*.28,show=lines.slice(0,2),bandH=show.length*lh+padY*2,bandY=c.height-c.height*.022-bandH;ctx.fillStyle='rgba(0,0,0,.56)';ctx.fillRect(c.width*.075,bandY,maxW,bandH);ctx.fillStyle=s.color||'#fff';ctx.strokeStyle='rgba(0,0,0,.75)';ctx.lineWidth=Math.max(2,fs*.07);show.forEach((line,j)=>{let y=bandY+padY+lh*(j+.5);ctx.strokeText(line,c.width/2,y,maxW-fs*.8);ctx.fillText(line,c.width/2,y,maxW-fs*.8)})};
+        setTimeout(()=>{setDefaults();try{window.refreshCaptionStyles&&window.refreshCaptionStyles()}catch(e){}},0);
+        setTimeout(()=>{setDefaults();try{window.refreshCaptionStyles&&window.refreshCaptionStyles()}catch(e){}},500);
+      }catch(e){console.error('standard subtitle patch',e)}
+    })();<\/script>`;
+    html=html.replace('</head>',style+'</head>').replace('</body>',patch+'</body>');
+    document.open();document.write(html);document.close();
+  }catch(e){document.getElementById('loading').textContent='読み込みエラー：'+e.message;}
+})();
+</script></body></html>
