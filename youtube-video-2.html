@@ -2,14 +2,20 @@
 <html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#16233f"><title>YouTube動画作成2</title><style>html,body{margin:0;width:100%;height:100%;background:#f4f5f7}#core{position:fixed;inset:0;width:100%;height:100%;border:0;background:#f4f5f7}</style></head><body><iframe id="core" src="youtube-video-2-core.html?v=motion1" allow="microphone;camera"></iframe><script>
 const core=document.getElementById('core');
 function getBaseDoc(){try{const cd=core.contentDocument;if(!cd)return null;const base=cd.getElementById('app');if(!base||!base.contentDocument)return null;return base.contentDocument}catch(e){return null}}
-function installNarrationStyle(){try{const d=getBaseDoc();if(!d)return;if(d.documentElement.dataset.yt2NarrationStyle==='1')return;const extra=d.getElementById('extra'),make=d.getElementById('makeScript');if(!extra||!make)return;d.documentElement.dataset.yt2NarrationStyle='1';
-const wrap=d.createElement('div');wrap.className='field';wrap.id='narrationStyleField';wrap.innerHTML='<label>ナレーション構成の型</label><select id="narrationStyle"><option value="standard">標準</option><option value="suzuyu">すずゆう風（強い問い→意外な結論→重厚な深掘り）</option></select><div class="hint" id="narrationStyleHint">標準の構成で作ります。</div>';
+function installNarrationStyle(){try{const d=getBaseDoc();if(!d)return;if(d.documentElement.dataset.yt2NarrationStyle==='2')return;const extra=d.getElementById('extra'),make=d.getElementById('makeScript');if(!extra||!make)return;d.documentElement.dataset.yt2NarrationStyle='2';
+const wrap=d.createElement('div');wrap.className='field';wrap.id='narrationStyleField';wrap.innerHTML='<label>ナレーション構成の型</label><select id="narrationStyle"><option value="standard">標準</option><option value="suzuyu">すずゆう風（「あなたは…ですか？」→意外な結論→重厚な深掘り）</option></select><div class="hint" id="narrationStyleHint">標準の構成で作ります。</div>';
 const extraField=extra.closest('.field');extraField.parentNode.insertBefore(wrap,extraField);const sel=d.getElementById('narrationStyle'),hint=d.getElementById('narrationStyleHint');try{sel.value=localStorage.getItem('yt2NarrationStyle')||'standard'}catch(_){sel.value='standard'}
-function syncHint(){if(sel.value==='suzuyu'){hint.textContent='冒頭の強い質問、常識的な候補、意外な本題提示、複数の予告、本編の因果関係、現代への意味までを一本の物語にします。文章のコピーではなく構成の型だけを使います。'}else hint.textContent='標準の構成で作ります。';try{localStorage.setItem('yt2NarrationStyle',sel.value)}catch(_){}}sel.onchange=syncHint;syncHint();
+function syncHint(){if(sel.value==='suzuyu'){hint.textContent='必ず「あなたは……ですか？」という視聴者への問いから始め、常識的な候補→意外な本題→重厚な深掘りへ進みます。文章のコピーではなく構成の型だけを使います。'}else hint.textContent='標準の構成で作ります。';try{localStorage.setItem('yt2NarrationStyle',sel.value)}catch(_){}}sel.onchange=syncHint;syncHint();
 const SUZUYU=`【ナレーション構成：すずゆう風】
 以下は文章や固有表現をコピーするための指定ではなく、長編歴史解説の構成パターンとして使用すること。
 
-1. 冒頭は視聴者への強い質問から始める。「この時代を本当に動かしたものは何か」のように、テーマの核心を問う。
+【最重要：冒頭の固定ルール】
+ナレーションの最初の一文は、必ず視聴者へ直接問いかける「あなたは……ですか？」の形にする。
+「皆様、突然ですが質問です」「〜は何だと思いますか」「この時代を動かしたものは何でしょうか」など、別の始め方に置き換えない。
+テーマに合わせて「あなたは、○○を知っていますか？」「あなたは、○○だと思いますか？」「あなたは、なぜ○○だったか知っていますか？」など、自然な一文を作る。
+一文目の先頭は必ず「あなたは」で始め、文末は必ず「ですか？」にする。
+
+1. SCENE 1は上記の「あなたは……ですか？」という強い問いから始め、その直後にテーマの核心をさらに掘る。
 2. 視聴者が思いつきそうな常識的な答えを2〜3個、具体例を交えて並べ、期待を作る。
 3. その予想を反転させ、意外だが史実に裏付けられた本題・主役を提示する。冒頭30秒以内に「続きを見たい」と思わせる。
 4. 短い導入のあと、今回の動画で分かる大きな論点を3〜4個予告する。各論点は「なぜそうなったのか」「その結果何が変わったのか」が気になる形にする。
@@ -26,7 +32,7 @@ const SUZUYU=`【ナレーション構成：すずゆう風】
 15. 史実の正確性を優先し、不明点は推測で埋めない。刺激的な導入にしても事実を誇張・捏造しない。
 
 【15シーン前後の場合の目安】
-SCENE 1：強い質問・問題提起
+SCENE 1：「あなたは……ですか？」から始まる強い質問・問題提起
 SCENE 2：常識的な候補→反転→本当の主役
 SCENE 3：動画全体の見どころ予告
 SCENE 4〜5：起源・背景
