@@ -1,7 +1,45 @@
 <!DOCTYPE html>
 <html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#16233f"><title>YouTube動画作成2</title><style>html,body{margin:0;width:100%;height:100%;background:#f4f5f7}#core{position:fixed;inset:0;width:100%;height:100%;border:0;background:#f4f5f7}</style></head><body><iframe id="core" src="youtube-video-2-core.html?v=motion1" allow="microphone;camera"></iframe><script>
 const core=document.getElementById('core');
-function installMotion(){try{const cd=core.contentDocument;if(!cd)return;const base=cd.getElementById('app');if(!base||!base.contentDocument)return;const d=base.contentDocument;if(d.documentElement.dataset.yt2Motion==='1')return;const s=d.createElement('script');s.textContent=`(()=>{if(window.__yt2Motion1)return;window.__yt2Motion1=true;document.documentElement.dataset.yt2Motion='1';
+function getBaseDoc(){try{const cd=core.contentDocument;if(!cd)return null;const base=cd.getElementById('app');if(!base||!base.contentDocument)return null;return base.contentDocument}catch(e){return null}}
+function installNarrationStyle(){try{const d=getBaseDoc();if(!d)return;if(d.documentElement.dataset.yt2NarrationStyle==='1')return;const extra=d.getElementById('extra'),make=d.getElementById('makeScript');if(!extra||!make)return;d.documentElement.dataset.yt2NarrationStyle='1';
+const wrap=d.createElement('div');wrap.className='field';wrap.id='narrationStyleField';wrap.innerHTML='<label>ナレーション構成の型</label><select id="narrationStyle"><option value="standard">標準</option><option value="suzuyu">すずゆう風（強い問い→意外な結論→重厚な深掘り）</option></select><div class="hint" id="narrationStyleHint">標準の構成で作ります。</div>';
+const extraField=extra.closest('.field');extraField.parentNode.insertBefore(wrap,extraField);const sel=d.getElementById('narrationStyle'),hint=d.getElementById('narrationStyleHint');try{sel.value=localStorage.getItem('yt2NarrationStyle')||'standard'}catch(_){sel.value='standard'}
+function syncHint(){if(sel.value==='suzuyu'){hint.textContent='冒頭の強い質問、常識的な候補、意外な本題提示、複数の予告、本編の因果関係、現代への意味までを一本の物語にします。文章のコピーではなく構成の型だけを使います。'}else hint.textContent='標準の構成で作ります。';try{localStorage.setItem('yt2NarrationStyle',sel.value)}catch(_){}}sel.onchange=syncHint;syncHint();
+const SUZUYU=`【ナレーション構成：すずゆう風】
+以下は文章や固有表現をコピーするための指定ではなく、長編歴史解説の構成パターンとして使用すること。
+
+1. 冒頭は視聴者への強い質問から始める。「この時代を本当に動かしたものは何か」のように、テーマの核心を問う。
+2. 視聴者が思いつきそうな常識的な答えを2〜3個、具体例を交えて並べ、期待を作る。
+3. その予想を反転させ、意外だが史実に裏付けられた本題・主役を提示する。冒頭30秒以内に「続きを見たい」と思わせる。
+4. 短い導入のあと、今回の動画で分かる大きな論点を3〜4個予告する。各論点は「なぜそうなったのか」「その結果何が変わったのか」が気になる形にする。
+5. 本編は、起源・背景 → 人間や国家の野望 → 転機となる事件 → 予想外の結果 → 世界史への波及、の因果関係で進める。
+6. 単なる年代・出来事の羅列にしない。政治・軍事・経済・社会・科学・医学など複数の視点をつなぎ、一つの出来事が別分野へどう波及したかを説明する。
+7. 各章は「状況説明 → 主体の狙い → 障害や見えない要因 → 結果 → 歴史的意味」の小さな物語として構成する。
+8. 人物を扱う場合は、英雄視だけでなく、判断、誤算、執念、限界、当時の知識水準も描く。断定できない心理は創作しない。
+9. 中盤以降に、最初の問いへの答えがより深く見えるよう、事例同士をつなげる。
+10. 終盤は、科学的解明・制度変更・戦略変更など「人類がどう理解し、どう対処したか」という転換点を入れる。
+11. 最後は主要な出来事を短く回収し、過去の話で終わらせず、現代社会や人間社会への意味・教訓へ広げる。
+12. 結論は説教調にせず、視聴者に考えさせる問いや余韻を残す。その後、必要なら短いチャンネル登録・高評価の案内を置く。
+13. 固有のチャンネル名、他人の決まり文句、メンバーシップ宣伝文句はコピーしない。ユーザーが指定していない名称や実績を創作しない。
+14. 全体の語り口は大人向けの重厚な歴史ドキュメンタリー調。難しい内容でも因果関係を明確にし、初心者にも追える文章にする。
+15. 史実の正確性を優先し、不明点は推測で埋めない。刺激的な導入にしても事実を誇張・捏造しない。
+
+【15シーン前後の場合の目安】
+SCENE 1：強い質問・問題提起
+SCENE 2：常識的な候補→反転→本当の主役
+SCENE 3：動画全体の見どころ予告
+SCENE 4〜5：起源・背景
+SCENE 6〜9：代表的事件・国家や人物の野望と失敗
+SCENE 10〜12：別地域・別時代への波及、科学や制度との交差
+SCENE 13：解明・克服・大きな転換点
+SCENE 14：全体の意味と現代への接続
+SCENE 15：結論・余韻・短いCTA
+
+各SCENEのナレーションは前後が自然につながるようにし、同じ説明を繰り返さない。`;
+make.addEventListener('click',()=>{if(sel.value!=='suzuyu')return;const before=extra.value;const marker='【ナレーション構成：すずゆう風】';let base=before;if(base.includes(marker))base=base.split(marker)[0].trim();extra.value=(base?base+'\n\n':'')+SUZUYU;extra.dispatchEvent(new Event('input',{bubbles:true}));setTimeout(()=>{extra.value=before;extra.dispatchEvent(new Event('input',{bubbles:true}))},120)},true);
+}catch(e){setTimeout(installNarrationStyle,400)}}
+function installMotion(){try{const d=getBaseDoc();if(!d)return;if(d.documentElement.dataset.yt2Motion==='1')return;const s=d.createElement('script');s.textContent=`(()=>{if(window.__yt2Motion1)return;window.__yt2Motion1=true;document.documentElement.dataset.yt2Motion='1';
 function ease(t){t=Math.max(0,Math.min(1,t||0));return t*t*(3-2*t)}
 function pose(i,p){p=ease(p);const zoom=1.025+0.085*p,m=i%4;let x=0,y=0;if(m===0)x=-1.8+3.6*p;else if(m===1)x=1.8-3.6*p;else if(m===2)y=1.4-2.8*p;else y=-1.2+2.4*p;return{zoom,x,y}}
 function drawMotion(ctx,c,img,title,cap,p=0,i=0){ctx.fillStyle='#000';ctx.fillRect(0,0,c.width,c.height);const q=pose(i,p),base=Math.max(c.width/img.width,c.height/img.height),sc=base*q.zoom,w=img.width*sc,h=img.height*sc,x=(c.width-w)/2+(q.x/100)*c.width,y=(c.height-h)/2+(q.y/100)*c.height;ctx.drawImage(img,x,y,w,h);const safeX=Math.round(c.width*.075),maxW=Math.round(c.width*.85);if(title){let fs=Math.round(c.height*.047);ctx.font='900 '+fs+'px sans-serif';while(fs>22&&ctx.measureText(title).width>maxW-34){fs-=2;ctx.font='900 '+fs+'px sans-serif'}const bw=Math.min(maxW,ctx.measureText(title).width+34),bh=Math.round(fs*1.65),ty=Math.round(c.height*.055);ctx.fillStyle='#8f1d24';ctx.fillRect(safeX,ty,bw,bh);ctx.fillStyle='#fff';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(title,safeX+17,ty+bh/2)}if(cap){const txt=String(cap).trim();let fs=Math.round(c.height*.064),minFs=Math.round(c.height*.045);ctx.font='900 '+fs+'px sans-serif';const wrap=()=>{const chars=[...txt.replace(/\\n/g,'')],arr=[];let line='';for(const ch of chars){const test=line+ch;if(ctx.measureText(test).width>maxW&&line){arr.push(line);line=ch}else line=test}if(line)arr.push(line);return arr};let lines=wrap();while(fs>minFs&&lines.length>2){fs-=2;ctx.font='900 '+fs+'px sans-serif';lines=wrap()}if(lines.length>2){const all=lines.join(''),mid=Math.ceil(all.length/2);lines=[all.slice(0,mid),all.slice(mid)]}ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.strokeStyle='#000';ctx.lineWidth=Math.max(5,Math.round(fs*.16));ctx.fillStyle='#fff';const lh=Math.round(fs*1.28),baseY=c.height-Math.round(c.height*.075)-(lines.length-1)*lh;lines.forEach((line,j)=>{const yy=baseY+j*lh;ctx.strokeText(line,c.width/2,yy,maxW);ctx.fillText(line,c.width/2,yy,maxW)})}}
@@ -11,5 +49,6 @@ window.playScene=async i=>{sync(i);if(project?.scenes?.[i]?.audio)await playMoti
 const play=document.getElementById('playAll');if(play)play.onclick=async()=>{for(let i=0;i<project.scenes.length;i++){const s=project.scenes[i];if(!s.image||!s.audio)continue;await playMotion(s,new Audio(s.audio),i);document.getElementById('previewProgress').style.width=Math.round((i+1)/project.scenes.length*100)+'%'}};
 const make=document.getElementById('makeVideo');if(make)make.onclick=async()=>{if(project.scenes.some(s=>!s.image||!s.audio))return alert('全シーンの画像と音声を作ってください。');make.disabled=true;cancelRequested=false;document.getElementById('cancelVideo').style.display='block';let ac=null,stream=null;try{const c=document.createElement('canvas');c.width=aspect()==='9:16'?1080:1280;c.height=aspect()==='9:16'?1920:720;const ctx=c.getContext('2d'),AC=window.AudioContext||window.webkitAudioContext;ac=new AC;await ac.resume();const dest=ac.createMediaStreamDestination(),imgs=[],bufs=[];for(let i=0;i<project.scenes.length;i++){imgs.push(await loadImg(project.scenes[i].image));bufs.push(await ab(ac,project.scenes[i].audio))}const vs=c.captureStream(30);stream=new MediaStream([...vs.getVideoTracks(),...dest.stream.getAudioTracks()]);const mime=['video/mp4','video/webm;codecs=vp9,opus','video/webm'].find(x=>MediaRecorder.isTypeSupported(x))||'',rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined),chunks=[];rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);const stopped=new Promise(r=>rec.onstop=r);rec.start(1000);for(let i=0;i<project.scenes.length&&!cancelRequested;i++){const scene=project.scenes[i],src=ac.createBufferSource();activeExportSource=src;src.buffer=bufs[i];src.connect(dest);src.start();const st=performance.now(),dur=bufs[i].duration;while(performance.now()-st<dur*1000&&!cancelRequested){const el=(performance.now()-st)/1000,p=Math.max(0,Math.min(1,el/dur));drawMotion(ctx,c,imgs[i],scene.title,speechCaption(scene,el,dur),p,i);document.getElementById('videoStatus').textContent='動画生成中… SCENE '+(i+1)+'/'+project.scenes.length+'（ゆっくりズーム・移動）';await wait(33)}}rec.stop();await stopped;if(cancelRequested){document.getElementById('videoStatus').textContent='動画生成を停止しました。';return}const type=rec.mimeType||mime||'video/webm',blob=new Blob(chunks,{type}),url=URL.createObjectURL(blob),ext=type.includes('mp4')?'mp4':'webm',rv=document.getElementById('resultVideo'),sl=document.getElementById('saveLink');rv.src=url;rv.style.display='block';sl.href=url;sl.download='youtube-video.'+ext;sl.textContent='完成した動画を保存';sl.style.display='block';document.getElementById('videoStatus').textContent='動画が完成しました。静止画にゆっくりした動きを入れています。'}catch(e){document.getElementById('videoStatus').textContent='動画作成エラー：'+e.message}finally{activeExportSource=null;if(stream)stream.getTracks().forEach(t=>t.stop());if(ac&&ac.state!=='closed')try{await ac.close()}catch(_){}make.disabled=false;document.getElementById('cancelVideo').style.display='none'}};
 })();`;d.body.appendChild(s)}catch(e){setTimeout(installMotion,400)}}
-core.addEventListener('load',()=>{setTimeout(installMotion,500);setTimeout(installMotion,1200);setTimeout(installMotion,2200)});
+function installAll(){installNarrationStyle();installMotion()}
+core.addEventListener('load',()=>{setTimeout(installAll,500);setTimeout(installAll,1200);setTimeout(installAll,2200)});
 </script></body></html>
