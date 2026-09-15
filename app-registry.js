@@ -1,5 +1,5 @@
 window.APP_REGISTRY=[
-{n:'営業管理',i:'営',u:'https://yuubae96-rgb.github.io/sales-crm/',c:'会社・製造',company:1,d:'会社・人物・名刺・営業活動を管理'},
+{n:'業務日報訪問',i:'営',u:'https://yuubae96-rgb.github.io/sales-crm/',c:'会社・製造',company:1,d:'会社・人物・名刺・営業活動を管理'},
 {n:'育てる図面変換',i:'図',u:'drawing-converter.html',c:'会社・製造',company:1,d:'客先図面→校正図の変換を学習'},
 {n:'育てる原稿AI',i:'原',u:'manuscript-ai.html',c:'会社・製造',company:1,d:'AIが原稿仕事の法則を自動発見'},
 {n:'原稿AI入口',i:'入',u:'genko-ai-entry.html',c:'会社・製造',company:1,d:'工法・加工条件を指定して原稿AIへ'},
