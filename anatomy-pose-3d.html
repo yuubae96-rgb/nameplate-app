@@ -4,7 +4,7 @@ const $=s=>document.querySelector(s),file=$('#file'),go=$('#go'),statusEl=$('#st
 const MP='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14',ROOT='https://raw.githubusercontent.com/ashemag/human-atlas/main/public/models/';let atlas,skel=[],imgURL='',pose,lm,renderer,scene,camera,root,meshes=[],loaded=false,visible=true,groups={},skeletonBox;
 function st(t,e=false){statusEl.textContent=t;statusEl.style.color=e?'#b91c1c':'#526579'}
 function side(n){n=n.toLowerCase();if(/\bright\b|\br\.\b|right[-_ ]/.test(n))return'R';if(/\bleft\b|\bl\.\b|left[-_ ]/.test(n))return'L';return'C'}
-function region(n){n=n.toLowerCase();if(/skull|crani|mandib|maxilla|zygom|nasal bone/.test(n))return'head';if(/clavicle|scapula|sternum|rib|vertebr|spine/.test(n))return'torso';if(/sacrum|pelvi|ilium|ischium|pubis|hip bone/.test(n))return'pelvis';if(/humerus/.test(n))return'upperArm';if(/radius|ulna/.test(n))return'foreArm';if(/carpal|metacarp|phalan.*hand|finger/.test(n))return'hand';if(/femur/.test(n))return'thigh';if(/tibia|fibula|patella/.test(n))return'shin';if(/tarsal|metatars|phalan.*foot|toe|calcane|talus/.test(n))return'foot';return'other'}
+function region(n){n=n.toLowerCase();if(/skull|crani|mandib|maxilla|zygom|nasal bone|ethmoid|frontal bone|palatine|parietal|temporal bone|occipital|sphenoid|vomer|hyoid/.test(n))return'head';if(/clavicle|scapula|sternum|rib|vertebr|spine/.test(n))return'torso';if(/sacrum|pelvi|ilium|ischium|pubis|hip bone/.test(n))return'pelvis';if(/humerus/.test(n))return'upperArm';if(/radius|ulna/.test(n))return'foreArm';if(/carpal|metacarp|phalan.*hand|finger/.test(n))return'hand';if(/femur/.test(n))return'thigh';if(/tibia|fibula|patella/.test(n))return'shin';if(/tarsal|metatars|phalan.*foot|toe|calcane|talus/.test(n))return'foot';return'other'}
 function key(p,lo,hi){const r=region(p.name);let s=side(p.name);if(s==='C'&&['upperArm','foreArm','hand','thigh','shin','foot'].includes(r)){const cx=(lo.x+hi.x)/2;s=cx>=0?'L':'R'}return ['upperArm','foreArm','hand','thigh','shin','foot'].includes(r)?r+s:r}
 async function decode(resp,expected,compressed){if(!resp.ok)throw Error('3D骨格ファイルを取得できません');const p=await resp.arrayBuffer(),s=new Uint8Array(p,0,2),gz=compressed&&s[0]===31&&s[1]===139,b=gz?await new Response(new Blob([p]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer():p;if(b.byteLength!==expected)throw Error('3D骨格ファイルが不完全です');return b}
 async function loadAtlas(){try{atlas=await(await fetch(ROOT+'atlas.json')).json();skel=atlas.parts.filter(p=>p.system==='skeletal');atlasEl.textContent=`Human Atlas：実骨格 ${skel.length}パーツ／全${atlas.parts.length}パーツ。実メッシュの骨端中心を各関節へ固定します。`;st('Human Atlas実骨格の準備ができました');if(photo.src)go.disabled=false}catch(e){st('Human Atlasを取得できませんでした',true)}}loadAtlas();
@@ -20,13 +20,44 @@ function L(i,min=.12){const p=lm?.[i];return p&&p.visibility>min?p:null}
 // joint drifts away from the body centre on portrait photos.
 function photoAspect(){const w=stage.clientWidth||photo.clientWidth||photo.naturalWidth||1,h=stage.clientHeight||photo.clientHeight||photo.naturalHeight||1;return w/h}
 function xy(i,min=.12){const p=L(i,min);if(!p)return null;const a=photoAspect();return new THREE.Vector3((p.x-.5)*2*a,(.5-p.y)*2,-(p.z||0)*.18)}
+function joint(i,min=.4){const p=L(i,min);if(!p||p.x<-.02||p.x>1.02||p.y<-.02||p.y>1.02)return null;return xy(i,min)}
 function mid(a,b){return a&&b?a.clone().add(b).multiplyScalar(.5):a||b}function orient(){const a=L(11),b=L(12);if(!a||!b)return'姿勢';const dz=Math.abs((a.z||0)-(b.z||0)),w=Math.abs(a.x-b.x);return dz>.16||w<.10?'横向き':dz>.07||w<.18?'斜め':'正面'}
-function segment(k){switch(k){case'upperArmL':return[xy(11,.22),xy(13,.22)];case'upperArmR':return[xy(12,.22),xy(14,.22)];case'foreArmL':return[xy(13,.22),xy(15,.22)];case'foreArmR':return[xy(14,.22),xy(16,.22)];case'thighL':return[xy(23,.28),xy(25,.28)];case'thighR':return[xy(24,.28),xy(26,.28)];case'shinL':return[xy(25,.28),xy(27,.28)];case'shinR':return[xy(26,.28),xy(28,.28)];case'handL':return[xy(15,.2),xy(19,.15)||xy(17,.15)];case'handR':return[xy(16,.2),xy(20,.15)||xy(18,.15)];case'footL':return[xy(27,.22),xy(31,.15)||xy(29,.15)];case'footR':return[xy(28,.22),xy(32,.15)||xy(30,.15)];default:return[null,null]}}
+function segment(k){switch(k){case'upperArmL':return[joint(11,.38),joint(13,.42)];case'upperArmR':return[joint(12,.38),joint(14,.42)];case'foreArmL':return[joint(13,.42),joint(15,.45)];case'foreArmR':return[joint(14,.42),joint(16,.45)];case'thighL':return[joint(23,.55),joint(25,.58)];case'thighR':return[joint(24,.55),joint(26,.58)];case'shinL':return[joint(25,.58),joint(27,.62)];case'shinR':return[joint(26,.58),joint(28,.62)];case'handL':return[joint(15,.45),joint(19,.4)||joint(17,.4)];case'handR':return[joint(16,.45),joint(20,.4)||joint(18,.4)];case'footL':return[joint(27,.62),joint(31,.55)||joint(29,.55)];case'footR':return[joint(28,.62),joint(32,.55)||joint(30,.55)];default:return[null,null]}}
 function globalScale(){const sw=xy(11)&&xy(12)?xy(11).distanceTo(xy(12)):0,hw=xy(23)&&xy(24)?xy(23).distanceTo(xy(24)):0,vals=[];if(sw&&groups.torso)vals.push(sw/groups.torso.size.x);if(hw&&groups.pelvis)vals.push(hw/groups.pelvis.size.x);return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:.003}
 function placeUniform(g,scale,q,anchor,sourceAnchor){for(const m of g.meshes){m.visible=visible;m.scale.setScalar(scale);m.quaternion.copy(q);m.position.copy(anchor).sub(sourceAnchor.clone().multiplyScalar(scale).applyQuaternion(q))}}
 function fitBoneMesh(m,prox,dist,base){const e=m.userData.ends;if(!e||e.len<.001)return;const target=dist.clone().sub(prox),targetLen=target.length();if(targetLen<.01)return;const src=e.dist.clone().sub(e.prox),q=new THREE.Quaternion().setFromUnitVectors(src.clone().normalize(),target.clone().normalize()),s=targetLen/e.len;if(!Number.isFinite(s)||s<base*.28||s>base*3.6)return;m.visible=visible;m.scale.setScalar(s);m.quaternion.copy(q);m.position.copy(prox).sub(e.prox.clone().multiplyScalar(s).applyQuaternion(q))}
 function fitLongGroup(g,prox,dist,base){for(const m of g.meshes)fitBoneMesh(m,prox,dist,base)}
-function poseGroups(){meshes.forEach(m=>m.visible=false);const sl=xy(11),sr=xy(12),hl=xy(23),hr=xy(24),base=globalScale(),torsoScale=sl&&sr&&groups.torso?sl.distanceTo(sr)/groups.torso.size.x:base,pelvisScale=hl&&hr&&groups.pelvis?hl.distanceTo(hr)/groups.pelvis.size.x:base,sourceDown=new THREE.Vector3(0,-1,0),shoulderMid=mid(sl,sr),hipMid=mid(hl,hr),nose=xy(0);for(const [k,g] of Object.entries(groups)){if(k==='head'){if(!nose||!shoulderMid)continue;const neck=shoulderMid.clone().lerp(nose,.24),q=new THREE.Quaternion(),src=new THREE.Vector3(g.center.x,g.box.min.y+g.size.y*.08,g.center.z);placeUniform(g,torsoScale*.84,q,neck,src);continue}if(k==='torso'){if(!shoulderMid||!hipMid)continue;const d=hipMid.clone().sub(shoulderMid),q=new THREE.Quaternion().setFromUnitVectors(sourceDown,d.clone().normalize()),src=new THREE.Vector3(g.center.x,g.box.max.y-g.size.y*.06,g.center.z);placeUniform(g,torsoScale*.92,q,shoulderMid,src);continue}if(k==='pelvis'){if(!hipMid)continue;const l=hl,r=hr,roll=l&&r?Math.atan2(r.y-l.y,r.x-l.x):0,q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),roll),src=new THREE.Vector3(g.center.x,g.box.max.y-g.size.y*.14,g.center.z);placeUniform(g,pelvisScale*.92,q,hipMid,src);continue}const [prox,dist]=segment(k);if(!prox||!dist)continue;if(['upperArmL','upperArmR','foreArmL','foreArmR','thighL','thighR','shinL','shinR'].includes(k)){fitLongGroup(g,prox,dist,base)}else{const d=dist.clone().sub(prox),q=new THREE.Quaternion().setFromUnitVectors(sourceDown,d.clone().normalize()),src=new THREE.Vector3(g.center.x,g.box.max.y,g.center.z);placeUniform(g,base*.82,q,prox,src)}}resize3D();render()}
+function poseGroups(){
+  meshes.forEach(m=>m.visible=false);
+  const sl=joint(11,.32),sr=joint(12,.32),hl=joint(23,.5),hr=joint(24,.5),base=globalScale(),
+    torsoScale=sl&&sr&&groups.torso?sl.distanceTo(sr)/groups.torso.size.x:base,
+    pelvisScale=hl&&hr&&groups.pelvis?hl.distanceTo(hr)/groups.pelvis.size.x:base,
+    sourceDown=new THREE.Vector3(0,-1,0),shoulderMid=mid(sl,sr),hipMid=hl&&hr?mid(hl,hr):null,
+    torsoEnd=hipMid||(shoulderMid?shoulderMid.clone().add(new THREE.Vector3(0,-(sl&&sr?sl.distanceTo(sr)*1.35:.45),0)):null),
+    earL=joint(7,.25),earR=joint(8,.25),headCenter=earL&&earR?mid(earL,earR):joint(0,.25);
+  for(const [k,g] of Object.entries(groups)){
+    if(k==='head'){
+      if(!headCenter)continue;
+      const q=earL&&earR?new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(earR.y-earL.y,earR.x-earL.x)):new THREE.Quaternion();
+      const headScale=earL&&earR?earL.distanceTo(earR)/Math.max(g.size.x,.001):torsoScale*.82;
+      placeUniform(g,headScale,q,headCenter,g.center);continue
+    }
+    if(k==='torso'){
+      if(!shoulderMid||!torsoEnd)continue;
+      const d=torsoEnd.clone().sub(shoulderMid),q=new THREE.Quaternion().setFromUnitVectors(sourceDown,d.clone().normalize()),src=new THREE.Vector3(g.center.x,g.box.max.y-g.size.y*.06,g.center.z);
+      placeUniform(g,torsoScale*.92,q,shoulderMid,src);continue
+    }
+    if(k==='pelvis'){
+      if(!hipMid)continue;
+      const roll=Math.atan2(hr.y-hl.y,hr.x-hl.x),q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),roll),src=new THREE.Vector3(g.center.x,g.box.max.y-g.size.y*.14,g.center.z);
+      placeUniform(g,pelvisScale*.92,q,hipMid,src);continue
+    }
+    const [prox,dist]=segment(k);if(!prox||!dist)continue;
+    if(['upperArmL','upperArmR','foreArmL','foreArmR','thighL','thighR','shinL','shinR'].includes(k))fitLongGroup(g,prox,dist,base);
+    else{const d=dist.clone().sub(prox),q=new THREE.Quaternion().setFromUnitVectors(sourceDown,d.clone().normalize()),src=new THREE.Vector3(g.center.x,g.box.max.y,g.center.z);placeUniform(g,base*.82,q,prox,src)}
+  }
+  resize3D();render()
+}
 function resize3D(){const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);const a=w/h;camera.left=-a;camera.right=a;camera.top=1;camera.bottom=-1;camera.updateProjectionMatrix()}function render(){renderer?.render(scene,camera)}
 go.onclick=async()=>{go.disabled=true;try{await initPose();st('写真の3D姿勢を解析しています…');lm=pose.detect(photo).landmarks?.[0];if(!lm)throw Error('人物を認識できませんでした');stage.style.display='block';controls.hidden=false;badge.textContent=orient()+'・Human Atlas実骨格';await new Promise(r=>requestAnimationFrame(r));await loadSkeleton();poseGroups();st('実メッシュの骨端中心を肩・肘・股・膝・足首へ合わせました')}catch(e){console.error(e);st(e.message||'解析できませんでした',true)}finally{go.disabled=false}};
 $('#bones').onclick=()=>{visible=true;$('#bones').classList.add('active');$('#photoOnly').classList.remove('active');poseGroups()};$('#photoOnly').onclick=()=>{visible=false;$('#photoOnly').classList.add('active');$('#bones').classList.remove('active');meshes.forEach(m=>m.visible=false);render()};opacity.oninput=()=>{meshes.forEach(m=>m.material.opacity=+opacity.value/100);render()};addEventListener('resize',()=>{if(renderer){resize3D();render()}});
