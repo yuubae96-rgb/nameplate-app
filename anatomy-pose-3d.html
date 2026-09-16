@@ -40,9 +40,9 @@ function fitBoneMesh(m,prox,dist,base,factor=1){const e=m.userData.ends;if(!e||e
 function fitLongGroup(g,prox,dist,base,factor=1){if(!segmentInside(prox,dist))return;for(const m of g.meshes)fitBoneMesh(m,prox,dist,base,factor)}
 function safeWidth(a,b){return a&&b?a.distanceTo(b):0}
 function segmentOK(a,b,reference,minRatio,maxRatio){if(!a||!b||!reference)return false;const d=a.distanceTo(b);return d>=reference*minRatio&&d<=reference*maxRatio&&segmentInside(a,b)}
-function poseGroups(skipHandles=false){
-  [...meshes,...muscleMeshes].forEach(m=>m.visible=false);
-  const gmap=displayMode==='muscular'?muscleGroups:groups,sizesNow=displayMode==='muscular'?muscleSizes:sizes,offsetsNow=offsets[displayMode];
+function poseSingleSystem(system,clear=true){
+  if(clear)[...meshes,...muscleMeshes].forEach(m=>m.visible=false);
+  const gmap=system==='muscular'?muscleGroups:groups,sizesNow=system==='muscular'?muscleSizes:sizes,offsetsNow=offsets[system];
   const sl=joint(11,.48),sr=joint(12,.48),hl=joint(23,.58),hr=joint(24,.58),
     shoulderMid=mid(sl,sr),hipMid=hl&&hr?mid(hl,hr):null,
     shoulderW=safeWidth(sl,sr),hipW=safeWidth(hl,hr),
@@ -75,7 +75,7 @@ function poseGroups(skipHandles=false){
     const category=groupCategory(k),partShift=offsetsNow[category]||{x:0,y:0},shift=new THREE.Vector3(partShift.x,partShift.y,0);
     if(k==='head'){
       if(!eyeCenter||!base)continue;
-      const eyeRatio=displayMode==='muscular'?.26:.43,eyeY=displayMode==='muscular'?.88:.55,eyeZ=displayMode==='muscular'?.90:.82,sourceEyeDistance=Math.max(g.size.x*eyeRatio,.001),sourceEyeCenter=new THREE.Vector3(g.center.x,g.box.min.y+g.size.y*eyeY,g.box.min.z+g.size.z*eyeZ);
+      const eyeRatio=system==='muscular'?.26:.43,eyeY=system==='muscular'?.88:.55,eyeZ=system==='muscular'?.90:.82,sourceEyeDistance=Math.max(g.size.x*eyeRatio,.001),sourceEyeCenter=new THREE.Vector3(g.center.x,g.box.min.y+g.size.y*eyeY,g.box.min.z+g.size.z*eyeZ);
       let headScale=eyeDistance?eyeDistance/sourceEyeDistance:base*.84;
       headScale=THREE.MathUtils.clamp(headScale,base*.68,base*1.08);
       let q=new THREE.Quaternion(),eyeLeft=eyesConsistent?faceEyeLeft:poseEyeLeft,eyeRight=eyesConsistent?faceEyeRight:poseEyeRight;
@@ -120,8 +120,8 @@ function poseGroups(skipHandles=false){
     const d=dist.clone().sub(prox),q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,-1,0),d.clone().normalize()),src=new THREE.Vector3(g.center.x,g.box.max.y,g.center.z);
     placeUniform(g,base*.82*(isHand?sizesNow.hands:sizesNow.feet),q,prox,src)
   }
-  resize3D();render();if(!skipHandles)refreshHandles()
 }
+function poseGroups(skipHandles=false){const systems=displayMode==='both'?['skeletal','muscular']:[displayMode];systems.forEach((system,i)=>poseSingleSystem(system,i===0));resize3D();render();if(!skipHandles)refreshHandles()}
 const EDIT_JOINTS=[11,12,13,14,15,16,23,24,25,26,27,28];
 function refreshHandles(){if(!manualMode||!lm)return;jointLayer.innerHTML='';for(const i of EDIT_JOINTS){const p=lm[i];if(!p)continue;const b=document.createElement('button');b.type='button';b.className='joint-dot '+([11,12,23,24].includes(i)?'core':'');b.style.left=(p.x*100)+'%';b.style.top=(p.y*100)+'%';b.setAttribute('aria-label','関節'+i);b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId)};b.onpointermove=e=>{if(!b.hasPointerCapture(e.pointerId))return;const r=stage.getBoundingClientRect();p.x=THREE.MathUtils.clamp((e.clientX-r.left)/r.width,0,1);p.y=THREE.MathUtils.clamp((e.clientY-r.top)/r.height,0,1);p.visibility=1;manualAdjusted=true;b.style.left=(p.x*100)+'%';b.style.top=(p.y*100)+'%';poseGroups(true)};jointLayer.appendChild(b)}}
 editPose.onclick=()=>{manualMode=!manualMode;jointLayer.classList.toggle('editing',manualMode);editPose.textContent=manualMode?'✅ 調整終了':'✋ 関節を直す';editPose.classList.toggle('active',manualMode);refreshHandles()};
