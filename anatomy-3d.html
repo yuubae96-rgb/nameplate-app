@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f7f8">
+<title>筋肉骨格 3D人体図鑑</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f7f8;color:#10243f}body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+header{height:58px;display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;border-bottom:1px solid #dbe3ea;position:relative;z-index:3}.back{border:0;background:#eef2f6;border-radius:12px;padding:10px 13px;font-size:16px;font-weight:800;color:#10243f}.title{min-width:0}.title b{display:block;font-size:18px}.title span{display:block;font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.frame{width:100%;height:calc(100dvh - 58px - env(safe-area-inset-top) - env(safe-area-inset-bottom));border:0;background:#fff}.fallback{position:fixed;inset:58px 0 0;display:none;align-items:center;justify-content:center;padding:24px;text-align:center}.fallback a{display:inline-block;padding:14px 18px;border-radius:14px;background:#10243f;color:white;text-decoration:none;font-weight:900}
+</style>
+</head>
+<body>
+<header><button class="back" onclick="history.length>1?history.back():location.href='anatomy-view.html'">← 戻る</button><div class="title"><b>3D人体図鑑</b><span>筋肉・骨格・内臓を360°表示／分解／選択</span></div></header>
+<iframe class="frame" src="https://human-atlas-seven.vercel.app/" allow="fullscreen" loading="eager" referrerpolicy="strict-origin-when-cross-origin" title="Human Atlas 3D anatomy"></iframe>
+<div class="fallback"><div><p>3D人体図鑑を読み込めませんでした。</p><a href="https://human-atlas-seven.vercel.app/">3D人体図鑑を開く</a></div></div>
+<script>const f=document.querySelector('iframe'),fb=document.querySelector('.fallback');let loaded=false;f.addEventListener('load',()=>loaded=true);setTimeout(()=>{if(!loaded){f.style.display='none';fb.style.display='flex'}},10000);</script>
+</body></html>
