@@ -19,8 +19,9 @@ function L(i,min=.12){const p=lm?.[i];return p&&p.visibility>min?p:null}
 // Scale normalized X by the displayed photo aspect ratio; otherwise every
 // joint drifts away from the body centre on portrait photos.
 function photoAspect(){const w=stage.clientWidth||photo.clientWidth||photo.naturalWidth||1,h=stage.clientHeight||photo.clientHeight||photo.naturalHeight||1;return w/h}
-function xy(i,min=.12){const p=L(i,min);if(!p)return null;const a=photoAspect();return new THREE.Vector3((p.x-.5)*2*a,(.5-p.y)*2,-(p.z||0)*.18)}
+function xy(i,min=.12){const p=L(i,min);if(!p)return null;const a=photoAspect();return new THREE.Vector3((p.x-.5)*2*a,(.5-p.y)*2,-(p.z||0)*2*a)}
 function joint(i,min=.4){const p=L(i,min);if(!p||p.x<-.02||p.x>1.02||p.y<-.02||p.y>1.02)return null;return xy(i,min)}
+function frameQuat(xAxis,yAxis){const x=xAxis.clone().normalize(),y=yAxis.clone().sub(x.clone().multiplyScalar(yAxis.dot(x))).normalize();if(x.lengthSq()<.01||y.lengthSq()<.01)return new THREE.Quaternion();const z=new THREE.Vector3().crossVectors(x,y).normalize();return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x,y,z))}
 function pairCost(a,b,c,d){return a&&b&&c&&d?a.distanceTo(c)+b.distanceTo(d):Infinity}
 function legChains(){const h=[joint(23,.55),joint(24,.55)],k=[joint(25,.58),joint(26,.58)],a=[joint(27,.62),joint(28,.62)],f=[joint(31,.55)||joint(29,.55),joint(32,.55)||joint(30,.55)];if(h[0]&&h[1]&&k[0]&&k[1]&&pairCost(h[0],h[1],k[1],k[0])<pairCost(h[0],h[1],k[0],k[1]))k.reverse();if(k[0]&&k[1]&&a[0]&&a[1]&&pairCost(k[0],k[1],a[1],a[0])<pairCost(k[0],k[1],a[0],a[1]))a.reverse();if(a[0]&&a[1]&&f[0]&&f[1]&&pairCost(a[0],a[1],f[1],f[0])<pairCost(a[0],a[1],f[0],f[1]))f.reverse();return[[h[0],k[0],a[0],f[0]],[h[1],k[1],a[1],f[1]]]}
 function mid(a,b){return a&&b?a.clone().add(b).multiplyScalar(.5):a||b}function orient(){const a=L(11),b=L(12);if(!a||!b)return'姿勢';const dz=Math.abs((a.z||0)-(b.z||0)),w=Math.abs(a.x-b.x);return dz>.16||w<.10?'横向き':dz>.07||w<.18?'斜め':'正面'}
@@ -40,18 +41,18 @@ function poseGroups(){
   for(const [k,g] of Object.entries(groups)){
     if(k==='head'){
       if(!headCenter)continue;
-      const q=earL&&earR?new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(earL.y-earR.y,earL.x-earR.x)):new THREE.Quaternion();
+      const q=earL&&earR&&shoulderMid?frameQuat(earL.clone().sub(earR),headCenter.clone().sub(shoulderMid)):new THREE.Quaternion();
       const headScale=earL&&earR?earL.distanceTo(earR)/Math.max(g.size.x,.001):torsoScale*.82;
       placeUniform(g,headScale,q,headCenter,g.center);continue
     }
     if(k==='torso'){
       if(!shoulderMid||!torsoEnd)continue;
-      const d=torsoEnd.clone().sub(shoulderMid),q=new THREE.Quaternion().setFromUnitVectors(sourceDown,d.clone().normalize()),src=new THREE.Vector3(g.center.x,g.box.max.y-g.size.y*.06,g.center.z);
+      const d=torsoEnd.clone().sub(shoulderMid),q=sl&&sr?frameQuat(sl.clone().sub(sr),shoulderMid.clone().sub(torsoEnd)):new THREE.Quaternion().setFromUnitVectors(sourceDown,d.clone().normalize()),src=new THREE.Vector3(g.center.x,g.box.max.y-g.size.y*.06,g.center.z);
       placeUniform(g,torsoScale*.92,q,shoulderMid,src);continue
     }
     if(k==='pelvis'){
       if(!hipMid)continue;
-      const roll=Math.atan2(hr.y-hl.y,hr.x-hl.x),q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),roll),src=new THREE.Vector3(g.center.x,g.box.max.y-g.size.y*.14,g.center.z);
+      const up=shoulderMid?shoulderMid.clone().sub(hipMid):new THREE.Vector3(0,1,0),q=frameQuat(hl.clone().sub(hr),up),src=new THREE.Vector3(g.center.x,g.box.max.y-g.size.y*.14,g.center.z);
       placeUniform(g,pelvisScale*.92,q,hipMid,src);continue
     }
     const [prox,dist]=segment(k);if(!prox||!dist)continue;
