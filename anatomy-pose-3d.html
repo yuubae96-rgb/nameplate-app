@@ -43,7 +43,7 @@ function poseGroups(skipHandles=false){
     bodyDown=shoulderMid&&hipMid?hipMid.clone().sub(shoulderMid):new THREE.Vector3(0,-1,0),
     rawTorsoLen=bodyDown.length(),torsoLen=shoulderW?THREE.MathUtils.clamp(rawTorsoLen||shoulderW*1.25,shoulderW*.72,shoulderW*2.05):rawTorsoLen,
     torsoEnd=shoulderMid?(hipMid&&rawTorsoLen<=shoulderW*2.45?hipMid:shoulderMid.clone().add(bodyDown.clone().normalize().multiplyScalar(torsoLen))):null,
-    torsoCenter=shoulderMid&&torsoEnd?mid(shoulderMid,torsoEnd):null,
+    torsoCenter=shoulderMid&&torsoEnd?mid(shoulderMid,torsoEnd):null,view=orient(),limbRef=Math.max(shoulderW||0,torsoLen*.58,hipW*.9),
     earL=joint(7,.32),earR=joint(8,.32),poseNose=joint(0,.28),eyeL=joint(2,.25),eyeR=joint(5,.25),
     faceA=facePoint(234),faceB=facePoint(454),faceTop=facePoint(10),faceChin=facePoint(152),faceNose=facePoint(1),
     faceLeft=faceA&&faceB?(faceA.x<faceB.x?faceA:faceB):null,faceRight=faceA&&faceB?(faceA.x<faceB.x?faceB:faceA):null,
@@ -56,7 +56,7 @@ function poseGroups(skipHandles=false){
   if(groups.torso&&shoulderMid&&torsoEnd&&shoulderW){
     const widthScale=shoulderW/Math.max(groups.torso.size.x,.001);
     const heightScale=torsoLen/Math.max(groups.torso.size.y*.68,.001);
-    torsoScale=THREE.MathUtils.clamp(widthScale*.62+heightScale*.38,widthScale*.72,widthScale*1.18);
+    torsoScale=view==='横向き'?THREE.MathUtils.clamp(widthScale*.28+heightScale*.72,heightScale*.76,heightScale*1.16):view==='斜め'?THREE.MathUtils.clamp(widthScale*.48+heightScale*.52,Math.min(widthScale,heightScale)*.82,Math.max(widthScale,heightScale)*1.08):THREE.MathUtils.clamp(widthScale*.62+heightScale*.38,widthScale*.72,widthScale*1.18);
   }
   const base=torsoScale||globalScale();
   for(const [k,g] of Object.entries(groups)){
@@ -89,20 +89,20 @@ function poseGroups(skipHandles=false){
       const up=shoulderMid?shoulderMid.clone().sub(hipMid):new THREE.Vector3(0,1,0),q=frameQuat(hl.clone().sub(hr),up);
       placeUniform(g,pelvisScale*.94*sizes.pelvis,q,hipMid,g.center);continue
     }
-    const [prox,dist]=segment(k);if(!prox||!dist||!shoulderW)continue;
+    const [prox,dist]=segment(k);if(!prox||!dist||!limbRef)continue;
     const isArm=k.startsWith('upperArm')||k.startsWith('foreArm'),isLeg=k.startsWith('thigh')||k.startsWith('shin');
     if(isArm){
       const limits=k.startsWith('upperArm')?[.22,1.18]:[.18,1.12];
-      if(!segmentOK(prox,dist,shoulderW,limits[0],limits[1]))continue;
+      if(!segmentOK(prox,dist,limbRef,limits[0],limits[1]))continue;
       fitLongGroup(g,prox,dist,base,sizes.arms);continue
     }
     if(isLeg){
       const limits=k.startsWith('thigh')?[.35,1.72]:[.30,1.62];
-      if(!segmentOK(prox,dist,shoulderW,limits[0],limits[1]))continue;
+      if(!segmentOK(prox,dist,limbRef,limits[0],limits[1]))continue;
       fitLongGroup(g,prox,dist,base,sizes.legs);continue
     }
     const isHand=k.startsWith('hand'),limits=isHand?[.08,.72]:[.10,.92];
-    if(!segmentOK(prox,dist,shoulderW,limits[0],limits[1]))continue;
+    if(!segmentOK(prox,dist,limbRef,limits[0],limits[1]))continue;
     const d=dist.clone().sub(prox),q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,-1,0),d.clone().normalize()),src=new THREE.Vector3(g.center.x,g.box.max.y,g.center.z);
     placeUniform(g,base*.82*(isHand?sizes.hands:sizes.feet),q,prox,src)
   }
