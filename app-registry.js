@@ -23,7 +23,7 @@ window.APP_REGISTRY=[
 {n:'結局なに？AI',i:'結',u:'kekkyoku-nani-ai.html',c:'AI・記録',company:0,d:'録音・録画を要約'},
 {n:'会議AI',i:'会',u:'meeting-pipeline-ai.html',c:'AI・記録',company:0,d:'議事録・TODO・判断事項を整理'},
 {n:'AI着せ替え',i:'A',u:'ai-kisekae.html',c:'AI・記録',company:0,d:'人物Bの服を人物Aへ着せ替え'},
-{n:'筋肉骨格',i:'筋',u:'anatomy-view.html',c:'AI・記録',company:0,d:'筋肉・骨格・内臓を学習'},
+{n:'筋肉骨格',i:'筋',u:'anatomy.html',c:'AI・記録',company:0,d:'写真表示と3D人体図鑑で筋肉・骨格・内臓を学習'},
 {n:'文学→漫画AI',i:'漫',u:'aozora-manga-drag.html',c:'文学・漫画',company:0,d:'文学作品を漫画化'},
 {n:'文学漫画Codex',i:'文',u:'codex-literary-manga.html',c:'文学・漫画',company:0,d:'Codexで文学漫画を制作'},
 {n:'YouTube動画作成',i:'映',u:'https://yuubae96-rgb.github.io/company-app/youtube-video-maker.html',c:'YouTube・動画',company:1,d:'テーマから台本・シーン・AI画像・ナレーションを作成'},
