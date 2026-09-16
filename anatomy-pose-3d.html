@@ -44,14 +44,20 @@ function poseGroups(skipHandles=false){
     rawTorsoLen=bodyDown.length(),torsoLen=shoulderW?THREE.MathUtils.clamp(rawTorsoLen||shoulderW*1.25,shoulderW*.72,shoulderW*2.05):rawTorsoLen,
     torsoEnd=shoulderMid?(hipMid&&rawTorsoLen<=shoulderW*2.45?hipMid:shoulderMid.clone().add(bodyDown.clone().normalize().multiplyScalar(torsoLen))):null,
     torsoCenter=shoulderMid&&torsoEnd?mid(shoulderMid,torsoEnd):null,view=orient(),limbRef=Math.max(shoulderW||0,torsoLen*.58,hipW*.9),
-    earL=joint(7,.32),earR=joint(8,.32),poseNose=joint(0,.28),eyeL=joint(2,.25),eyeR=joint(5,.25),
+    earL=joint(7,.32),earR=joint(8,.32),poseNose=joint(0,.28),poseEyeA=joint(2,.25),poseEyeB=joint(5,.25),
     faceA=facePoint(234),faceB=facePoint(454),faceTop=facePoint(10),faceChin=facePoint(152),faceNose=facePoint(1),
+    eyeA1=facePoint(33),eyeA2=facePoint(133),eyeB1=facePoint(362),eyeB2=facePoint(263),
+    rawEyeA=eyeA1&&eyeA2?mid(eyeA1,eyeA2):null,rawEyeB=eyeB1&&eyeB2?mid(eyeB1,eyeB2):null,
+    faceEyeLeft=rawEyeA&&rawEyeB?(rawEyeA.x<rawEyeB.x?rawEyeA:rawEyeB):null,faceEyeRight=rawEyeA&&rawEyeB?(rawEyeA.x<rawEyeB.x?rawEyeB:rawEyeA):null,
+    poseEyeLeft=poseEyeA&&poseEyeB?(poseEyeA.x<poseEyeB.x?poseEyeA:poseEyeB):null,poseEyeRight=poseEyeA&&poseEyeB?(poseEyeA.x<poseEyeB.x?poseEyeB:poseEyeA):null,
+    poseEyeCenter=poseEyeLeft&&poseEyeRight?mid(poseEyeLeft,poseEyeRight):poseNose,
     faceLeft=faceA&&faceB?(faceA.x<faceB.x?faceA:faceB):null,faceRight=faceA&&faceB?(faceA.x<faceB.x?faceB:faceA):null,
     faceW=safeWidth(faceLeft,faceRight)||safeWidth(earL,earR),
-    detectedFaceCenter=faceTop&&faceChin?mid(faceTop,faceChin):(faceLeft&&faceRight?mid(faceLeft,faceRight):null),
-    poseFaceCenter=eyeL&&eyeR?mid(eyeL,eyeR):poseNose,
-    faceConsistent=!detectedFaceCenter||!poseFaceCenter||!faceW||detectedFaceCenter.distanceTo(poseFaceCenter)<faceW*.72,
-    headCenter=(faceConsistent?detectedFaceCenter:null)||poseFaceCenter||(earL&&earR?mid(earL,earR):null);
+    rawFaceEyeCenter=faceEyeLeft&&faceEyeRight?mid(faceEyeLeft,faceEyeRight):null,
+    faceEyeDistance=safeWidth(faceEyeLeft,faceEyeRight),poseEyeDistance=safeWidth(poseEyeLeft,poseEyeRight),
+    eyesConsistent=!rawFaceEyeCenter||!poseEyeCenter||!faceW||rawFaceEyeCenter.distanceTo(poseEyeCenter)<faceW*.48,
+    eyeCenter=(eyesConsistent?rawFaceEyeCenter:null)||poseEyeCenter||(earL&&earR?mid(earL,earR):null),
+    eyeDistance=(eyesConsistent?faceEyeDistance:0)||poseEyeDistance||(faceW?faceW*.43:0);
   let torsoScale=globalScale();
   if(groups.torso&&shoulderMid&&torsoEnd&&shoulderW){
     const widthScale=shoulderW/Math.max(groups.torso.size.x,.001);
@@ -61,22 +67,23 @@ function poseGroups(skipHandles=false){
   const base=torsoScale||globalScale();
   for(const [k,g] of Object.entries(groups)){
     if(k==='head'){
-      if(!headCenter||!base)continue;
-      let headScale=faceW?faceW*1.06/Math.max(g.size.x,.001):base*.82;
-      headScale=THREE.MathUtils.clamp(headScale,base*.68,base*.96);
-      let q=new THREE.Quaternion();
-      if(faceLeft&&faceRight){
-        const axis=faceRight.clone().sub(faceLeft),roll=Math.atan2(axis.y,axis.x);
+      if(!eyeCenter||!base)continue;
+      const sourceEyeDistance=Math.max(g.size.x*.43,.001),sourceEyeCenter=new THREE.Vector3(g.center.x,g.box.min.y+g.size.y*.55,g.box.min.z+g.size.z*.82);
+      let headScale=eyeDistance?eyeDistance/sourceEyeDistance:base*.84;
+      headScale=THREE.MathUtils.clamp(headScale,base*.68,base*1.08);
+      let q=new THREE.Quaternion(),eyeLeft=eyesConsistent?faceEyeLeft:poseEyeLeft,eyeRight=eyesConsistent?faceEyeRight:poseEyeRight;
+      if(eyeLeft&&eyeRight){
+        const axis=eyeRight.clone().sub(eyeLeft),roll=Math.atan2(axis.y,axis.x);
         const qRoll=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),roll);
         let yaw=0;
-        if(faceNose&&faceW){const cheekMid=mid(faceLeft,faceRight);yaw=THREE.MathUtils.clamp((faceNose.x-cheekMid.x)/faceW*1.65,-.62,.62)}
+        if(faceNose&&eyeDistance){yaw=THREE.MathUtils.clamp((faceNose.x-eyeCenter.x)/eyeDistance*1.28,-.68,.68)}
         const qYaw=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),yaw);
         q.copy(qRoll).multiply(qYaw);
-      }else if(earL&&earR){const a=earL.clone().sub(earR);q.setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(a.y,a.x))}
-      const anchor=headCenter.clone();
-      if(faceW)anchor.y+=faceW*.05;
-      anchor.add(new THREE.Vector3(headOffset.x,headOffset.y,0));
-      placeUniform(g,headScale*sizes.head,q,anchor,g.center);continue
+      }else if(faceLeft&&faceRight){
+        const a=faceRight.clone().sub(faceLeft);q.setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(a.y,a.x))
+      }
+      const anchor=eyeCenter.clone().add(new THREE.Vector3(headOffset.x,headOffset.y,0));
+      placeUniform(g,headScale*sizes.head,q,anchor,sourceEyeCenter);continue
     }
     if(k==='torso'){
       if(!torsoCenter||!shoulderW||!base)continue;
