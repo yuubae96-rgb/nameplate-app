@@ -40,7 +40,7 @@ function poseGroups(){
   for(const [k,g] of Object.entries(groups)){
     if(k==='head'){
       if(!headCenter)continue;
-      const q=earL&&earR?new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(earR.y-earL.y,earR.x-earL.x)):new THREE.Quaternion();
+      const q=earL&&earR?new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(earL.y-earR.y,earL.x-earR.x)):new THREE.Quaternion();
       const headScale=earL&&earR?earL.distanceTo(earR)/Math.max(g.size.x,.001):torsoScale*.82;
       placeUniform(g,headScale,q,headCenter,g.center);continue
     }
