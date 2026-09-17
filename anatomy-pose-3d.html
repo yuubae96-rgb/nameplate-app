@@ -1,8 +1,7 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>筋肉骨格 Human Atlas姿勢合わせ</title></head><body><div style="font-family:-apple-system,sans-serif;padding:24px;text-align:center">最新版を読み込み中…</div><script>
 (async()=>{
-  const base='https://raw.githubusercontent.com/yuubae96-rgb/nameplate-app/9b1bd3739e02bc79880eacd833187a7fdb8e650d/anatomy-pose-3d.html';
-  let html=await (await fetch(base,{cache:'no-store'})).text();
-  const old=`      let q=new THREE.Quaternion(),eyeLeft=eyesConsistent?faceEyeLeft:poseEyeLeft,eyeRight=eyesConsistent?faceEyeRight:poseEyeRight;
+const base='https://raw.githubusercontent.com/yuubae96-rgb/nameplate-app/9b1bd3739e02bc79880eacd833187a7fdb8e650d/anatomy-pose-3d.html';let html=await(await fetch(base,{cache:'no-store'})).text();
+const old=`      let q=new THREE.Quaternion(),eyeLeft=eyesConsistent?faceEyeLeft:poseEyeLeft,eyeRight=eyesConsistent?faceEyeRight:poseEyeRight;
       if(eyeLeft&&eyeRight){
         const axis=eyeRight.clone().sub(eyeLeft),roll=Math.atan2(axis.y,axis.x);
         const qRoll=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),roll);
@@ -13,40 +12,28 @@
       }else if(faceLeft&&faceRight){
         const a=faceRight.clone().sub(faceLeft);q.setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(a.y,a.x))
       }`;
-  const improved=`      let q=new THREE.Quaternion(),eyeLeft=eyesConsistent?faceEyeLeft:poseEyeLeft,eyeRight=eyesConsistent?faceEyeRight:poseEyeRight;
-      // 眼窩・鼻・顎の顔アンカーから頭蓋骨姿勢を決定。
-      // 画像上の頭の傾きは両目と目中心→顎の両方から求め、斜め顔でも頭蓋骨だけ起きないようにする。
+const improved=`      let q=new THREE.Quaternion(),eyeLeft=eyesConsistent?faceEyeLeft:poseEyeLeft,eyeRight=eyesConsistent?faceEyeRight:poseEyeRight;
       if(eyeLeft&&eyeRight){
-        const eyeAxis=eyeRight.clone().sub(eyeLeft),eyeRoll=Math.atan2(eyeAxis.y,eyeAxis.x);
-        let roll=eyeRoll,yaw=0,pitch=0;
-        if(faceChin){
-          const ec=eyeLeft.clone().add(eyeRight).multiplyScalar(.5),down=faceChin.clone().sub(ec);
-          const chinRoll=Math.atan2(down.x,-down.y);
-          roll=THREE.MathUtils.clamp(eyeRoll*.72+chinRoll*.28,-1.05,1.05);
-        }
-        if(faceNose&&eyeDistance){
-          const ec=eyeLeft.clone().add(eyeRight).multiplyScalar(.5);
-          const noseSide=(faceNose.x-ec.x)/eyeDistance;
-          const depthSide=(eyeRight.z-eyeLeft.z)/Math.max(eyeDistance,.001);
-          yaw=THREE.MathUtils.clamp(noseSide*1.18+depthSide*.48,-1.0,1.0);
-          const noseDrop=(ec.y-faceNose.y)/eyeDistance;
-          pitch=THREE.MathUtils.clamp((noseDrop-.53)*.78,-.55,.55);
-          if(Math.abs(noseSide)<.075&&Math.abs(depthSide)<.09)yaw*=.22;
-        }
+        const eyeAxis=eyeRight.clone().sub(eyeLeft),eyeRoll=Math.atan2(eyeAxis.y,eyeAxis.x);let roll=eyeRoll,yaw=0,pitch=0;
+        if(faceChin){const ec=mid(eyeLeft,eyeRight),down=faceChin.clone().sub(ec),chinRoll=Math.atan2(down.x,-down.y);roll=THREE.MathUtils.clamp(eyeRoll*.82+chinRoll*.18,-1.05,1.05)}
+        if(faceNose&&eyeDistance){const ec=mid(eyeLeft,eyeRight),noseSide=(faceNose.x-ec.x)/eyeDistance,depthSide=(eyeRight.z-eyeLeft.z)/Math.max(eyeDistance,.001);yaw=THREE.MathUtils.clamp(noseSide*1.12+depthSide*.45,-1,1);const noseDrop=(ec.y-faceNose.y)/eyeDistance;pitch=THREE.MathUtils.clamp((noseDrop-.53)*.76,-.55,.55);if(Math.abs(noseSide)<.075&&Math.abs(depthSide)<.09)yaw*=.22}
         q.setFromEuler(new THREE.Euler(pitch,yaw,roll,'YXZ'));
-      }else if(faceLeft&&faceRight){
-        const a=faceRight.clone().sub(faceLeft);q.setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(a.y,a.x))
-      }`;
-  if(!html.includes(old)) throw new Error('頭蓋骨自動合わせ部分を確認できませんでした');
-  html=html.replace(old,improved);
-  // 顔中心は眼窩を最優先にしつつ鼻・顎へ少量寄せる。頭頂中心で置くと斜め顔で上へ逃げるため使わない。
-  const anchorNeedle=`const headTarget=faceCenter||P(0);`;
-  if(html.includes(anchorNeedle))html=html.replace(anchorNeedle,`const headTarget=faceCenter||P(0);if(faceEyeLeft&&faceEyeRight){const ec=faceEyeLeft.clone().add(faceEyeRight).multiplyScalar(.5);headTarget.x=ec.x;headTarget.y=ec.y;if(faceNose){headTarget.x=headTarget.x*.78+faceNose.x*.22;headTarget.y=headTarget.y*.84+faceNose.y*.16}if(faceChin){headTarget.x=headTarget.x*.92+faceChin.x*.08;headTarget.y=headTarget.y*.90+faceChin.y*.10}}`);
-  // 頭蓋骨が顔より一回り大きく出る症状を抑える。手動サイズ調整はこの後も有効。
-  html=html.replace(/(groups\.head\.scale\.setScalar\()([^;]+?)(\);)/,`$1($2)*.86$3`);
-  html=html
-    .replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);","badge.textContent=(faceLm?'眼窩・鼻・顎3D追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);")
-    .replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(mode);","badge.textContent=(faceLm?'眼窩・鼻・顎3D追従':'姿勢推定')+'・Human Atlas'+modeName(mode);");
-  document.open();document.write(html);document.close();
-})().catch(e=>{document.body.innerHTML='<div style="font-family:-apple-system,sans-serif;padding:24px;color:#b91c1c"><b>読み込みに失敗しました</b><br>'+String(e.message||e)+'</div>'});
+      }else if(faceLeft&&faceRight){const a=faceRight.clone().sub(faceLeft);q.setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(a.y,a.x))}`;
+if(!html.includes(old))throw Error('頭部姿勢コードを確認できませんでした');html=html.replace(old,improved);
+// 骨格と筋肉の頭部を同じ顔アンカーで合わせる。従来の筋肉専用0.26比率は顔筋を過大化するため廃止。
+const headOld=`      const eyeRatio=system==='muscular'?.26:.43,eyeY=system==='muscular'?.88:.55,eyeZ=system==='muscular'?.90:.82,sourceEyeDistance=Math.max(g.size.x*eyeRatio,.001),sourceEyeCenter=new THREE.Vector3(g.center.x,g.box.min.y+g.size.y*eyeY,g.box.min.z+g.size.z*eyeZ);
+      let headScale=eyeDistance?eyeDistance/sourceEyeDistance:base*.84;
+      headScale=THREE.MathUtils.clamp(headScale,base*.68,base*1.08);`;
+const headNew=`      const eyeRatio=system==='muscular'?.40:.43,eyeY=system==='muscular'?.79:.55,eyeZ=system==='muscular'?.88:.82,sourceEyeDistance=Math.max(g.size.x*eyeRatio,.001),sourceEyeCenter=new THREE.Vector3(g.center.x,g.box.min.y+g.size.y*eyeY,g.box.min.z+g.size.z*eyeZ);
+      let headScale=eyeDistance?eyeDistance/sourceEyeDistance:base*.84;
+      if(faceW&&g.size.x>0){const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90));headScale=headScale*.65+faceScale*.35}
+      headScale=THREE.MathUtils.clamp(headScale,base*.58,base*.98);`;
+if(!html.includes(headOld))throw Error('頭部倍率コードを確認できませんでした');html=html.replace(headOld,headNew);
+// 胸郭・体幹は全身倍率ではなく左右肩幅と肩〜腰の長さで個別に校正。筋肉が腹部下まで巨大化するのを防ぐ。
+const torsoOld=`      placeUniform(g,base*.94*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue`;
+const torsoNew=`      let torsoFit=base*.94;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.78:.86)),sy=torsoLen/(g.size.y*(system==='muscular'?.78:.88));torsoFit=THREE.MathUtils.clamp(Math.min(sx,sy),base*.62,base*.98)}placeUniform(g,torsoFit*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue`;
+if(!html.includes(torsoOld))throw Error('体幹コードを確認できませんでした');html=html.replace(torsoOld,torsoNew);
+html=html.replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);","badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);").replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(mode);","badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(mode);");
+document.open();document.write(html);document.close();
+})().catch(e=>document.body.innerHTML='<div style="font-family:-apple-system,sans-serif;padding:24px;color:#b91c1c"><b>読み込みに失敗しました</b><br>'+String(e.message||e)+'</div>');
 </script></body></html>
