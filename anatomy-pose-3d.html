@@ -37,7 +37,7 @@ if(!html.includes(torsoOld))throw Error('体幹コードを確認できません
 // shortest screen distance breaks crossed legs, so preserve each anatomical
 // chain exactly as detected.
 const legChainsOld=`function legChains(){const h=[joint(23,.55),joint(24,.55)],k=[joint(25,.58),joint(26,.58)],a=[joint(27,.62),joint(28,.62)],f=[joint(31,.55)||joint(29,.55),joint(32,.55)||joint(30,.55)];if(h[0]&&h[1]&&k[0]&&k[1]&&pairCost(h[0],h[1],k[1],k[0])<pairCost(h[0],h[1],k[0],k[1]))k.reverse();if(k[0]&&k[1]&&a[0]&&a[1]&&pairCost(k[0],k[1],a[1],a[0])<pairCost(k[0],k[1],a[0],a[1]))a.reverse();if(a[0]&&a[1]&&f[0]&&f[1]&&pairCost(a[0],a[1],f[1],f[0])<pairCost(a[0],a[1],f[0],f[1]))f.reverse();return[[h[0],k[0],a[0],f[0]],[h[1],k[1],a[1],f[1]]]}`;
-const legChainsNew=`function legChains(){const h=[joint(23,.34),joint(24,.34)],k=[joint(25,.34),joint(26,.34)],a=[joint(27,.34),joint(28,.34)],f=[joint(31,.30)||joint(29,.30),joint(32,.30)||joint(30,.30)];return[[h[0],k[0],a[0],f[0]],[h[1],k[1],a[1],f[1]]]}`;
+const legChainsNew=`function legChains(){const h=[joint(23,.18),joint(24,.18)],k=[joint(25,.18),joint(26,.18)],a=[joint(27,.18),joint(28,.18)],f=[joint(31,.16)||joint(29,.16),joint(32,.16)||joint(30,.16)];return[[h[0],k[0],a[0],f[0]],[h[1],k[1],a[1],f[1]]]}`;
 if(!html.includes(legChainsOld))throw Error('脚の左右判定コードを確認できませんでした');html=html.replace(legChainsOld,legChainsNew);
 
 // Keep difficult limbs visible when segmentation is weak (gloves, crossed
@@ -71,11 +71,14 @@ if(!html.includes(headPoseOld))throw Error('頭部の補正コードを確認で
 const headBlendOld=`      if(faceW&&g.size.x>0){const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90));headScale=headScale*.65+faceScale*.35}`;
 const headBlendNew=`      if(faceW&&g.size.x>0){const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90)),faceWeight=faceLm?.55:.72;headScale=headScale*(1-faceWeight)+faceScale*faceWeight}`;
 if(!html.includes(headBlendOld))throw Error('頭部サイズ補正コードを確認できませんでした');html=html.replace(headBlendOld,headBlendNew);
-// Use MediaPipe's highest-accuracy single-person model for sports poses.  It
-// is heavier than the full model, but is substantially better when arms
-// overlap, the torso bends backward, or legs cross.
-html=html.replace('pose_landmarker_full/float16/1/pose_landmarker_full.task','pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task');
+// The Full model is more stable than Heavy on crossed-leg follow-through
+// photos. Heavy lost both legs in the five-image regression set, while Full
+// retained all visible joints and remained accurate on the four other poses.
 html=html.replace("minPoseDetectionConfidence:.4,minPosePresenceConfidence:.4","minPoseDetectionConfidence:.28,minPosePresenceConfidence:.28");
+// Occluded joints can have very low visibility even when the model reports
+// high presence and a stable in-frame coordinate (for example, an elbow under
+// a loose sleeve). Bounds and the person mask still reject off-frame guesses.
+html=html.replace("function L(i,min=.12){const p=lm?.[i];return p&&p.visibility>min?p:null}", "function L(i,min=.12){const p=lm?.[i],score=p?Math.max(p.visibility||0,(p.presence||0)*.55):0;return p&&score>min?p:null}");
 html=html.replace("earL=joint(7,.32),earR=joint(8,.32),poseNose=joint(0,.28),poseEyeA=joint(2,.25),poseEyeB=joint(5,.25)","earL=joint(7,.16),earR=joint(8,.16),poseNose=joint(0,.16),poseEyeA=joint(2,.16),poseEyeB=joint(5,.16)");
 html=html.replace("case'upperArmL':return[joint(11,.38),joint(13,.42)];case'upperArmR':return[joint(12,.38),joint(14,.42)];case'foreArmL':return[joint(13,.42),joint(15,.45)];case'foreArmR':return[joint(14,.42),joint(16,.45)]","case'upperArmL':return[joint(11,.28),joint(13,.28)];case'upperArmR':return[joint(12,.28),joint(14,.28)];case'foreArmL':return[joint(13,.28),joint(15,.28)];case'foreArmR':return[joint(14,.28),joint(16,.28)]");
 // Keep the normal iPhone path on GPU, while allowing automated visual QA on
