@@ -12,11 +12,11 @@
 
   // 胸郭・体幹は肩幅と肩〜股関節の長さで校正しつつ、写真に対して少し上へ寄せる。
   const torsoOld="let torsoFit=base*.94;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.78:.86)),sy=torsoLen/(g.size.y*(system==='muscular'?.78:.88));torsoFit=THREE.MathUtils.clamp(Math.min(sx,sy),base*.62,base*.98)}placeUniform(g,torsoFit*(system==='muscular'?.90:1)*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue";
-  const torsoNew="let torsoFit=base*.90;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.88:.96)),sy=torsoLen/(g.size.y*(system==='muscular'?.92:1.02));torsoFit=THREE.MathUtils.clamp(Math.min(sx,sy),base*.55,base*.92)}const jointTorsoAnchor=torsoCenter.clone().add(shift);jointTorsoAnchor.y+=torsoLen*.045;placeUniform(g,torsoFit*(system==='muscular'?.88:1)*sizesNow.torso,q,jointTorsoAnchor,g.center);continue";
+  const torsoNew="let torsoFit=base*.90;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.88:.96)),sy=torsoLen/(g.size.y*(system==='muscular'?.92:1.02));torsoFit=THREE.MathUtils.clamp(Math.min(sx,sy),base*.55,base*.92)}const jointTorsoAnchor=torsoCenter.clone().add(shift);jointTorsoAnchor.y+=torsoLen*.060;placeUniform(g,torsoFit*(system==='muscular'?.88:1)*sizesNow.torso,q,jointTorsoAnchor,g.center);continue";
   if(!wrapper.includes(torsoOld))throw new Error('体幹サイズコードを確認できませんでした');
   wrapper=wrapper.replace(torsoOld,torsoNew);
 
-  // 頭部は眼窩固定を優先し、胸郭・体幹側だけを約4.5%上へ補正する。
+  // 頭部と骨盤は維持し、胸郭・胸椎側だけを合計約6%上へ補正する。
   // 腕・脚は関節アンカーを維持して、骨端が関節からはみ出さない既存補正を保持。
   wrapper=wrapper.replace("badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);", "badge.textContent=(faceLm?'眼窩・全身関節固定':'姿勢推定')+'・Human Atlas'+modeName(displayMode);");
   wrapper=wrapper.replace("badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(mode);", "badge.textContent=(faceLm?'眼窩・全身関節固定':'姿勢推定')+'・Human Atlas'+modeName(mode);");
