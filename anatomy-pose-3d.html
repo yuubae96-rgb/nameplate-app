@@ -132,7 +132,8 @@ headGesture.onpointermove=e=>{if(!headPointers.has(e.pointerId))return;e.prevent
 function finishHeadPointer(e){headPointers.delete(e.pointerId);if(headPointers.size===0){headGesture.classList.remove('active');headGestureState=null}else if(headPointers.size===1)beginSingle()}
 headGesture.onpointerup=finishHeadPointer;headGesture.onpointercancel=finishHeadPointer;photoOnly.addEventListener('click',()=>updateHeadGesture());addEventListener('resize',updateHeadGesture);
 `;
-html=html.replace('</script></body></html>',headGestureCode+'</script></body></html>');
+const moduleEnd='</scr'+'ipt></body></html>';
+html=html.replace(moduleEnd,headGestureCode+moduleEnd);
 html=html.replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);","badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);").replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(mode);","badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(mode);");
 document.open();document.write(html);document.close();
 })().catch(e=>document.body.innerHTML='<div style="font-family:-apple-system,sans-serif;padding:24px;color:#b91c1c"><b>読み込みに失敗しました</b><br>'+String(e.message||e)+'</div>');
