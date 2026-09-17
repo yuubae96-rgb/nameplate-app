@@ -33,6 +33,44 @@ if(!html.includes(headOld))throw Error('頭部倍率コードを確認できま�
 const torsoOld=`      placeUniform(g,base*.94*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue`;
 const torsoNew=`      let torsoFit=base*.94;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.78:.86)),sy=torsoLen/(g.size.y*(system==='muscular'?.78:.88));torsoFit=THREE.MathUtils.clamp(Math.min(sx,sy),base*.62,base*.98)}placeUniform(g,torsoFit*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue`;
 if(!html.includes(torsoOld))throw Error('体幹コードを確認できませんでした');html=html.replace(torsoOld,torsoNew);
+// MediaPipe already keeps left/right landmark identities.  Re-pairing by the
+// shortest screen distance breaks crossed legs, so preserve each anatomical
+// chain exactly as detected.
+const legChainsOld=`function legChains(){const h=[joint(23,.55),joint(24,.55)],k=[joint(25,.58),joint(26,.58)],a=[joint(27,.62),joint(28,.62)],f=[joint(31,.55)||joint(29,.55),joint(32,.55)||joint(30,.55)];if(h[0]&&h[1]&&k[0]&&k[1]&&pairCost(h[0],h[1],k[1],k[0])<pairCost(h[0],h[1],k[0],k[1]))k.reverse();if(k[0]&&k[1]&&a[0]&&a[1]&&pairCost(k[0],k[1],a[1],a[0])<pairCost(k[0],k[1],a[0],a[1]))a.reverse();if(a[0]&&a[1]&&f[0]&&f[1]&&pairCost(a[0],a[1],f[1],f[0])<pairCost(a[0],a[1],f[0],f[1]))f.reverse();return[[h[0],k[0],a[0],f[0]],[h[1],k[1],a[1],f[1]]]}`;
+const legChainsNew=`function legChains(){const h=[joint(23,.34),joint(24,.34)],k=[joint(25,.34),joint(26,.34)],a=[joint(27,.34),joint(28,.34)],f=[joint(31,.30)||joint(29,.30),joint(32,.30)||joint(30,.30)];return[[h[0],k[0],a[0],f[0]],[h[1],k[1],a[1],f[1]]]}`;
+if(!html.includes(legChainsOld))throw Error('脚の左右判定コードを確認できませんでした');html=html.replace(legChainsOld,legChainsNew);
+
+// Keep difficult limbs visible when segmentation is weak (gloves, crossed
+// limbs, video UI overlays), while still rejecting segments that are mostly
+// outside the person.
+const insideOld=`function segmentInside(A,B){if(!poseMask||manualAdjusted)return true;let good=0;for(const t of [.18,.38,.58,.78]){const p=A.clone().lerp(B,t);if(maskValue(p)>.22)good++}return good>=3}`;
+const insideNew=`function segmentInside(A,B){if(!poseMask||manualAdjusted)return true;let good=0;for(const t of [.12,.30,.50,.70,.88]){const p=A.clone().lerp(B,t);if(maskValue(p)>.16)good++}return good>=2}`;
+if(!html.includes(insideOld))throw Error('人物領域判定コードを確認できませんでした');html=html.replace(insideOld,insideNew);
+
+// Clamp implausible limb lengths without changing their detected direction.
+// This prevents one uncertain elbow/knee from stretching a bone across the
+// body, but preserves back-bends and crossed-leg directions.
+const rawSegmentOld=`    const [rawProx,rawDist]=segment(k);if(!rawProx||!rawDist||!limbRef)continue;const prox=rawProx.clone().add(shift),dist=rawDist.clone().add(shift);`;
+const rawSegmentNew=`    const [rawProx,rawDist]=segment(k);if(!rawProx||!rawDist||!limbRef)continue;const prox=rawProx.clone().add(shift),dist=rawDist.clone().add(shift),rawVector=dist.clone().sub(prox);let minLen=.10,maxLen=1.10;if(k.startsWith('upperArm')){minLen=.30;maxLen=.88}else if(k.startsWith('foreArm')){minLen=.26;maxLen=.82}else if(k.startsWith('thigh')){minLen=.48;maxLen=1.28}else if(k.startsWith('shin')){minLen=.42;maxLen=1.18}const rawLen=rawVector.length();if(rawLen>.001&&(k.startsWith('upperArm')||k.startsWith('foreArm')||k.startsWith('thigh')||k.startsWith('shin'))){const fixedLen=THREE.MathUtils.clamp(rawLen,limbRef*minLen,limbRef*maxLen);dist.copy(prox).add(rawVector.normalize().multiplyScalar(fixedLen))}`;
+if(!html.includes(rawSegmentOld))throw Error('手足の配置コードを確認できませんでした');html=html.replace(rawSegmentOld,rawSegmentNew);
+
+// When a hat or a strong profile prevents FaceLandmarker detection, derive
+// roll/yaw/pitch from pose ears, eyes and nose instead of leaving the skull
+// upright.  Face landmarks still take priority when available.
+const headPoseOld=`        const eyeAxis=eyeRight.clone().sub(eyeLeft),eyeRoll=Math.atan2(eyeAxis.y,eyeAxis.x);let roll=eyeRoll,yaw=0,pitch=0;
+        if(faceChin){const ec=mid(eyeLeft,eyeRight),down=faceChin.clone().sub(ec),chinRoll=Math.atan2(down.x,-down.y);roll=THREE.MathUtils.clamp(eyeRoll*.82+chinRoll*.18,-1.05,1.05)}
+        if(faceNose&&eyeDistance){const ec=mid(eyeLeft,eyeRight),noseSide=(faceNose.x-ec.x)/eyeDistance,depthSide=(eyeRight.z-eyeLeft.z)/Math.max(eyeDistance,.001);yaw=THREE.MathUtils.clamp(noseSide*1.12+depthSide*.45,-1,1);const noseDrop=(ec.y-faceNose.y)/eyeDistance;pitch=THREE.MathUtils.clamp((noseDrop-.53)*.76,-.55,.55);if(Math.abs(noseSide)<.075&&Math.abs(depthSide)<.09)yaw*=.22}
+        q.setFromEuler(new THREE.Euler(pitch,yaw,roll,'YXZ'));`;
+const headPoseNew=`        let rollAxis=eyeRight.clone().sub(eyeLeft),turnLeft=eyeLeft,turnRight=eyeRight;if(!faceLm&&earL&&earR){turnLeft=earL.x<earR.x?earL:earR;turnRight=earL.x<earR.x?earR:earL;const earAxis=turnRight.clone().sub(turnLeft);if(earAxis.lengthSq()>.001)rollAxis.lerp(earAxis,.72)}const eyeRoll=Math.atan2(rollAxis.y,rollAxis.x);let roll=eyeRoll,yaw=0,pitch=0;
+        if(faceChin){const ec=mid(eyeLeft,eyeRight),down=faceChin.clone().sub(ec),chinRoll=Math.atan2(down.x,-down.y);roll=THREE.MathUtils.clamp(eyeRoll*.82+chinRoll*.18,-1.05,1.05)}
+        const turnNose=faceNose||poseNose,turnWidth=eyeDistance||faceW;if(turnNose&&turnWidth){const ec=faceNose?mid(eyeLeft,eyeRight):(turnLeft&&turnRight?mid(turnLeft,turnRight):mid(eyeLeft,eyeRight)),noseSide=(turnNose.x-ec.x)/turnWidth,depthSide=turnLeft&&turnRight?(turnRight.z-turnLeft.z)/Math.max(turnWidth,.001):0;yaw=THREE.MathUtils.clamp(noseSide*1.02+depthSide*.52,-1,1);const noseDrop=(ec.y-turnNose.y)/turnWidth;pitch=THREE.MathUtils.clamp((noseDrop-(faceNose?.53:.22))*(faceNose?.76:.50),-.55,.55);if(Math.abs(noseSide)<.075&&Math.abs(depthSide)<.09)yaw*=.22}
+        q.setFromEuler(new THREE.Euler(pitch,yaw,roll,'YXZ'));`;
+if(!html.includes(headPoseOld))throw Error('頭部の補正コードを確認できませんでした');html=html.replace(headPoseOld,headPoseNew);
+
+// Prefer head width over tiny pose-eye distances on strong profiles.
+const headBlendOld=`      if(faceW&&g.size.x>0){const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90));headScale=headScale*.65+faceScale*.35}`;
+const headBlendNew=`      if(faceW&&g.size.x>0){const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90)),faceWeight=faceLm?.55:.72;headScale=headScale*(1-faceWeight)+faceScale*faceWeight}`;
+if(!html.includes(headBlendOld))throw Error('頭部サイズ補正コードを確認できませんでした');html=html.replace(headBlendOld,headBlendNew);
 html=html.replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);","badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);").replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(mode);","badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(mode);");
 document.open();document.write(html);document.close();
 })().catch(e=>document.body.innerHTML='<div style="font-family:-apple-system,sans-serif;padding:24px;color:#b91c1c"><b>読み込みに失敗しました</b><br>'+String(e.message||e)+'</div>');
