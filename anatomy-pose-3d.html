@@ -54,6 +54,20 @@ const rawSegmentOld=`    const [rawProx,rawDist]=segment(k);if(!rawProx||!rawDis
 const rawSegmentNew=`    const [rawProx,rawDist]=segment(k);if(!rawProx||!rawDist||!limbRef)continue;const prox=rawProx.clone().add(shift),dist=rawDist.clone().add(shift),rawVector=dist.clone().sub(prox);let minLen=.10,maxLen=1.10;if(k.startsWith('upperArm')){minLen=.28;maxLen=1.18}else if(k.startsWith('foreArm')){minLen=.24;maxLen=1.12}else if(k.startsWith('thigh')){minLen=.44;maxLen=1.34}else if(k.startsWith('shin')){minLen=.38;maxLen=1.26}const rawLen=rawVector.length();if(rawLen>.001&&(k.startsWith('upperArm')||k.startsWith('foreArm')||k.startsWith('thigh')||k.startsWith('shin'))){const fixedLen=THREE.MathUtils.clamp(rawLen,limbRef*minLen,limbRef*maxLen);dist.copy(prox).add(rawVector.normalize().multiplyScalar(fixedLen))}`;
 if(!html.includes(rawSegmentOld))throw Error('手足の配置コードを確認できませんでした');html=html.replace(rawSegmentOld,rawSegmentNew);
 
+// The old endpoint estimator averaged the outer 9% of each bone. On short,
+// sharply bent arms this anchored points well inside the mesh, leaving the
+// real bone ends sticking past the shoulder, elbow and wrist. Use the outer
+// 2% for skeletal parts and keep a small joint-safe inset on arm segments.
+const meshEndsOld=`function meshEnds(m){const a=m.geometry.attributes.position,c=a.count;let minY=Infinity,maxY=-Infinity;for(let i=0;i<c;i++){const y=a.getY(i);if(y<minY)minY=y;if(y>maxY)maxY=y}const band=Math.max((maxY-minY)*.09,.0001),top=new THREE.Vector3(),bot=new THREE.Vector3();let nt=0,nb=0;for(let i=0;i<c;i++){const y=a.getY(i);if(y>=maxY-band){top.x+=a.getX(i);top.y+=y;top.z+=a.getZ(i);nt++}if(y<=minY+band){bot.x+=a.getX(i);bot.y+=y;bot.z+=a.getZ(i);nb++}}if(nt)top.multiplyScalar(1/nt);if(nb)bot.multiplyScalar(1/nb);return{prox:top,dist:bot,len:top.distanceTo(bot)}}`;
+const meshEndsNew=`function meshEnds(m){const a=m.geometry.attributes.position,c=a.count;let minY=Infinity,maxY=-Infinity;for(let i=0;i<c;i++){const y=a.getY(i);if(y<minY)minY=y;if(y>maxY)maxY=y}const ratio=m.userData.part.system==='skeletal'?.02:.09,band=Math.max((maxY-minY)*ratio,.0001),top=new THREE.Vector3(),bot=new THREE.Vector3();let nt=0,nb=0;for(let i=0;i<c;i++){const y=a.getY(i);if(y>=maxY-band){top.x+=a.getX(i);top.y+=y;top.z+=a.getZ(i);nt++}if(y<=minY+band){bot.x+=a.getX(i);bot.y+=y;bot.z+=a.getZ(i);nb++}}if(nt)top.multiplyScalar(1/nt);if(nb)bot.multiplyScalar(1/nb);return{prox:top,dist:bot,len:top.distanceTo(bot)}}`;
+if(!html.includes(meshEndsOld))throw Error('骨端の計算処理を確認できませんでした');html=html.replace(meshEndsOld,meshEndsNew);
+html=html.replace("fitLongGroup(g,prox,dist,base,sizesNow.arms);continue", "fitLongGroup(g,prox,dist,base,sizesNow.arms*(system==='skeletal'?.96:1));continue");
+const handScaleOld=`    const d=dist.clone().sub(prox),q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,-1,0),d.clone().normalize()),src=new THREE.Vector3(g.center.x,g.box.max.y,g.center.z);
+    placeUniform(g,base*.82*(isHand?sizesNow.hands:sizesNow.feet),q,prox,src)`;
+const handScaleNew=`    const d=dist.clone().sub(prox),q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,-1,0),d.clone().normalize()),src=new THREE.Vector3(g.center.x,g.box.max.y,g.center.z),detectedScale=isHand&&g.size.y>0?d.length()/g.size.y:base*.82,partScale=isHand?THREE.MathUtils.clamp(detectedScale,base*.30,base*.82):base*.82;
+    placeUniform(g,partScale*(isHand?sizesNow.hands:sizesNow.feet),q,prox,src)`;
+if(!html.includes(handScaleOld))throw Error('手の大きさ処理を確認できませんでした');html=html.replace(handScaleOld,handScaleNew);
+
 // When a hat or a strong profile prevents FaceLandmarker detection, derive
 // roll/yaw/pitch from pose ears, eyes and nose instead of leaving the skull
 // upright.  Face landmarks still take priority when available.
