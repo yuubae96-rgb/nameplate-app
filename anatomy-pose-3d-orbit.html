@@ -1,25 +1,28 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>筋肉骨格 Human Atlas姿勢合わせ</title></head><body><div style="font-family:-apple-system,sans-serif;padding:24px;text-align:center">肩・股関節基準版を読み込み中…</div><script>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>筋肉骨格 Human Atlas姿勢合わせ</title></head><body><div style="font-family:-apple-system,sans-serif;padding:24px;text-align:center">関節固定版を読み込み中…</div><script>
 (async()=>{
   const pinned='https://raw.githubusercontent.com/yuubae96-rgb/nameplate-app/91de6129dcd92db79f0c46ede35eedc90bafe104/anatomy-pose-3d.html';
   let wrapper=await(await fetch(pinned,{cache:'no-store'})).text();
+
+  // 頭部：眼窩中心を写真の両目へ合わせる。
   const before="eyeY=system==='muscular'?.79:.55,eyeZ=system==='muscular'?.88:.82";
   const after ="eyeY=system==='muscular'?.79:.63,eyeZ=system==='muscular'?.88:.84";
   if(!wrapper.includes(before))throw new Error('眼窩基準コードを確認できませんでした');
   wrapper=wrapper.replace(before,after);
   wrapper=wrapper.replace("const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90)),faceWeight=faceLm?.55:.72;headScale=headScale*(1-faceWeight)+faceScale*faceWeight", "const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90)),faceWeight=system==='skeletal'?(faceLm?.18:.38):(faceLm?.55:.72);headScale=headScale*(1-faceWeight)+faceScale*faceWeight");
 
-  // 体幹の縦補正。ここでは未定義の shoulderL/hipL を参照せず、既に計算済みの torsoLen を使う。
-  const torsoOld="placeUniform(g,torsoFit*(system==='muscular'?.90:1)*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue";
-  const torsoNew="const torsoAnchor=torsoCenter.clone().add(shift);if(system==='skeletal')torsoAnchor.y+=Math.max(torsoLen,.001)*.085;placeUniform(g,torsoFit*(system==='muscular'?.90:1)*sizesNow.torso,q,torsoAnchor,g.center);continue";
-  if(!wrapper.includes(torsoOld))throw new Error('体幹配置コードを確認できませんでした');
+  // 以前の『体幹全体を上へ』補正は廃止。
+  // 胸郭は MediaPipe の肩幅と肩中点〜股関節中点の長さから直接サイズを決め、
+  // その2点の中間をアンカーにする。これで胸郭だけが巨大化したり上下へずれにくい。
+  const torsoOld="let torsoFit=base*.94;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.78:.86)),sy=torsoLen/(g.size.y*(system==='muscular'?.78:.88));torsoFit=THREE.MathUtils.clamp(Math.min(sx,sy),base*.62,base*.98)}placeUniform(g,torsoFit*(system==='muscular'?.90:1)*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue";
+  const torsoNew="let torsoFit=base*.90;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.88:.96)),sy=torsoLen/(g.size.y*(system==='muscular'?.92:1.02));torsoFit=THREE.MathUtils.clamp(Math.min(sx,sy),base*.55,base*.92)}const jointTorsoAnchor=torsoCenter.clone().add(shift);placeUniform(g,torsoFit*(system==='muscular'?.88:1)*sizesNow.torso,q,jointTorsoAnchor,g.center);continue";
+  if(!wrapper.includes(torsoOld))throw new Error('体幹サイズコードを確認できませんでした');
   wrapper=wrapper.replace(torsoOld,torsoNew);
 
-  const pelvisOld="placeUniform(g,base*.94*sizesNow.pelvis,q,pelvisCenter.clone().add(shift),g.center);continue";
-  const pelvisNew="const pelvisAnchor=pelvisCenter.clone().add(shift);if(system==='skeletal')pelvisAnchor.y+=Math.max(torsoLen,.001)*.045;placeUniform(g,base*.94*sizesNow.pelvis,q,pelvisAnchor,g.center);continue";
-  if(wrapper.includes(pelvisOld))wrapper=wrapper.replace(pelvisOld,pelvisNew);
+  // 骨盤は写真の左右股関節中心そのものを維持。全体上げはしない。
+  // 腕・脚は既存の肩→肘→手首、股→膝→足首の各関節アンカーをそのまま使用する。
+  wrapper=wrapper.replace("badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);", "badge.textContent=(faceLm?'眼窩・全身関節固定':'姿勢推定')+'・Human Atlas'+modeName(displayMode);");
+  wrapper=wrapper.replace("badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(mode);", "badge.textContent=(faceLm?'眼窩・全身関節固定':'姿勢推定')+'・Human Atlas'+modeName(mode);");
 
-  wrapper=wrapper.replace("badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);", "badge.textContent=(faceLm?'眼窩・肩・股関節固定':'姿勢推定')+'・Human Atlas'+modeName(displayMode);");
-  wrapper=wrapper.replace("badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(mode);", "badge.textContent=(faceLm?'眼窩・肩・股関節固定':'姿勢推定')+'・Human Atlas'+modeName(mode);");
   document.open();document.write(wrapper);document.close();
 })().catch(e=>{document.body.innerHTML='<div style="font-family:-apple-system,sans-serif;padding:24px;color:#b91c1c"><b>読み込みに失敗しました</b><br>'+String(e.message||e)+'</div>'});
 </script></body></html>
