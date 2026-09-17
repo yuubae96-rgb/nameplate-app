@@ -82,13 +82,14 @@ function poseSingleSystem(system,clear=true){
       if(eyeLeft&&eyeRight){
         const axis=eyeRight.clone().sub(eyeLeft),roll=Math.atan2(axis.y,axis.x);
         const qRoll=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),roll);
-        let yaw=0;
-        if(faceNose&&eyeDistance){yaw=THREE.MathUtils.clamp((faceNose.x-eyeCenter.x)/eyeDistance*1.28,-.68,.68)}
-        const qYaw=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),yaw);
-        q.copy(qRoll).multiply(qYaw);
+        let yaw=0,pitch=0;
+        if(faceNose&&eyeDistance){yaw=THREE.MathUtils.clamp((faceNose.x-eyeCenter.x)/eyeDistance*1.28,-.85,.85);const noseDrop=(eyeCenter.y-faceNose.y)/eyeDistance;pitch=THREE.MathUtils.clamp((noseDrop-.55)*.9,-.52,.52)}
+        const qYaw=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),yaw),qPitch=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),pitch);
+        q.copy(qRoll).multiply(qYaw).multiply(qPitch);
       }else if(faceLeft&&faceRight){
         const a=faceRight.clone().sub(faceLeft);q.setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(a.y,a.x))
       }
+      if(system==='skeletal'){const d=Math.PI/180,qManual=new THREE.Quaternion().setFromEuler(new THREE.Euler(headRotation.pitch*d,headRotation.yaw*d,headRotation.roll*d,'YXZ'));q.multiply(qManual)}
       const anchor=eyeCenter.clone().add(shift);
       placeUniform(g,headScale*sizesNow.head,q,anchor,sourceEyeCenter);continue
     }
