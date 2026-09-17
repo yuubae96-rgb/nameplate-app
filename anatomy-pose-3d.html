@@ -88,6 +88,14 @@ html=html.replace("try{o.baseOptions.delegate='GPU';face=await v.FaceLandmarker.
 // same pose and face models entirely through the CPU/WASM path.
 html=html.replace("const poseResult=pose.detect(photo);", "const inferenceImage=FORCE_CPU?(()=>{const c=document.createElement('canvas');c.width=photo.naturalWidth;c.height=photo.naturalHeight;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(photo,0,0);return x.getImageData(0,0,c.width,c.height)})():photo;const poseResult=pose.detect(inferenceImage);");
 html=html.replace("faceLm=face.detect(photo).faceLandmarks?.[0]||null", "faceLm=face.detect(inferenceImage).faceLandmarks?.[0]||null");
+// Include the failing stage in QA-only errors; normal users see the original
+// short message.
+html=html.replace("go.onclick=async()=>{go.disabled=true;try{await initPose();", "go.onclick=async()=>{go.disabled=true;let qaPhase='initPose';try{await initPose();qaPhase='poseDetect';");
+html=html.replace("const poseResult=pose.detect(inferenceImage);", "const poseResult=pose.detect(inferenceImage);qaPhase='poseReady';");
+html=html.replace("try{faceLm=face.detect(inferenceImage).faceLandmarks?.[0]||null}", "qaPhase='faceDetect';try{faceLm=face.detect(inferenceImage).faceLandmarks?.[0]||null}");
+html=html.replace("stage.style.display='block';controls.hidden=false;", "qaPhase='renderer';stage.style.display='block';controls.hidden=false;");
+html=html.replace("await loadSkeleton();", "qaPhase='skeleton';await loadSkeleton();");
+html=html.replace("st(e.message||'解析できませんでした',true)", "st((FORCE_CPU?'['+qaPhase+'] ':'')+(e.message||'解析できませんでした'),true)");
 html=html.replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);","badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);").replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(mode);","badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(mode);");
 document.open();document.write(html);document.close();
 })().catch(e=>document.body.innerHTML='<div style="font-family:-apple-system,sans-serif;padding:24px;color:#b91c1c"><b>読み込みに失敗しました</b><br>'+String(e.message||e)+'</div>');
