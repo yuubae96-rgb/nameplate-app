@@ -27,11 +27,11 @@ const headOld=`      const eyeRatio=system==='muscular'?.26:.43,eyeY=system==='m
 const headNew=`      const eyeRatio=system==='muscular'?.40:.43,eyeY=system==='muscular'?.79:.55,eyeZ=system==='muscular'?.88:.82,sourceEyeDistance=Math.max(g.size.x*eyeRatio,.001),sourceEyeCenter=new THREE.Vector3(g.center.x,g.box.min.y+g.size.y*eyeY,g.box.min.z+g.size.z*eyeZ);
       let headScale=eyeDistance?eyeDistance/sourceEyeDistance:base*.84;
       if(faceW&&g.size.x>0){const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90));headScale=headScale*.65+faceScale*.35}
-      headScale=THREE.MathUtils.clamp(headScale,base*.58,base*.98);`;
+      headScale=THREE.MathUtils.clamp(headScale,base*.58,base*.98)*(system==='muscular'?1.16:1.07);`;
 if(!html.includes(headOld))throw Error('頭部倍率コードを確認できませんでした');html=html.replace(headOld,headNew);
 // 胸郭・体幹は全身倍率ではなく左右肩幅と肩〜腰の長さで個別に校正。筋肉が腹部下まで巨大化するのを防ぐ。
 const torsoOld=`      placeUniform(g,base*.94*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue`;
-const torsoNew=`      let torsoFit=base*.94;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.78:.86)),sy=torsoLen/(g.size.y*(system==='muscular'?.78:.88));torsoFit=THREE.MathUtils.clamp(Math.min(sx,sy),base*.62,base*.98)}placeUniform(g,torsoFit*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue`;
+const torsoNew=`      let torsoFit=base*.94;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.78:.86)),sy=torsoLen/(g.size.y*(system==='muscular'?.78:.88));torsoFit=THREE.MathUtils.clamp(Math.min(sx,sy),base*.62,base*.98)}placeUniform(g,torsoFit*(system==='muscular'?.90:1)*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue`;
 if(!html.includes(torsoOld))throw Error('体幹コードを確認できませんでした');html=html.replace(torsoOld,torsoNew);
 // MediaPipe already keeps left/right landmark identities.  Re-pairing by the
 // shortest screen distance breaks crossed legs, so preserve each anatomical
@@ -51,7 +51,7 @@ if(!html.includes(insideOld))throw Error('人物領域判定コードを確認�
 // This prevents one uncertain elbow/knee from stretching a bone across the
 // body, but preserves back-bends and crossed-leg directions.
 const rawSegmentOld=`    const [rawProx,rawDist]=segment(k);if(!rawProx||!rawDist||!limbRef)continue;const prox=rawProx.clone().add(shift),dist=rawDist.clone().add(shift);`;
-const rawSegmentNew=`    const [rawProx,rawDist]=segment(k);if(!rawProx||!rawDist||!limbRef)continue;const prox=rawProx.clone().add(shift),dist=rawDist.clone().add(shift),rawVector=dist.clone().sub(prox);let minLen=.10,maxLen=1.10;if(k.startsWith('upperArm')){minLen=.30;maxLen=.88}else if(k.startsWith('foreArm')){minLen=.26;maxLen=.82}else if(k.startsWith('thigh')){minLen=.48;maxLen=1.28}else if(k.startsWith('shin')){minLen=.42;maxLen=1.18}const rawLen=rawVector.length();if(rawLen>.001&&(k.startsWith('upperArm')||k.startsWith('foreArm')||k.startsWith('thigh')||k.startsWith('shin'))){const fixedLen=THREE.MathUtils.clamp(rawLen,limbRef*minLen,limbRef*maxLen);dist.copy(prox).add(rawVector.normalize().multiplyScalar(fixedLen))}`;
+const rawSegmentNew=`    const [rawProx,rawDist]=segment(k);if(!rawProx||!rawDist||!limbRef)continue;const prox=rawProx.clone().add(shift),dist=rawDist.clone().add(shift),rawVector=dist.clone().sub(prox);let minLen=.10,maxLen=1.10;if(k.startsWith('upperArm')){minLen=.28;maxLen=1.18}else if(k.startsWith('foreArm')){minLen=.24;maxLen=1.12}else if(k.startsWith('thigh')){minLen=.44;maxLen=1.34}else if(k.startsWith('shin')){minLen=.38;maxLen=1.26}const rawLen=rawVector.length();if(rawLen>.001&&(k.startsWith('upperArm')||k.startsWith('foreArm')||k.startsWith('thigh')||k.startsWith('shin'))){const fixedLen=THREE.MathUtils.clamp(rawLen,limbRef*minLen,limbRef*maxLen);dist.copy(prox).add(rawVector.normalize().multiplyScalar(fixedLen))}`;
 if(!html.includes(rawSegmentOld))throw Error('手足の配置コードを確認できませんでした');html=html.replace(rawSegmentOld,rawSegmentNew);
 
 // When a hat or a strong profile prevents FaceLandmarker detection, derive
@@ -71,6 +71,13 @@ if(!html.includes(headPoseOld))throw Error('頭部の補正コードを確認で
 const headBlendOld=`      if(faceW&&g.size.x>0){const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90));headScale=headScale*.65+faceScale*.35}`;
 const headBlendNew=`      if(faceW&&g.size.x>0){const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90)),faceWeight=faceLm?.55:.72;headScale=headScale*(1-faceWeight)+faceScale*faceWeight}`;
 if(!html.includes(headBlendOld))throw Error('頭部サイズ補正コードを確認できませんでした');html=html.replace(headBlendOld,headBlendNew);
+// Use MediaPipe's highest-accuracy single-person model for sports poses.  It
+// is heavier than the full model, but is substantially better when arms
+// overlap, the torso bends backward, or legs cross.
+html=html.replace('pose_landmarker_full/float16/1/pose_landmarker_full.task','pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task');
+html=html.replace("minPoseDetectionConfidence:.4,minPosePresenceConfidence:.4","minPoseDetectionConfidence:.28,minPosePresenceConfidence:.28");
+html=html.replace("earL=joint(7,.32),earR=joint(8,.32),poseNose=joint(0,.28),poseEyeA=joint(2,.25),poseEyeB=joint(5,.25)","earL=joint(7,.16),earR=joint(8,.16),poseNose=joint(0,.16),poseEyeA=joint(2,.16),poseEyeB=joint(5,.16)");
+html=html.replace("case'upperArmL':return[joint(11,.38),joint(13,.42)];case'upperArmR':return[joint(12,.38),joint(14,.42)];case'foreArmL':return[joint(13,.42),joint(15,.45)];case'foreArmR':return[joint(14,.42),joint(16,.45)]","case'upperArmL':return[joint(11,.28),joint(13,.28)];case'upperArmR':return[joint(12,.28),joint(14,.28)];case'foreArmL':return[joint(13,.28),joint(15,.28)];case'foreArmR':return[joint(14,.28),joint(16,.28)]");
 html=html.replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);","badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);").replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(mode);","badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(mode);");
 document.open();document.write(html);document.close();
 })().catch(e=>document.body.innerHTML='<div style="font-family:-apple-system,sans-serif;padding:24px;color:#b91c1c"><b>読み込みに失敗しました</b><br>'+String(e.message||e)+'</div>');
