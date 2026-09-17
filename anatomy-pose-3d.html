@@ -14,30 +14,33 @@
         const a=faceRight.clone().sub(faceLeft);q.setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(a.y,a.x))
       }`;
   const improved=`      let q=new THREE.Quaternion(),eyeLeft=eyesConsistent?faceEyeLeft:poseEyeLeft,eyeRight=eyesConsistent?faceEyeRight:poseEyeRight;
-      // 顔の3Dランドマークから頭部座標系を直接作る。
-      // 目線だけの2D回転ではなく、左右旋回(Yaw)・上下(Pitch)・傾き(Roll)を同時に推定する。
-      if(faceEyeLeft&&faceEyeRight&&faceTop&&faceChin){
-        const xAxis=faceEyeRight.clone().sub(faceEyeLeft);
-        const yAxis=faceTop.clone().sub(faceChin);
-        q.copy(frameQuat(xAxis,yAxis));
-        // MediaPipeの奥行きは写真によって弱く出るため、鼻の左右偏位を補助情報としてYawへ少量加える。
-        if(faceNose&&eyeDistance){
-          const yawAssist=THREE.MathUtils.clamp((faceNose.x-eyeCenter.x)/eyeDistance*.42,-.28,.28);
-          q.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),yawAssist));
-        }
-      }else if(eyeLeft&&eyeRight){
-        const axis=eyeRight.clone().sub(eyeLeft),roll=Math.atan2(axis.y,axis.x);
-        const qRoll=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),roll);
+      // 頭蓋骨は眼窩と両目の線を最優先で合わせる。顔全体の3D情報はYaw/Pitchに使う。
+      if(eyeLeft&&eyeRight){
+        const eyeAxis=eyeRight.clone().sub(eyeLeft);
+        const roll=THREE.MathUtils.clamp(Math.atan2(eyeAxis.y,eyeAxis.x)*1.18,-1.05,1.05);
         let yaw=0,pitch=0;
-        if(faceNose&&eyeDistance){yaw=THREE.MathUtils.clamp((faceNose.x-eyeCenter.x)/eyeDistance*1.28,-.85,.85);const noseDrop=(eyeCenter.y-faceNose.y)/eyeDistance;pitch=THREE.MathUtils.clamp((noseDrop-.55)*.9,-.52,.52)}
-        q.copy(qRoll).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),yaw)).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),pitch));
+        if(faceNose&&eyeDistance){
+          const noseSide=(faceNose.x-eyeCenter.x)/eyeDistance;
+          const depthSide=(eyeRight.z-eyeLeft.z)/Math.max(eyeDistance,.001);
+          yaw=THREE.MathUtils.clamp(noseSide*1.45+depthSide*.85,-1.12,1.12);
+          const noseDrop=(eyeCenter.y-faceNose.y)/eyeDistance;
+          pitch=THREE.MathUtils.clamp((noseDrop-.52)*1.05,-.72,.72);
+        }
+        // 顔上端〜顎の傾きも補助にし、横倒し姿勢で頭蓋骨が起き上がるのを防ぐ。
+        if(faceTop&&faceChin){
+          const faceUp=faceTop.clone().sub(faceChin);
+          const faceRoll=Math.atan2(-faceUp.x,faceUp.y);
+          const delta=THREE.MathUtils.clamp(faceRoll-roll,-.28,.28);
+          q.setFromEuler(new THREE.Euler(pitch,yaw,roll+delta*.35,'YXZ'));
+        }else q.setFromEuler(new THREE.Euler(pitch,yaw,roll,'YXZ'));
       }else if(faceLeft&&faceRight){
-        const a=faceRight.clone().sub(faceLeft);q.setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(a.y,a.x))
+        const a=faceRight.clone().sub(faceLeft),roll=Math.atan2(a.y,a.x);
+        q.setFromAxisAngle(new THREE.Vector3(0,0,1),roll)
       }`;
   if(!html.includes(old)) throw new Error('頭蓋骨自動合わせ部分を確認できませんでした');
   html=html.replace(old,improved)
-    .replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);","badge.textContent=(faceLm?'顔3D自動追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);")
-    .replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(mode);","badge.textContent=(faceLm?'顔3D自動追従':'姿勢推定')+'・Human Atlas'+modeName(mode);");
+    .replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);","badge.textContent=(faceLm?'眼窩＋顔3D自動追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);")
+    .replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(mode);","badge.textContent=(faceLm?'眼窩＋顔3D自動追従':'姿勢推定')+'・Human Atlas'+modeName(mode);");
   document.open();document.write(html);document.close();
 })().catch(e=>{document.body.innerHTML='<div style="font-family:-apple-system,sans-serif;padding:24px;color:#b91c1c"><b>読み込みに失敗しました</b><br>'+String(e.message||e)+'</div>'});
 </script></body></html>
