@@ -2,23 +2,20 @@
 (async()=>{
   const pinned='https://raw.githubusercontent.com/yuubae96-rgb/nameplate-app/91de6129dcd92db79f0c46ede35eedc90bafe104/anatomy-pose-3d.html';
   let wrapper=await(await fetch(pinned,{cache:'no-store'})).text();
-  // 頭部は眼窩中心を写真の両目中心へ固定。
   const before="eyeY=system==='muscular'?.79:.55,eyeZ=system==='muscular'?.88:.82";
   const after ="eyeY=system==='muscular'?.79:.63,eyeZ=system==='muscular'?.88:.84";
   if(!wrapper.includes(before))throw new Error('眼窩基準コードを確認できませんでした');
   wrapper=wrapper.replace(before,after);
   wrapper=wrapper.replace("const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90)),faceWeight=faceLm?.55:.72;headScale=headScale*(1-faceWeight)+faceScale*faceWeight", "const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90)),faceWeight=system==='skeletal'?(faceLm?.18:.38):(faceLm?.55:.72);headScale=headScale*(1-faceWeight)+faceScale*faceWeight");
 
-  // 首から下は全身中心ではなく、写真の左右肩と左右股関節を縦方向の基準にする。
-  // この写真で胸郭・骨盤がまとめて下へ落ちる症状を補正し、肩関節を本人の肩へ優先して戻す。
+  // 体幹の縦補正。ここでは未定義の shoulderL/hipL を参照せず、既に計算済みの torsoLen を使う。
   const torsoOld="placeUniform(g,torsoFit*(system==='muscular'?.90:1)*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue";
-  const torsoNew="const torsoAnchor=torsoCenter.clone().add(shift);if(system==='skeletal'){const shoulderMid=mid(shoulderL,shoulderR),hipMid=mid(hipL,hipR),span=Math.max(shoulderMid.distanceTo(hipMid),.001);torsoAnchor.y+=span*.085}placeUniform(g,torsoFit*(system==='muscular'?.90:1)*sizesNow.torso,q,torsoAnchor,g.center);continue";
+  const torsoNew="const torsoAnchor=torsoCenter.clone().add(shift);if(system==='skeletal')torsoAnchor.y+=Math.max(torsoLen,.001)*.085;placeUniform(g,torsoFit*(system==='muscular'?.90:1)*sizesNow.torso,q,torsoAnchor,g.center);continue";
   if(!wrapper.includes(torsoOld))throw new Error('体幹配置コードを確認できませんでした');
   wrapper=wrapper.replace(torsoOld,torsoNew);
 
-  // 骨盤も股関節中心を基準に少し上へ。脚そのものの関節アンカーは変更しない。
   const pelvisOld="placeUniform(g,base*.94*sizesNow.pelvis,q,pelvisCenter.clone().add(shift),g.center);continue";
-  const pelvisNew="const pelvisAnchor=pelvisCenter.clone().add(shift);if(system==='skeletal')pelvisAnchor.y+=torsoLen*.045;placeUniform(g,base*.94*sizesNow.pelvis,q,pelvisAnchor,g.center);continue";
+  const pelvisNew="const pelvisAnchor=pelvisCenter.clone().add(shift);if(system==='skeletal')pelvisAnchor.y+=Math.max(torsoLen,.001)*.045;placeUniform(g,base*.94*sizesNow.pelvis,q,pelvisAnchor,g.center);continue";
   if(wrapper.includes(pelvisOld))wrapper=wrapper.replace(pelvisOld,pelvisNew);
 
   wrapper=wrapper.replace("badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);", "badge.textContent=(faceLm?'眼窩・肩・股関節固定':'姿勢推定')+'・Human Atlas'+modeName(displayMode);");
