@@ -9,9 +9,9 @@
   wrapper=wrapper.replace(before,after);
   wrapper=wrapper.replace("const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90)),faceWeight=faceLm?.55:.72;headScale=headScale*(1-faceWeight)+faceScale*faceWeight", "const faceScale=faceW/(g.size.x*(system==='muscular'?.92:.90)),faceWeight=system==='skeletal'?(faceLm?.18:.38):(faceLm?.55:.72);headScale=headScale*(1-faceWeight)+faceScale*faceWeight");
 
-  // 胸郭は肩幅を優先して従来より幅広くする。体幹中心は左右肩の中点へ寄せ、頸椎中心と首を合わせる。
+  // 縦は肩〜股関節長だけで決め、横幅だけを肩幅へ合わせる。全体拡大で肋骨が長くなり過ぎないようにする。
   const torsoOld="let torsoFit=base*.94;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.78:.86)),sy=torsoLen/(g.size.y*(system==='muscular'?.78:.88));torsoFit=THREE.MathUtils.clamp(Math.min(sx,sy),base*.62,base*.98)}placeUniform(g,torsoFit*(system==='muscular'?.90:1)*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue";
-  const torsoNew="let torsoFit=base*.90;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.82:.88)),sy=torsoLen/(g.size.y*(system==='muscular'?.92:1.02));torsoFit=THREE.MathUtils.clamp(Math.max(sy,sx*.94),base*.62,base*1.10)}const jointTorsoAnchor=torsoCenter.clone().add(shift);jointTorsoAnchor.y+=torsoLen*.060;const ls=joint(11,.18),rs=joint(12,.18);if(ls&&rs)jointTorsoAnchor.x=(ls.x+rs.x)*.5+shift.x;placeUniform(g,torsoFit*(system==='muscular'?.90:1.10)*sizesNow.torso,q,jointTorsoAnchor,g.center);continue";
+  const torsoNew="let torsoFit=base*.90,wide=1;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.84:.90)),sy=torsoLen/(g.size.y*(system==='muscular'?.92:1.02));torsoFit=THREE.MathUtils.clamp(sy,base*.58,base*.92);wide=THREE.MathUtils.clamp(sx/Math.max(torsoFit,.001),1.05,1.22)}const jointTorsoAnchor=torsoCenter.clone().add(shift);jointTorsoAnchor.y+=torsoLen*.060;const ls=joint(11,.18),rs=joint(12,.18);if(ls&&rs){const neckX=(ls.x+rs.x)*.5;jointTorsoAnchor.x=neckX+shift.x}placeUniform(g,torsoFit*(system==='muscular'?.88:1)*sizesNow.torso,q,jointTorsoAnchor,g.center);g.root.scale.x*=wide;continue";
   if(!wrapper.includes(torsoOld))throw new Error('体幹サイズコードを確認できませんでした');
   wrapper=wrapper.replace(torsoOld,torsoNew);
 
