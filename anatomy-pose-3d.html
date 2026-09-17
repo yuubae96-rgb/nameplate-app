@@ -14,33 +14,43 @@
         const a=faceRight.clone().sub(faceLeft);q.setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(a.y,a.x))
       }`;
   const improved=`      let q=new THREE.Quaternion(),eyeLeft=eyesConsistent?faceEyeLeft:poseEyeLeft,eyeRight=eyesConsistent?faceEyeRight:poseEyeRight;
-      // 頭蓋骨は眼窩と両目の線を最優先で合わせる。顔全体の3D情報はYaw/Pitchに使う。
+      // 頭蓋骨の正面基準を顔のアンカーへ固定する。
+      // まず両目の線でRoll、鼻の偏位と左右目の奥行きでYaw、目〜鼻の比率でPitchを決める。
+      // 正面顔では過剰な3D回転を抑え、眼窩が左右の目から逃げないことを最優先にする。
       if(eyeLeft&&eyeRight){
         const eyeAxis=eyeRight.clone().sub(eyeLeft);
-        const roll=THREE.MathUtils.clamp(Math.atan2(eyeAxis.y,eyeAxis.x)*1.18,-1.05,1.05);
+        const roll=THREE.MathUtils.clamp(Math.atan2(eyeAxis.y,eyeAxis.x),-.9,.9);
         let yaw=0,pitch=0;
         if(faceNose&&eyeDistance){
           const noseSide=(faceNose.x-eyeCenter.x)/eyeDistance;
           const depthSide=(eyeRight.z-eyeLeft.z)/Math.max(eyeDistance,.001);
-          yaw=THREE.MathUtils.clamp(noseSide*1.45+depthSide*.85,-1.12,1.12);
+          yaw=THREE.MathUtils.clamp(noseSide*1.05+depthSide*.42,-.92,.92);
           const noseDrop=(eyeCenter.y-faceNose.y)/eyeDistance;
-          pitch=THREE.MathUtils.clamp((noseDrop-.52)*1.05,-.72,.72);
+          pitch=THREE.MathUtils.clamp((noseDrop-.53)*.72,-.48,.48);
+          // ほぼ正面なら微小な推定誤差で頭蓋骨が横を向かないようデッドゾーンを設ける。
+          if(Math.abs(noseSide)<.09&&Math.abs(depthSide)<.10)yaw*=.28;
         }
-        // 顔上端〜顎の傾きも補助にし、横倒し姿勢で頭蓋骨が起き上がるのを防ぐ。
-        if(faceTop&&faceChin){
-          const faceUp=faceTop.clone().sub(faceChin);
-          const faceRoll=Math.atan2(-faceUp.x,faceUp.y);
-          const delta=THREE.MathUtils.clamp(faceRoll-roll,-.28,.28);
-          q.setFromEuler(new THREE.Euler(pitch,yaw,roll+delta*.35,'YXZ'));
-        }else q.setFromEuler(new THREE.Euler(pitch,yaw,roll,'YXZ'));
+        q.setFromEuler(new THREE.Euler(pitch,yaw,roll,'YXZ'));
       }else if(faceLeft&&faceRight){
         const a=faceRight.clone().sub(faceLeft),roll=Math.atan2(a.y,a.x);
         q.setFromAxisAngle(new THREE.Vector3(0,0,1),roll)
       }`;
   if(!html.includes(old)) throw new Error('頭蓋骨自動合わせ部分を確認できませんでした');
-  html=html.replace(old,improved)
-    .replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);","badge.textContent=(faceLm?'眼窩＋顔3D自動追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);")
-    .replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(mode);","badge.textContent=(faceLm?'眼窩＋顔3D自動追従':'姿勢推定')+'・Human Atlas'+modeName(mode);");
+  html=html.replace(old,improved);
+  // 頭蓋骨の位置・大きさは鼻単独や頭頂ではなく顔中心へ寄せる。
+  // 元版の頭部アンカー計算後に補正を掛け、正面写真で左上へ飛ぶ症状と過大表示を抑える。
+  const anchorNeedle=`const headTarget=faceCenter||P(0);`;
+  if(html.includes(anchorNeedle)){
+    html=html.replace(anchorNeedle,`const headTarget=faceCenter||P(0);if(faceEyeLeft&&faceEyeRight){const ec=faceEyeLeft.clone().add(faceEyeRight).multiplyScalar(.5);if(faceNose){headTarget.x=ec.x*.72+faceNose.x*.28;headTarget.y=ec.y*.78+faceNose.y*.22} else {headTarget.x=ec.x;headTarget.y=ec.y}}`);
+  }
+  // Human Atlas頭蓋骨は顔写真に対して大きめに出やすいため、自動頭部倍率だけ校正。
+  const scaleNeedle=`sizes.head`;
+  if(html.includes(scaleNeedle)){
+    html=html.replace(/(groups\.head\.scale\.setScalar\()([^;]+?)(\);)/,`$1($2)*.90$3`);
+  }
+  html=html
+    .replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);","badge.textContent=(faceLm?'眼窩・鼻・顎基準':'姿勢推定')+'・Human Atlas'+modeName(displayMode);")
+    .replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(mode);","badge.textContent=(faceLm?'眼窩・鼻・顎基準':'姿勢推定')+'・Human Atlas'+modeName(mode);");
   document.open();document.write(html);document.close();
 })().catch(e=>{document.body.innerHTML='<div style="font-family:-apple-system,sans-serif;padding:24px;color:#b91c1c"><b>読み込みに失敗しました</b><br>'+String(e.message||e)+'</div>'});
 </script></body></html>
