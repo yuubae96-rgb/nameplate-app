@@ -1,84 +1,8 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>筋肉骨格 Human Atlas姿勢合わせ</title><style>:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#10243f;background:#edf3f8}*{box-sizing:border-box}body{margin:0}.wrap{max-width:760px;margin:auto;padding:calc(18px + env(safe-area-inset-top)) 14px 40px}h1{font-size:27px}.lead{color:#526579;line-height:1.55}.card{background:#fff;border-radius:20px;padding:15px}.pick{display:block;border:2px dashed #8da1b5;border-radius:15px;padding:18px;text-align:center;font-weight:900}.pick input{display:none}.go{width:100%;margin-top:10px;padding:14px;border:0;border-radius:14px;background:#16a34a;color:#fff;font-weight:900;font-size:16px}.go:disabled{opacity:.4}.stage{display:none;position:relative;margin-top:13px;border-radius:16px;overflow:hidden}.stage img{display:block;width:100%;height:auto}.stage canvas{position:absolute;inset:0;width:100%;height:100%}.status{text-align:center;font-weight:800;color:#526579;margin:10px}.atlas{margin-top:10px;padding:10px;border-radius:12px;background:#eef7f1;font-size:12px;color:#315744}.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.controls button{padding:12px;border:1px solid #ccd6df;border-radius:12px;background:#fff;font-weight:800}.controls button.active{background:#10243f;color:#fff}.range,.sizebox,.headpos,.rotatebox{grid-column:1/-1;background:#f4f7fa;padding:10px;border-radius:12px}.range input,.sizebox input{width:100%}.sizehead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:7px}.sizehead select{min-width:150px;padding:8px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#10243f;font-weight:800}.headpos-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.headpos-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.headpos-grid button{min-height:44px;padding:9px}.headpos-grid .up{grid-column:2}.headpos-grid .left{grid-column:1}.headpos-grid .reset{grid-column:2}.headpos-grid .right{grid-column:3}.headpos-grid .down{grid-column:2}.rotatebox h3{margin:0 0 8px;font-size:16px}.rotate-row{display:grid;grid-template-columns:86px 1fr 52px;align-items:center;gap:8px;margin:9px 0}.rotate-row input{width:100%}.rotate-value{text-align:right;font-weight:800}.note{font-size:12px;line-height:1.55;color:#8c3c0d;background:#fff7ed;border:1px solid #fed7aa;padding:10px;border-radius:12px;margin-top:12px}.badge{position:absolute;left:8px;top:8px;background:#07111dcc;color:#fff;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:800;z-index:3}.joint-layer{display:none;position:absolute;inset:0;z-index:5;pointer-events:none}.joint-layer.editing{display:block}.joint-dot{position:absolute;width:20px;height:20px;margin:-10px 0 0 -10px;padding:0;border:2px solid #fff;border-radius:50%;background:#ef4444;box-shadow:0 1px 5px #0008;pointer-events:auto;touch-action:none}.joint-dot.core{background:#0ea5e9}</style></head><body><main class="wrap"><h1>筋肉骨格</h1><p class="lead">写真の姿勢を3D解析し、Human Atlas / BodyParts3Dの実骨格を、実メッシュの骨端中心から関節へ合わせます。</p><section class="card"><label class="pick">📷 人物写真を選ぶ<input id="file" type="file" accept="image/*"></label><div id="status" class="status">Human Atlas骨格データを準備中…</div><button id="go" class="go" disabled>Human Atlas骨格を写真に合わせる</button><div id="atlas" class="atlas">Human Atlasへ接続しています…</div><div id="stage" class="stage"><img id="photo"><canvas id="gl"></canvas><span id="badge" class="badge"></span><div id="jointLayer" class="joint-layer"></div></div><div id="controls" class="controls" hidden><button id="bones" class="active">🦴 実骨格</button><button id="muscles">💪 筋肉</button><button id="both">🦴＋💪 両方</button><button id="photoOnly">👤 写真だけ</button><button id="editPose">✋ 関節を直す</button><label class="range">骨格の濃さ <input id="boneOpacity" type="range" min="10" max="100" value="36"></label><label class="range">筋肉の濃さ <input id="muscleOpacity" type="range" min="10" max="100" value="36"></label><div class="sizebox"><div class="sizehead"><select id="adjustSystem" aria-label="調整する表示"><option value="skeletal">骨格を調整</option><option value="muscular">筋肉を調整</option></select><b>調整対象</b></div><div class="sizehead"><select id="sizePart" aria-label="大きさを変える部位"><option value="head">頭蓋骨</option><option value="torso">胸郭・背骨</option><option value="pelvis">骨盤</option><option value="arms">腕</option><option value="legs">脚</option><option value="hands">手</option><option value="feet">足</option></select><b id="sizeValue">100%</b></div><input id="partSize" type="range" min="60" max="140" value="100" aria-label="選択した部位の大きさ"><button id="resetSizes" type="button">大きさを全部戻す</button></div><div class="headpos"><div class="headpos-title"><b id="positionTitle">頭蓋骨の位置</b><span id="headPosValue">中央</span></div><div class="headpos-grid"><button id="headUp" class="up" type="button">↑ 上</button><button id="headLeft" class="left" type="button">← 左</button><button id="resetHeadPos" class="reset" type="button">中央へ戻す</button><button id="headRight" class="right" type="button">右 →</button><button id="headDown" class="down" type="button">↓ 下</button></div></div><div class="rotatebox"><h3>頭蓋骨の3D向き（自動＋微調整）</h3><label class="rotate-row"><span>横向き</span><input id="headYaw" type="range" min="-90" max="90" value="0"><span id="headYawValue" class="rotate-value">0°</span></label><label class="rotate-row"><span>上下向き</span><input id="headPitch" type="range" min="-60" max="60" value="0"><span id="headPitchValue" class="rotate-value">0°</span></label><label class="rotate-row"><span>傾き</span><input id="headRoll" type="range" min="-45" max="45" value="0"><span id="headRollValue" class="rotate-value">0°</span></label><button id="resetHeadRotation" type="button">自動の向きへ戻す</button></div></div></section><p class="note"><b>教育用：</b>本人の骨を透視しているものではありません。BodyParts3Dの参照解剖を写真から推定した姿勢へ変形・配置しています。</p></main><script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const $=s=>document.querySelector(s),file=$('#file'),go=$('#go'),statusEl=$('#status'),stage=$('#stage'),photo=$('#photo'),gl=$('#gl'),badge=$('#badge'),atlasEl=$('#atlas'),controls=$('#controls'),boneOpacity=$('#boneOpacity'),muscleOpacity=$('#muscleOpacity'),editPose=$('#editPose'),jointLayer=$('#jointLayer'),bones=$('#bones'),musclesBtn=$('#muscles'),bothBtn=$('#both'),photoOnly=$('#photoOnly'),adjustSystem=$('#adjustSystem'),sizePart=$('#sizePart'),partSize=$('#partSize'),sizeValue=$('#sizeValue'),resetSizes=$('#resetSizes'),positionTitle=$('#positionTitle'),headPosValue=$('#headPosValue'),headUp=$('#headUp'),headDown=$('#headDown'),headLeft=$('#headLeft'),headRight=$('#headRight'),resetHeadPos=$('#resetHeadPos'),headYaw=$('#headYaw'),headPitch=$('#headPitch'),headRoll=$('#headRoll'),headYawValue=$('#headYawValue'),headPitchValue=$('#headPitchValue'),headRollValue=$('#headRollValue'),resetHeadRotation=$('#resetHeadRotation');
-const MP='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14',ROOT='https://raw.githubusercontent.com/ashemag/human-atlas/main/public/models/';let atlas,skel=[],muscleParts=[],imgURL='',pose,lm,face,faceLm,poseMask=null,manualMode=false,manualAdjusted=false,renderer,scene,camera,root,meshes=[],muscleMeshes=[],loaded=false,musclesLoaded=false,visible=true,displayMode='skeletal',adjustMode='skeletal',groups={},muscleGroups={},skeletonBox,sizes={head:1,torso:1,pelvis:1,arms:1,legs:1,hands:1,feet:1},muscleSizes={head:1,torso:1,pelvis:1,arms:1,legs:1,hands:1,feet:1},headRotation={yaw:0,pitch:0,roll:0},offsets={skeletal:{head:{x:0,y:0},torso:{x:0,y:0},pelvis:{x:0,y:0},arms:{x:0,y:0},legs:{x:0,y:0},hands:{x:0,y:0},feet:{x:0,y:0}},muscular:{head:{x:0,y:0},torso:{x:0,y:0},pelvis:{x:0,y:0},arms:{x:0,y:0},legs:{x:0,y:0},hands:{x:0,y:0},feet:{x:0,y:0}}};
-function st(t,e=false){statusEl.textContent=t;statusEl.style.color=e?'#b91c1c':'#526579'}
-function side(n){n=n.toLowerCase();if(/\bright\b|\br\.\b|right[-_ ]/.test(n))return'R';if(/\bleft\b|\bl\.\b|left[-_ ]/.test(n))return'L';return'C'}
-function region(n){n=n.toLowerCase();if(/skull|crani|mandib|maxilla|zygom|nasal bone|ethmoid|frontal bone|palatine|parietal|temporal bone|occipital|sphenoid|vomer|hyoid/.test(n))return'head';if(/clavicle|scapula|sternum|rib|vertebr|spine/.test(n))return'torso';if(/sacrum|pelvi|ilium|ischium|pubis|hip bone/.test(n))return'pelvis';if(/humerus/.test(n))return'upperArm';if(/radius|ulna/.test(n))return'foreArm';if(/carpal|metacarp|phalan.*hand|finger/.test(n))return'hand';if(/femur/.test(n))return'thigh';if(/tibia|fibula|patella/.test(n))return'shin';if(/tarsal|metatars|phalan.*foot|toe|calcane|talus/.test(n))return'foot';return'other'}
-function key(p,lo,hi){const r=region(p.name);let s=side(p.name);if(s==='C'&&['upperArm','foreArm','hand','thigh','shin','foot'].includes(r)){const cx=(lo.x+hi.x)/2;s=cx>=0?'L':'R'}return ['upperArm','foreArm','hand','thigh','shin','foot'].includes(r)?r+s:r}
-async function decode(resp,expected,compressed){if(!resp.ok)throw Error('3D骨格ファイルを取得できません');const p=await resp.arrayBuffer(),s=new Uint8Array(p,0,2),gz=compressed&&s[0]===31&&s[1]===139,b=gz?await new Response(new Blob([p]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer():p;if(b.byteLength!==expected)throw Error('3D骨格ファイルが不完全です');return b}
-async function loadAtlas(){try{atlas=await(await fetch(ROOT+'atlas.json')).json();skel=atlas.parts.filter(p=>p.system==='skeletal');muscleParts=atlas.parts.filter(p=>p.system==='muscular');atlasEl.textContent=`Human Atlas：実骨格 ${skel.length}パーツ・筋肉 ${muscleParts.length}パーツ／全${atlas.parts.length}パーツ。骨格と筋肉を写真の関節へ固定します。`;st('Human Atlas実骨格の準備ができました');if(photo.src)go.disabled=false}catch(e){st('Human Atlasを取得できませんでした',true)}}loadAtlas();
-file.onchange=()=>{const f=file.files?.[0];if(!f)return;if(imgURL)URL.revokeObjectURL(imgURL);imgURL=URL.createObjectURL(f);photo.onload=()=>{go.disabled=!atlas;st(atlas?'写真を読み込みました':'Human Atlasを準備中…')};photo.src=imgURL};
-async function initPose(){if(pose&&face)return;const v=await import(MP+'/+esm'),fs=await v.FilesetResolver.forVisionTasks(MP+'/wasm');if(!pose){const o={baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task'},runningMode:'IMAGE',numPoses:1,minPoseDetectionConfidence:.4,minPosePresenceConfidence:.4,outputSegmentationMasks:true};try{o.baseOptions.delegate='GPU';pose=await v.PoseLandmarker.createFromOptions(fs,o)}catch{delete o.baseOptions.delegate;pose=await v.PoseLandmarker.createFromOptions(fs,o)}}if(!face){const o={baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'},runningMode:'IMAGE',numFaces:1,minFaceDetectionConfidence:.35,minFacePresenceConfidence:.35,outputFacialTransformationMatrixes:true};try{o.baseOptions.delegate='GPU';face=await v.FaceLandmarker.createFromOptions(fs,o)}catch{delete o.baseOptions.delegate;face=await v.FaceLandmarker.createFromOptions(fs,o)}}}
-function init3D(){if(renderer)return;renderer=new THREE.WebGLRenderer({canvas:gl,alpha:true,antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;scene=new THREE.Scene();camera=new THREE.OrthographicCamera(-1,1,1,-1,-10,10);camera.position.z=4;scene.add(new THREE.HemisphereLight(0xffffff,0x6b7280,2.2));const d=new THREE.DirectionalLight(0xffffff,2.5);d.position.set(-2,3,4);scene.add(d);root=new THREE.Group();scene.add(root)}
-function meshEnds(m){const a=m.geometry.attributes.position,c=a.count;let minY=Infinity,maxY=-Infinity;for(let i=0;i<c;i++){const y=a.getY(i);if(y<minY)minY=y;if(y>maxY)maxY=y}const band=Math.max((maxY-minY)*.09,.0001),top=new THREE.Vector3(),bot=new THREE.Vector3();let nt=0,nb=0;for(let i=0;i<c;i++){const y=a.getY(i);if(y>=maxY-band){top.x+=a.getX(i);top.y+=y;top.z+=a.getZ(i);nt++}if(y<=minY+band){bot.x+=a.getX(i);bot.y+=y;bot.z+=a.getZ(i);nb++}}if(nt)top.multiplyScalar(1/nt);if(nb)bot.multiplyScalar(1/nb);return{prox:top,dist:bot,len:top.distanceTo(bot)}}
-function muscleKey(p,lo,hi){const cx=(lo.x+hi.x)/2,cy=(lo.y+hi.y)/2,ax=Math.abs(cx);let r;if(cy>1.49)r='head';else if(cy<.14)r='foot';else if(cy<.92&&ax>.18)r='hand';else if(cy>1.13&&ax>=.14)r='upperArm';else if(cy>.90&&ax>=.18)r='foreArm';else if(cy>1.03)r='torso';else if(cy>.82)r='pelvis';else if(cy>.48)r='thigh';else r='shin';if(['head','torso','pelvis'].includes(r))return r;let s=side(p.name);if(s==='C')s=cx>=0?'L':'R';return r+s}
-function buildGroupMap(list,system){const out={};for(const m of list){const p=m.userData.part,lo=new THREE.Vector3().fromArray(p.bounds[0]),hi=new THREE.Vector3().fromArray(p.bounds[1]),k=system==='muscular'?muscleKey(p,lo,hi):key(p,lo,hi);m.userData.key=k;m.userData.ends=meshEnds(m);if(k==='other')continue;if(!out[k])out[k]={meshes:[],box:new THREE.Box3()};out[k].meshes.push(m);out[k].box.expandByPoint(lo);out[k].box.expandByPoint(hi)}for(const g of Object.values(out)){g.center=g.box.getCenter(new THREE.Vector3());g.size=g.box.getSize(new THREE.Vector3())}return out}
-function buildGroups(){groups=buildGroupMap(meshes,'skeletal')}
-async function loadPartSet(parts,target,color,label){init3D();const chunks=[...new Set(parts.map(p=>p.chunk))],mat=new THREE.MeshStandardMaterial({color,roughness:.56,transparent:true,opacity:+(label==='筋肉'?muscleOpacity.value:boneOpacity.value)/100,side:THREE.DoubleSide});let done=0;for(const ci of chunks){const ch=atlas.chunks[ci],compressed=!!ch.gzip&&typeof DecompressionStream!=='undefined',u=ROOT+(compressed?(ch.gzip||ch.url):ch.url).replace(/^.*models\//,'').replace(/^\//,'');const b=await decode(await fetch(u),ch.bytes,compressed);for(const p of parts.filter(q=>q.chunk===ci)){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(b,p.positions,p.vertexCount*3),3));g.setAttribute('normal',new THREE.BufferAttribute(new Int16Array(b,p.normals,p.vertexCount*3),3,true));g.setIndex(new THREE.BufferAttribute(new Uint32Array(b,p.indices,p.indexCount),1));const m=new THREE.Mesh(g,mat.clone());m.visible=false;m.userData={part:p};root.add(m);target.push(m)}done++;st(`Human Atlas${label}を読み込み中… ${Math.round(done/chunks.length*100)}%`)}}
-async function loadSkeleton(){if(loaded)return;await loadPartSet(skel,meshes,0xeadfbe,'実骨格');buildGroups();loaded=true}
-async function loadMuscles(){if(musclesLoaded)return;await loadPartSet(muscleParts,muscleMeshes,0xb9353f,'筋肉');muscleGroups=buildGroupMap(muscleMeshes,'muscular');musclesLoaded=true}
-function L(i,min=.12){const p=lm?.[i];return p&&p.visibility>min?p:null}
-// The camera spans -aspect..+aspect horizontally and -1..+1 vertically.
-// Scale normalized X by the displayed photo aspect ratio; otherwise every
-// joint drifts away from the body centre on portrait photos.
-function photoAspect(){const w=stage.clientWidth||photo.clientWidth||photo.naturalWidth||1,h=stage.clientHeight||photo.clientHeight||photo.naturalHeight||1;return w/h}
-function xy(i,min=.12){const p=L(i,min);if(!p)return null;const a=photoAspect();const z=THREE.MathUtils.clamp(-(p.z||0)*a*.55,-.22,.22);return new THREE.Vector3((p.x-.5)*2*a,(.5-p.y)*2,z)}
-function joint(i,min=.4){const p=L(i,min);if(!p||p.x<-.02||p.x>1.02||p.y<-.02||p.y>1.02)return null;return xy(i,min)}
-function maskValue(P){if(!poseMask||manualAdjusted)return 1;const a=photoAspect(),nx=THREE.MathUtils.clamp(P.x/(2*a)+.5,0,1),ny=THREE.MathUtils.clamp(.5-P.y/2,0,1),x=Math.min(poseMask.width-1,Math.round(nx*(poseMask.width-1))),y=Math.min(poseMask.height-1,Math.round(ny*(poseMask.height-1)));return poseMask.data[y*poseMask.width+x]||0}
-function segmentInside(A,B){if(!poseMask||manualAdjusted)return true;let good=0;for(const t of [.18,.38,.58,.78]){const p=A.clone().lerp(B,t);if(maskValue(p)>.22)good++}return good>=3}
-function facePoint(i){const p=faceLm?.[i];if(!p||p.x<-.02||p.x>1.02||p.y<-.02||p.y>1.02)return null;const a=photoAspect(),z=THREE.MathUtils.clamp(-(p.z||0)*a*1.05,-.2,.2);return new THREE.Vector3((p.x-.5)*2*a,(.5-p.y)*2,z)}
-function frameQuat(xAxis,yAxis){const x=xAxis.clone(),rawY=yAxis.clone(),xz=Math.hypot(x.x,x.y),yz=Math.hypot(rawY.x,rawY.y);x.z=THREE.MathUtils.clamp(x.z,-xz*.45,xz*.45);rawY.z=THREE.MathUtils.clamp(rawY.z,-yz*.4,yz*.4);x.normalize();const y=rawY.sub(x.clone().multiplyScalar(rawY.dot(x))).normalize();if(x.lengthSq()<.01||y.lengthSq()<.01)return new THREE.Quaternion();const z=new THREE.Vector3().crossVectors(x,y).normalize();return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x,y,z))}
-function pairCost(a,b,c,d){return a&&b&&c&&d?a.distanceTo(c)+b.distanceTo(d):Infinity}
-function legChains(){const h=[joint(23,.55),joint(24,.55)],k=[joint(25,.58),joint(26,.58)],a=[joint(27,.62),joint(28,.62)],f=[joint(31,.55)||joint(29,.55),joint(32,.55)||joint(30,.55)];if(h[0]&&h[1]&&k[0]&&k[1]&&pairCost(h[0],h[1],k[1],k[0])<pairCost(h[0],h[1],k[0],k[1]))k.reverse();if(k[0]&&k[1]&&a[0]&&a[1]&&pairCost(k[0],k[1],a[1],a[0])<pairCost(k[0],k[1],a[0],a[1]))a.reverse();if(a[0]&&a[1]&&f[0]&&f[1]&&pairCost(a[0],a[1],f[1],f[0])<pairCost(a[0],a[1],f[0],f[1]))f.reverse();return[[h[0],k[0],a[0],f[0]],[h[1],k[1],a[1],f[1]]]}
-function mid(a,b){return a&&b?a.clone().add(b).multiplyScalar(.5):a||b}function orient(){const a=L(11),b=L(12);if(!a||!b)return'姿勢';const dz=Math.abs((a.z||0)-(b.z||0)),w=Math.abs(a.x-b.x);return dz>.16||w<.10?'横向き':dz>.07||w<.18?'斜め':'正面'}
-function segment(k){const legs=legChains();switch(k){case'upperArmL':return[joint(11,.38),joint(13,.42)];case'upperArmR':return[joint(12,.38),joint(14,.42)];case'foreArmL':return[joint(13,.42),joint(15,.45)];case'foreArmR':return[joint(14,.42),joint(16,.45)];case'thighL':return[legs[0][0],legs[0][1]];case'thighR':return[legs[1][0],legs[1][1]];case'shinL':return[legs[0][1],legs[0][2]];case'shinR':return[legs[1][1],legs[1][2]];case'handL':return[joint(15,.45),joint(19,.4)||joint(17,.4)];case'handR':return[joint(16,.45),joint(20,.4)||joint(18,.4)];case'footL':return[legs[0][2],legs[0][3]];case'footR':return[legs[1][2],legs[1][3]];default:return[null,null]}}
-function globalScale(gmap=groups){const sw=xy(11)&&xy(12)?xy(11).distanceTo(xy(12)):0,hw=xy(23)&&xy(24)?xy(23).distanceTo(xy(24)):0,vals=[];if(sw&&gmap.torso)vals.push(sw/gmap.torso.size.x);if(hw&&gmap.pelvis)vals.push(hw/gmap.pelvis.size.x);return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:.003}
-function groupCategory(k){if(k==='head'||k==='torso'||k==='pelvis')return k;if(k.startsWith('upperArm')||k.startsWith('foreArm'))return'arms';if(k.startsWith('thigh')||k.startsWith('shin'))return'legs';if(k.startsWith('hand'))return'hands';return'feet'}
-function placeUniform(g,scale,q,anchor,sourceAnchor){for(const m of g.meshes){m.visible=visible;m.scale.setScalar(scale);m.quaternion.copy(q);m.position.copy(anchor).sub(sourceAnchor.clone().multiplyScalar(scale).applyQuaternion(q))}}
-function fitBoneMesh(m,prox,dist,base,factor=1){const e=m.userData.ends;if(!e||e.len<.001)return;const target=dist.clone().sub(prox),targetLen=target.length();if(targetLen<.01)return;const src=e.dist.clone().sub(e.prox),q=new THREE.Quaternion().setFromUnitVectors(src.clone().normalize(),target.clone().normalize()),s=targetLen/e.len*factor;if(!Number.isFinite(s)||s<base*.45||s>base*2.15)return;const srcMid=e.prox.clone().add(e.dist).multiplyScalar(.5),targetMid=prox.clone().add(dist).multiplyScalar(.5);m.visible=visible;m.scale.setScalar(s);m.quaternion.copy(q);m.position.copy(targetMid).sub(srcMid.multiplyScalar(s).applyQuaternion(q))}
-function fitLongGroup(g,prox,dist,base,factor=1){if(!segmentInside(prox,dist))return;for(const m of g.meshes)fitBoneMesh(m,prox,dist,base,factor)}
-function safeWidth(a,b){return a&&b?a.distanceTo(b):0}
-function segmentOK(a,b,reference,minRatio,maxRatio){if(!a||!b||!reference)return false;const d=a.distanceTo(b);return d>=reference*minRatio&&d<=reference*maxRatio&&segmentInside(a,b)}
-function poseSingleSystem(system,clear=true){
-  if(clear)[...meshes,...muscleMeshes].forEach(m=>m.visible=false);
-  const gmap=system==='muscular'?muscleGroups:groups,sizesNow=system==='muscular'?muscleSizes:sizes,offsetsNow=offsets[system];
-  const sl=joint(11,.48),sr=joint(12,.48),hl=joint(23,.58),hr=joint(24,.58),
-    shoulderMid=mid(sl,sr),hipMid=hl&&hr?mid(hl,hr):null,
-    shoulderW=safeWidth(sl,sr),hipW=safeWidth(hl,hr),
-    bodyDown=shoulderMid&&hipMid?hipMid.clone().sub(shoulderMid):new THREE.Vector3(0,-1,0),
-    rawTorsoLen=bodyDown.length(),torsoLen=shoulderW?THREE.MathUtils.clamp(rawTorsoLen||shoulderW*1.25,shoulderW*.72,shoulderW*2.05):rawTorsoLen,
-    torsoEnd=shoulderMid?(hipMid&&rawTorsoLen<=shoulderW*2.45?hipMid:shoulderMid.clone().add(bodyDown.clone().normalize().multiplyScalar(torsoLen))):null,
-    torsoCenter=shoulderMid&&torsoEnd?mid(shoulderMid,torsoEnd):null,view=orient(),limbRef=Math.max(shoulderW||0,torsoLen*.58,hipW*.9),
-    earL=joint(7,.32),earR=joint(8,.32),poseNose=joint(0,.28),poseEyeA=joint(2,.25),poseEyeB=joint(5,.25),
-    faceA=facePoint(234),faceB=facePoint(454),faceTop=facePoint(10),faceChin=facePoint(152),faceNose=facePoint(1),
-    eyeA1=facePoint(33),eyeA2=facePoint(133),eyeB1=facePoint(362),eyeB2=facePoint(263),
-    rawEyeA=eyeA1&&eyeA2?mid(eyeA1,eyeA2):null,rawEyeB=eyeB1&&eyeB2?mid(eyeB1,eyeB2):null,
-    faceEyeLeft=rawEyeA&&rawEyeB?(rawEyeA.x<rawEyeB.x?rawEyeA:rawEyeB):null,faceEyeRight=rawEyeA&&rawEyeB?(rawEyeA.x<rawEyeB.x?rawEyeB:rawEyeA):null,
-    poseEyeLeft=poseEyeA&&poseEyeB?(poseEyeA.x<poseEyeB.x?poseEyeA:poseEyeB):null,poseEyeRight=poseEyeA&&poseEyeB?(poseEyeA.x<poseEyeB.x?poseEyeB:poseEyeA):null,
-    poseEyeCenter=poseEyeLeft&&poseEyeRight?mid(poseEyeLeft,poseEyeRight):poseNose,
-    faceLeft=faceA&&faceB?(faceA.x<faceB.x?faceA:faceB):null,faceRight=faceA&&faceB?(faceA.x<faceB.x?faceB:faceA):null,
-    faceW=safeWidth(faceLeft,faceRight)||safeWidth(earL,earR),
-    rawFaceEyeCenter=faceEyeLeft&&faceEyeRight?mid(faceEyeLeft,faceEyeRight):null,
-    faceEyeDistance=safeWidth(faceEyeLeft,faceEyeRight),poseEyeDistance=safeWidth(poseEyeLeft,poseEyeRight),
-    eyesConsistent=!rawFaceEyeCenter||!poseEyeCenter||!faceW||rawFaceEyeCenter.distanceTo(poseEyeCenter)<faceW*.48,
-    eyeCenter=(eyesConsistent?rawFaceEyeCenter:null)||poseEyeCenter||(earL&&earR?mid(earL,earR):null),
-    eyeDistance=(eyesConsistent?faceEyeDistance:0)||poseEyeDistance||(faceW?faceW*.43:0);
-  let torsoScale=globalScale(gmap);
-  if(gmap.torso&&shoulderMid&&torsoEnd&&shoulderW){
-    const widthScale=shoulderW/Math.max(gmap.torso.size.x,.001);
-    const heightScale=torsoLen/Math.max(gmap.torso.size.y*.68,.001);
-    torsoScale=view==='横向き'?THREE.MathUtils.clamp(widthScale*.28+heightScale*.72,heightScale*.76,heightScale*1.16):view==='斜め'?THREE.MathUtils.clamp(widthScale*.48+heightScale*.52,Math.min(widthScale,heightScale)*.82,Math.max(widthScale,heightScale)*1.08):THREE.MathUtils.clamp(widthScale*.62+heightScale*.38,widthScale*.72,widthScale*1.18);
-  }
-  const base=torsoScale||globalScale(gmap);
-  for(const [k,g] of Object.entries(gmap)){
-    const category=groupCategory(k),partShift=offsetsNow[category]||{x:0,y:0},shift=new THREE.Vector3(partShift.x,partShift.y,0);
-    if(k==='head'){
-      if(!eyeCenter||!base)continue;
-      const eyeRatio=system==='muscular'?.26:.43,eyeY=system==='muscular'?.88:.55,eyeZ=system==='muscular'?.90:.82,sourceEyeDistance=Math.max(g.size.x*eyeRatio,.001),sourceEyeCenter=new THREE.Vector3(g.center.x,g.box.min.y+g.size.y*eyeY,g.box.min.z+g.size.z*eyeZ);
-      let headScale=eyeDistance?eyeDistance/sourceEyeDistance:base*.84;
-      headScale=THREE.MathUtils.clamp(headScale,base*.68,base*1.08);
-      let q=new THREE.Quaternion(),eyeLeft=eyesConsistent?faceEyeLeft:poseEyeLeft,eyeRight=eyesConsistent?faceEyeRight:poseEyeRight;
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>筋肉骨格 Human Atlas姿勢合わせ</title></head><body><div style="font-family:-apple-system,sans-serif;padding:24px;text-align:center">最新版を読み込み中…</div><script>
+(async()=>{
+  const base='https://raw.githubusercontent.com/yuubae96-rgb/nameplate-app/9b1bd3739e02bc79880eacd833187a7fdb8e650d/anatomy-pose-3d.html';
+  let html=await (await fetch(base,{cache:'no-store'})).text();
+  const old=`      let q=new THREE.Quaternion(),eyeLeft=eyesConsistent?faceEyeLeft:poseEyeLeft,eyeRight=eyesConsistent?faceEyeRight:poseEyeRight;
       if(eyeLeft&&eyeRight){
         const axis=eyeRight.clone().sub(eyeLeft),roll=Math.atan2(axis.y,axis.x);
         const qRoll=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),roll);
@@ -88,64 +12,32 @@ function poseSingleSystem(system,clear=true){
         q.copy(qRoll).multiply(qYaw).multiply(qPitch);
       }else if(faceLeft&&faceRight){
         const a=faceRight.clone().sub(faceLeft);q.setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(a.y,a.x))
-      }
-      if(system==='skeletal'){const d=Math.PI/180,qManual=new THREE.Quaternion().setFromEuler(new THREE.Euler(headRotation.pitch*d,headRotation.yaw*d,headRotation.roll*d,'YXZ'));q.multiply(qManual)}
-      const anchor=eyeCenter.clone().add(shift);
-      placeUniform(g,headScale*sizesNow.head,q,anchor,sourceEyeCenter);continue
-    }
-    if(k==='torso'){
-      if(!torsoCenter||!shoulderW||!base)continue;
-      const up=shoulderMid.clone().sub(torsoEnd),xAxis=sl.clone().sub(sr),q=frameQuat(xAxis,up);
-      placeUniform(g,base*.94*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue
-    }
-    if(k==='pelvis'){
-      if(!hipMid||!hipW||!shoulderW||hipW<shoulderW*.38||hipW>shoulderW*1.65)continue;
-      const pelvisScale=THREE.MathUtils.clamp(hipW/Math.max(g.size.x,.001),base*.76,base*1.12);
-      const up=shoulderMid?shoulderMid.clone().sub(hipMid):new THREE.Vector3(0,1,0),q=frameQuat(hl.clone().sub(hr),up);
-      placeUniform(g,pelvisScale*.94*sizesNow.pelvis,q,hipMid.clone().add(shift),g.center);continue
-    }
-    const [rawProx,rawDist]=segment(k);if(!rawProx||!rawDist||!limbRef)continue;const prox=rawProx.clone().add(shift),dist=rawDist.clone().add(shift);
-    const isArm=k.startsWith('upperArm')||k.startsWith('foreArm'),isLeg=k.startsWith('thigh')||k.startsWith('shin');
-    if(isArm){
-      const limits=k.startsWith('upperArm')?[.22,1.18]:[.18,1.12];
-      if(!segmentOK(prox,dist,limbRef,limits[0],limits[1]))continue;
-      fitLongGroup(g,prox,dist,base,sizesNow.arms);continue
-    }
-    if(isLeg){
-      const limits=k.startsWith('thigh')?[.35,1.72]:[.30,1.62];
-      if(!segmentOK(prox,dist,limbRef,limits[0],limits[1]))continue;
-      fitLongGroup(g,prox,dist,base,sizesNow.legs);continue
-    }
-    const isHand=k.startsWith('hand'),limits=isHand?[.08,.72]:[.10,.92];
-    if(!segmentOK(prox,dist,limbRef,limits[0],limits[1]))continue;
-    const d=dist.clone().sub(prox),q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,-1,0),d.clone().normalize()),src=new THREE.Vector3(g.center.x,g.box.max.y,g.center.z);
-    placeUniform(g,base*.82*(isHand?sizesNow.hands:sizesNow.feet),q,prox,src)
-  }
-}
-function poseGroups(skipHandles=false){const systems=displayMode==='both'?['skeletal','muscular']:[displayMode];systems.forEach((system,i)=>poseSingleSystem(system,i===0));resize3D();render();if(!skipHandles)refreshHandles()}
-const EDIT_JOINTS=[11,12,13,14,15,16,23,24,25,26,27,28];
-function refreshHandles(){if(!manualMode||!lm)return;jointLayer.innerHTML='';for(const i of EDIT_JOINTS){const p=lm[i];if(!p)continue;const b=document.createElement('button');b.type='button';b.className='joint-dot '+([11,12,23,24].includes(i)?'core':'');b.style.left=(p.x*100)+'%';b.style.top=(p.y*100)+'%';b.setAttribute('aria-label','関節'+i);b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId)};b.onpointermove=e=>{if(!b.hasPointerCapture(e.pointerId))return;const r=stage.getBoundingClientRect();p.x=THREE.MathUtils.clamp((e.clientX-r.left)/r.width,0,1);p.y=THREE.MathUtils.clamp((e.clientY-r.top)/r.height,0,1);p.visibility=1;manualAdjusted=true;b.style.left=(p.x*100)+'%';b.style.top=(p.y*100)+'%';poseGroups(true)};jointLayer.appendChild(b)}}
-editPose.onclick=()=>{manualMode=!manualMode;jointLayer.classList.toggle('editing',manualMode);editPose.textContent=manualMode?'✅ 調整終了':'✋ 関節を直す';editPose.classList.toggle('active',manualMode);refreshHandles()};
-const partLabels={skeletal:{head:'頭蓋骨',torso:'胸郭・背骨',pelvis:'骨盤',arms:'腕',legs:'脚',hands:'手',feet:'足'},muscular:{head:'頭・首の筋肉',torso:'胴体の筋肉',pelvis:'骨盤周辺の筋肉',arms:'腕の筋肉',legs:'脚の筋肉',hands:'手の筋肉',feet:'足の筋肉'}};
-function activeSizes(){return adjustMode==='muscular'?muscleSizes:sizes}
-function activeOffset(){return offsets[adjustMode][sizePart.value]}
-function syncSizeControl(){const values=activeSizes();partSize.value=Math.round(values[sizePart.value]*100);sizeValue.textContent=partSize.value+'%'}
-function syncPartPosition(){const o=activeOffset(),x=Math.round(o.x*100),y=Math.round(o.y*100),label=partLabels[adjustMode][sizePart.value];positionTitle.textContent=label+'の位置';headPosValue.textContent=x===0&&y===0?'中央':`左右 ${x>0?'+':''}${x}・上下 ${y>0?'+':''}${y}`}
-function syncModeControls(){adjustSystem.value=adjustMode;adjustSystem.disabled=displayMode!=='both';for(const option of sizePart.options)option.textContent=partLabels[adjustMode][option.value];syncSizeControl();syncPartPosition()}
-adjustSystem.onchange=()=>{adjustMode=adjustSystem.value;syncModeControls()};
-sizePart.onchange=()=>{syncSizeControl();syncPartPosition()};
-partSize.oninput=()=>{const values=activeSizes();values[sizePart.value]=+partSize.value/100;sizeValue.textContent=partSize.value+'%';poseGroups()};
-resetSizes.onclick=()=>{const values=activeSizes();for(const k of Object.keys(values))values[k]=1;syncSizeControl();poseGroups()};
-function movePart(dx,dy){const o=activeOffset();o.x=THREE.MathUtils.clamp(o.x+dx,-.4,.4);o.y=THREE.MathUtils.clamp(o.y+dy,-.4,.4);syncPartPosition();poseGroups()}
-headUp.onclick=()=>movePart(0,.02);headDown.onclick=()=>movePart(0,-.02);headLeft.onclick=()=>movePart(-.02,0);headRight.onclick=()=>movePart(.02,0);resetHeadPos.onclick=()=>{const o=activeOffset();o.x=0;o.y=0;syncPartPosition();poseGroups()};
-function resetPartOffsets(){for(const system of Object.values(offsets))for(const o of Object.values(system)){o.x=0;o.y=0}}
-function syncHeadRotation(){headYaw.value=headRotation.yaw;headPitch.value=headRotation.pitch;headRoll.value=headRotation.roll;headYawValue.textContent=headRotation.yaw+'°';headPitchValue.textContent=headRotation.pitch+'°';headRollValue.textContent=headRotation.roll+'°'}
-function changeHeadRotation(axis,value){headRotation[axis]=+value;syncHeadRotation();poseGroups()}
-headYaw.oninput=()=>changeHeadRotation('yaw',headYaw.value);headPitch.oninput=()=>changeHeadRotation('pitch',headPitch.value);headRoll.oninput=()=>changeHeadRotation('roll',headRoll.value);resetHeadRotation.onclick=()=>{headRotation={yaw:0,pitch:0,roll:0};syncHeadRotation();poseGroups()};
-function resetHeadRotationValues(){headRotation={yaw:0,pitch:0,roll:0};syncHeadRotation()}
-function modeName(mode){return mode==='both'?'実骨格＋筋肉':mode==='muscular'?'筋肉':'実骨格'}
-async function showSystem(mode){visible=true;photoOnly.classList.remove('active');if((mode==='muscular'||mode==='both')&&!musclesLoaded){musclesBtn.disabled=true;bothBtn.disabled=true;try{await loadMuscles()}finally{musclesBtn.disabled=false;bothBtn.disabled=false}}displayMode=mode;if(mode!=='both')adjustMode=mode;bones.classList.toggle('active',mode==='skeletal');musclesBtn.classList.toggle('active',mode==='muscular');bothBtn.classList.toggle('active',mode==='both');syncModeControls();poseGroups();badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(mode);st(modeName(mode)+'を写真の向き・傾き・関節へ合わせました')}
-function resize3D(){const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);const a=w/h;camera.left=-a;camera.right=a;camera.top=1;camera.bottom=-1;camera.updateProjectionMatrix()}function render(){renderer?.render(scene,camera)}
-go.onclick=async()=>{go.disabled=true;try{await initPose();st('写真の3D姿勢を解析しています…');const poseResult=pose.detect(photo);lm=poseResult.landmarks?.[0];if(!lm)throw Error('人物を認識できませんでした');const pm=poseResult.segmentationMasks?.[0];poseMask=pm?{data:Float32Array.from(pm.getAsFloat32Array()),width:pm.width,height:pm.height}:null;manualAdjusted=false;manualMode=false;resetPartOffsets();resetHeadRotationValues();syncModeControls();jointLayer.classList.remove('editing');editPose.textContent='✋ 関節を直す';try{faceLm=face.detect(photo).faceLandmarks?.[0]||null}catch{faceLm=null}stage.style.display='block';controls.hidden=false;await new Promise(r=>requestAnimationFrame(r));await loadSkeleton();if((displayMode==='muscular'||displayMode==='both')&&!musclesLoaded)await loadMuscles();poseGroups();badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);st(modeName(displayMode)+'を写真の向き・傾き・関節へ合わせました')}catch(e){console.error(e);st(e.message||'解析できませんでした',true)}finally{go.disabled=false}};
-bones.onclick=()=>showSystem('skeletal');musclesBtn.onclick=()=>showSystem('muscular');bothBtn.onclick=()=>showSystem('both');photoOnly.onclick=()=>{visible=false;photoOnly.classList.add('active');bones.classList.remove('active');musclesBtn.classList.remove('active');bothBtn.classList.remove('active');[...meshes,...muscleMeshes].forEach(m=>m.visible=false);render()};boneOpacity.oninput=()=>{meshes.forEach(m=>m.material.opacity=+boneOpacity.value/100);render()};muscleOpacity.oninput=()=>{muscleMeshes.forEach(m=>m.material.opacity=+muscleOpacity.value/100);render()};addEventListener('resize',()=>{if(renderer){resize3D();render()}});
+      }`;
+  const improved=`      let q=new THREE.Quaternion(),eyeLeft=eyesConsistent?faceEyeLeft:poseEyeLeft,eyeRight=eyesConsistent?faceEyeRight:poseEyeRight;
+      // 顔の3Dランドマークから頭部座標系を直接作る。
+      // 目線だけの2D回転ではなく、左右旋回(Yaw)・上下(Pitch)・傾き(Roll)を同時に推定する。
+      if(faceEyeLeft&&faceEyeRight&&faceTop&&faceChin){
+        const xAxis=faceEyeRight.clone().sub(faceEyeLeft);
+        const yAxis=faceTop.clone().sub(faceChin);
+        q.copy(frameQuat(xAxis,yAxis));
+        // MediaPipeの奥行きは写真によって弱く出るため、鼻の左右偏位を補助情報としてYawへ少量加える。
+        if(faceNose&&eyeDistance){
+          const yawAssist=THREE.MathUtils.clamp((faceNose.x-eyeCenter.x)/eyeDistance*.42,-.28,.28);
+          q.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),yawAssist));
+        }
+      }else if(eyeLeft&&eyeRight){
+        const axis=eyeRight.clone().sub(eyeLeft),roll=Math.atan2(axis.y,axis.x);
+        const qRoll=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),roll);
+        let yaw=0,pitch=0;
+        if(faceNose&&eyeDistance){yaw=THREE.MathUtils.clamp((faceNose.x-eyeCenter.x)/eyeDistance*1.28,-.85,.85);const noseDrop=(eyeCenter.y-faceNose.y)/eyeDistance;pitch=THREE.MathUtils.clamp((noseDrop-.55)*.9,-.52,.52)}
+        q.copy(qRoll).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),yaw)).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),pitch));
+      }else if(faceLeft&&faceRight){
+        const a=faceRight.clone().sub(faceLeft);q.setFromAxisAngle(new THREE.Vector3(0,0,1),Math.atan2(a.y,a.x))
+      }`;
+  if(!html.includes(old)) throw new Error('頭蓋骨自動合わせ部分を確認できませんでした');
+  html=html.replace(old,improved)
+    .replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);","badge.textContent=(faceLm?'顔3D自動追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);")
+    .replace("badge.textContent=(faceLm?'顔方向追従':'姿勢推定')+'・Human Atlas'+modeName(mode);","badge.textContent=(faceLm?'顔3D自動追従':'姿勢推定')+'・Human Atlas'+modeName(mode);");
+  document.open();document.write(html);document.close();
+})().catch(e=>{document.body.innerHTML='<div style="font-family:-apple-system,sans-serif;padding:24px;color:#b91c1c"><b>読み込みに失敗しました</b><br>'+String(e.message||e)+'</div>'});
 </script></body></html>
