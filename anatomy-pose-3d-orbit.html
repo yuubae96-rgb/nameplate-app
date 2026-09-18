@@ -48,15 +48,13 @@ pelvisGesture.onpointerup=finishPelvisPointer;pelvisGesture.onpointercancel=fini
   // 縦は肩〜股関節長で決定し、横幅は肩幅へ合わせる。
   // g.obj は存在しなかったため、実メッシュを直接縦横別に配置する。
   const torsoOld="let torsoFit=base*.94;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.78:.86)),sy=torsoLen/(g.size.y*(system==='muscular'?.78:.88));torsoFit=THREE.MathUtils.clamp(Math.min(sx,sy),base*.62,base*.98)}placeUniform(g,torsoFit*(system==='muscular'?.90:1)*sizesNow.torso,q,torsoCenter.clone().add(shift),g.center);continue";
-  const torsoNew="let torsoFit=base*.90,wide=1;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.84:.90)),sy=torsoLen/(g.size.y*(system==='muscular'?1.00:1.10));torsoFit=THREE.MathUtils.clamp(sy,base*.56,base*.88);wide=THREE.MathUtils.clamp(sx/Math.max(torsoFit,.001),1.04,1.28)}const jointTorsoAnchor=torsoCenter.clone().add(shift);jointTorsoAnchor.y+=torsoLen*.105;const ls=joint(11,.24),rs=joint(12,.24);if(ls&&rs){const neckX=(ls.x+rs.x)*.5;jointTorsoAnchor.x=neckX+shift.x}const torsoScale=torsoFit*(system==='muscular'?.88:1)*sizesNow.torso;placeScaled(g,torsoScale*wide,torsoScale,torsoScale,q,jointTorsoAnchor,g.center);continue";
+  const torsoNew="let torsoFit=base*.94,wide=1;if(g.size.x>0&&g.size.y>0){const sx=shoulderW/(g.size.x*(system==='muscular'?.78:.86)),sy=torsoLen/(g.size.y*(system==='muscular'?.78:.88));torsoFit=THREE.MathUtils.clamp(Math.min(sx,sy),base*.62,base*.98);wide=THREE.MathUtils.clamp(sx/Math.max(torsoFit,.001),.96,1.18)}const torsoScale=torsoFit*(system==='muscular'?.90:1)*sizesNow.torso;placeScaled(g,torsoScale*wide,torsoScale,torsoScale,q,torsoCenter.clone().add(shift),g.center);continue";
   if(!wrapper.includes(torsoOld))throw new Error('体幹サイズコードを確認できませんでした');
   wrapper=wrapper.replace(torsoOld,torsoNew);
 
   // 遮蔽箇所で presence だけが高い推測関節を除外する。
-  wrapper=wrapper.replace("function L(i,min=.12){const p=lm?.[i],score=p?Math.max(p.visibility||0,(p.presence||0)*.55):0;return p&&score>min?p:null}", "function L(i,min=.12){const p=lm?.[i],visibility=p?.visibility||0,presence=p?.presence||0,core=[0,2,5,7,8,11,12,23,24].includes(i),score=core?Math.max(visibility,presence*.42):visibility;return p&&score>min?p:null}");
-  wrapper=wrapper.replace("case'upperArmL':return[joint(11,.28),joint(13,.28)];case'upperArmR':return[joint(12,.28),joint(14,.28)];case'foreArmL':return[joint(13,.28),joint(15,.28)];case'foreArmR':return[joint(14,.28),joint(16,.28)]", "case'upperArmL':return[joint(11,.24),joint(13,.24)];case'upperArmR':return[joint(12,.24),joint(14,.24)];case'foreArmL':return[joint(13,.30),joint(15,.34)];case'foreArmR':return[joint(14,.30),joint(16,.34)]");
-  wrapper=wrapper.replace("function legChains(){const h=[joint(23,.18),joint(24,.18)],k=[joint(25,.18),joint(26,.18)],a=[joint(27,.18),joint(28,.18)],f=[joint(31,.16)||joint(29,.16),joint(32,.16)||joint(30,.16)];return[[h[0],k[0],a[0],f[0]],[h[1],k[1],a[1],f[1]]]}", "function legChains(){const h=[joint(23,.24),joint(24,.24)],k=[joint(25,.30),joint(26,.30)],a=[joint(27,.34),joint(28,.34)],f=[joint(31,.32)||joint(29,.32),joint(32,.32)||joint(30,.32)];return[[h[0],k[0],a[0],f[0]],[h[1],k[1],a[1],f[1]]]}");
-
+  // Preserve the Thursday whole-body pose anchors. Do not discard elbows/knees/ankles merely because they are occluded; mask/length guards handle implausible guesses.\n
+    
   wrapper=wrapper.replace("badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(displayMode);", "badge.textContent=(faceLm?'眼窩・全身関節固定':'姿勢推定')+'・Human Atlas'+modeName(displayMode);");
   wrapper=wrapper.replace("badge.textContent=(faceLm?'顔・関節アンカー追従':'姿勢推定')+'・Human Atlas'+modeName(mode);", "badge.textContent=(faceLm?'眼窩・全身関節固定':'姿勢推定')+'・Human Atlas'+modeName(mode);");
 
