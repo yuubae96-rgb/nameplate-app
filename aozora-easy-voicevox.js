@@ -1,6 +1,6 @@
 /* 青空文庫→漫画AI: やさしい要約＋iPhone標準音声／VOICEVOX朗読 */
 (()=>{
-let vvAudio=null,deviceVoices=[],vvRun=0;
+let vvAudio=null,vvAudioContext=null,vvAudioSource=null,deviceVoices=[],vvRun=0;
 const VV_API='https://api.tts.quest/v3/voicevox/synthesis';
 const VV_SILENT='data:audio/wav;base64,UklGRnQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVAAAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
 const VV_SPEAKERS=[
@@ -30,10 +30,30 @@ function loadSpeakers(){const sel=$v('vvSpeaker');if(!sel||sel.options.length)re
 const vvSleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function vvMake(text,speaker,onWait){let err='VOICEVOX音声を作成できませんでした。';for(let a=0;a<7;a++){const r=await fetch(VV_API,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:new URLSearchParams({text:String(text||''),speaker:String(speaker||13)})});const j=await r.json().catch(()=>({}));if(r.status===429||!j.success){err=j.message||j.error||(r.status===429?'音声APIが混み合っています。':`音声API ${r.status}`);if(a===6)break;const seconds=Math.min(30,Math.max(5,Number(j.retryAfter||r.headers.get('Retry-After')||((a+1)*5))));if(onWait)onWait(seconds);await vvSleep(seconds*1000);continue}for(let i=0;i<90;i++){const st=await fetch(j.audioStatusUrl,{cache:'no-store'}).then(x=>x.json()).catch(()=>null);if(st?.isAudioError)throw Error('音声生成でエラーになりました。');if(st?.isAudioReady){const ar=await fetch(j.mp3DownloadUrl||j.wavDownloadUrl,{cache:'no-store'});if(!ar.ok)throw Error('作成した音声を取得できませんでした。');return ar.blob()}await vvSleep(1000)}throw Error('音声生成が90秒以内に終わりませんでした。')}throw Error(err)}
 function vvChunks(text,max=380){const out=[];let rest=String(text||'').replace(/\s+/g,' ').trim();while(rest){if(rest.length<=max){out.push(rest);break}let p=Math.max(rest.lastIndexOf('。',max),rest.lastIndexOf('！',max),rest.lastIndexOf('？',max),rest.lastIndexOf('、',max));if(p<80)p=max;out.push(rest.slice(0,p+1));rest=rest.slice(p+1).trim()}return out}
-function unlockVVAudio(){const a=new Audio(VV_SILENT);a.preload='auto';a.loop=true;a.setAttribute('playsinline','');a.play().catch(()=>{});return a}
-async function playVV(unlocked){stopSpeech(false);const player=unlocked||new Audio(),run=++vvRun,text=$v('easyText').value.trim(),speaker=$v('vvSpeaker').value,chunks=vvChunks(text);vvAudio=player;if(!text){stopSpeech(false);return easyStatus('読み上げる文章がありません。',true)}try{for(let i=0;i<chunks.length;i++){if(run!==vvRun)return;easyStatus(`🔊 VOICEVOX音声を作っています…（${i+1}/${chunks.length}）`);const blob=await vvMake(chunks[i],speaker,seconds=>easyStatus(`⏳ 音声APIが混み合っています。${seconds}秒後に自動で再試行します…`));if(run!==vvRun)return;player.loop=false;player.src=URL.createObjectURL(blob);player.playbackRate=Number($v('vvSpeed').value)||1;await player.play();easyStatus(`▶ 読み上げ中…（${i+1}/${chunks.length}）`);await new Promise((resolve,reject)=>{player.onended=resolve;player.onerror=()=>reject(Error('音声を再生できませんでした。'))})}if(run===vvRun)easyStatus('✅ 読み上げが終わりました')}catch(e){if(run===vvRun)easyStatus('⚠️ 音声を再生できません: '+(e?.message||e),true)}}
-function playSpeech(){return $v('speechMode').value==='voicevox'?playVV(unlockVVAudio()):playDevice()}
-function stopSpeech(show=true){vvRun++;if('speechSynthesis' in window)window.speechSynthesis.cancel();if(vvAudio){vvAudio.pause();vvAudio.currentTime=0;vvAudio=null}if(show&&$v('easyStatus'))easyStatus('■ 停止しました')}
+function unlockVVAudio(){
+ const AC=window.AudioContext||window.webkitAudioContext;
+ if(AC){
+  if(!vvAudioContext)vvAudioContext=new AC();
+  vvAudioContext.resume().catch(()=>{});
+  try{const b=vvAudioContext.createBuffer(1,1,22050),s=vvAudioContext.createBufferSource();s.buffer=b;s.connect(vvAudioContext.destination);s.start(0)}catch(_){}
+  return{kind:'webaudio',context:vvAudioContext}
+ }
+ const a=new Audio(VV_SILENT);a.preload='auto';a.loop=true;a.setAttribute('playsinline','');a.play().catch(()=>{});return{kind:'html',player:a}
+}
+async function playBlobWithUnlock(blob,unlocked,rate){
+ if(unlocked?.kind==='webaudio'){
+  const ctx=unlocked.context;
+  if(ctx.state==='suspended')await ctx.resume();
+  const data=await blob.arrayBuffer();
+  const buffer=await new Promise((resolve,reject)=>{const p=ctx.decodeAudioData(data.slice(0),resolve,reject);if(p?.then)p.then(resolve,reject)});
+  await new Promise((resolve,reject)=>{try{const source=ctx.createBufferSource();vvAudioSource=source;source.buffer=buffer;source.playbackRate.value=rate;source.connect(ctx.destination);source.onended=()=>{if(vvAudioSource===source)vvAudioSource=null;resolve()};source.start(0)}catch(e){reject(e)}});
+  return
+ }
+ const player=unlocked?.player||new Audio();vvAudio=player;player.loop=false;player.src=URL.createObjectURL(blob);player.playbackRate=rate;await player.play();await new Promise((resolve,reject)=>{player.onended=resolve;player.onerror=()=>reject(Error('音声を再生できませんでした。'))})
+}
+async function playVV(unlocked){stopSpeech(false);const run=++vvRun,text=$v('easyText').value.trim(),speaker=$v('vvSpeaker').value,chunks=vvChunks(text);if(!text){stopSpeech(false);return easyStatus('読み上げる文章がありません。',true)}try{for(let i=0;i<chunks.length;i++){if(run!==vvRun)return;easyStatus(`🔊 VOICEVOX音声を作っています…（${i+1}/${chunks.length}）`);const blob=await vvMake(chunks[i],speaker,seconds=>easyStatus(`⏳ 音声APIが混み合っています。${seconds}秒後に自動で再試行します…`));if(run!==vvRun)return;easyStatus(`▶ 読み上げ中…（${i+1}/${chunks.length}）`);await playBlobWithUnlock(blob,unlocked,Number($v('vvSpeed').value)||1)}if(run===vvRun)easyStatus('✅ 読み上げが終わりました')}catch(e){if(run===vvRun)easyStatus('⚠️ 音声を再生できません: '+(e?.message||e),true)}}
+function playSpeech(){if($v('speechMode').value!=='voicevox')return playDevice();const unlocked=unlockVVAudio();easyStatus('🔊 VOICEVOX音声を準備しています…');return playVV(unlocked)}
+function stopSpeech(show=true){vvRun++;if('speechSynthesis' in window)window.speechSynthesis.cancel();if(vvAudioSource){try{vvAudioSource.stop()}catch(_){}vvAudioSource=null}if(vvAudio){vvAudio.pause();vvAudio.currentTime=0;vvAudio=null}if(show&&$v('easyStatus'))easyStatus('■ 停止しました')}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addUI);else addUI();
 })();
 
