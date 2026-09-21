@@ -49,12 +49,21 @@ if(allBtn&&!allBtn.dataset.vvAllFix){
   const st=document.getElementById('audioStatus');
   if(typeof pages==='undefined'||!pages.length){if(st)st.textContent='先にPDFを読み込んでください。';return}
   for(let i=0;i<pages.length;i++){const n=document.getElementById('nar-'+i),rd=document.getElementById('read-'+i);if(n)pages[i].narration=n.value;if(rd)pages[i].reading=rd.value}
-  if(!pages.every(x=>String(x.narration||'').trim())){if(st)st.textContent='先に「ChatGPTで全ページのナレーションを作る」を押してください。';return}
-  allBtn.disabled=true;allBtn.textContent='VOICEVOX音声を作成中…';
+  allBtn.disabled=true;allBtn.dataset.audioRunning='1';allBtn.textContent='VOICEVOX音声を作成中…';
   let completed=0;
   try{
    for(let i=0;i<pages.length;i++){
-    const p=pages[i],reading=String(p.reading||p.narration||'').trim();
+    const p=pages[i];
+    let reading=String(p.reading||p.narration||'').trim();
+    while(!reading&&document.documentElement.dataset.narrationGenerating==='1'){
+     if(st)st.textContent='次のナレーションを待っています… 原稿 '+i+'/'+pages.length+'・音声 '+completed+'/'+pages.length;
+     allBtn.textContent='追いかけ作成中 '+completed+'/'+pages.length;
+     await new Promise(r=>setTimeout(r,350));
+     const n=document.getElementById('nar-'+i),rd=document.getElementById('read-'+i);
+     if(n)pages[i].narration=n.value;if(rd)pages[i].reading=rd.value;
+     reading=String(pages[i].reading||pages[i].narration||'').trim();
+    }
+    if(!reading)throw Error('PAGE '+(i+1)+'のナレーションがまだありません。先にナレーション作成を開始してください。');
     if(p.audio&&!p.audioStale&&p.audioText===reading){completed++;if(st)st.textContent='作成済みを確認中… '+completed+'/'+pages.length+'ページ';continue}
     if(st)st.textContent='VOICEVOX 青山龍星で作成中… '+(i+1)+'/'+pages.length+'ページ';
     allBtn.textContent='作成中 '+(i+1)+'/'+pages.length;
@@ -71,7 +80,7 @@ if(allBtn&&!allBtn.dataset.vvAllFix){
    if(st)st.textContent='全'+completed+'ページのVOICEVOX音声が完成しました。';
   }catch(err){
    if(st)st.textContent='PAGE '+(completed+1)+'で停止しました：'+(err?.message||String(err))+'　もう一度押すと続きから再開します。';
-  }finally{const b=document.getElementById('allAudio');if(b){b.disabled=false;b.textContent='全ページのAI音声を作る'}}
+  }finally{const b=document.getElementById('allAudio');if(b){b.dataset.audioRunning='0';b.disabled=false;b.textContent='全ページのAI音声を作る'}}
  },true)
 }
 })();`;
