@@ -40,6 +40,40 @@ const geminiTts=window.tts;
 window.tts=async function(text){return provider.value==='voicevox'?vv(text):geminiTts(text)};
 try{tts=window.tts}catch(_){}
 const sample=document.getElementById('sampleVoice');if(sample&&!sample.dataset.vvfix){sample.dataset.vvfix='1';sample.addEventListener('click',async e=>{if(provider.value!=='voicevox')return;e.stopImmediatePropagation();sample.disabled=true;const st=document.getElementById('audioStatus'),a=document.getElementById('sampleAudio');if(st)st.textContent='青山龍星の試聴音声を作成中…';try{const x=await vv('こんにちは。プレゼン資料の内容を、分かりやすく自然にご紹介します。');a.src='data:'+(x.mimeType||'audio/mpeg')+';base64,'+x.data;a.style.display='block';if(st)st.textContent='VOICEVOX 青山龍星です。下の再生ボタンで確認できます。'}catch(err){if(st)st.textContent='青山龍星の試聴エラー：'+err.message}finally{sample.disabled=false}},true)}
+const allBtn=document.getElementById('allAudio');
+if(allBtn&&!allBtn.dataset.vvAllFix){
+ allBtn.dataset.vvAllFix='1';
+ allBtn.addEventListener('click',async e=>{
+  if(provider.value!=='voicevox')return;
+  e.preventDefault();e.stopImmediatePropagation();
+  const st=document.getElementById('audioStatus');
+  if(typeof pages==='undefined'||!pages.length){if(st)st.textContent='先にPDFを読み込んでください。';return}
+  for(let i=0;i<pages.length;i++){const n=document.getElementById('nar-'+i),rd=document.getElementById('read-'+i);if(n)pages[i].narration=n.value;if(rd)pages[i].reading=rd.value}
+  if(!pages.every(x=>String(x.narration||'').trim())){if(st)st.textContent='先に「ChatGPTで全ページのナレーションを作る」を押してください。';return}
+  allBtn.disabled=true;allBtn.textContent='VOICEVOX音声を作成中…';
+  let completed=0;
+  try{
+   for(let i=0;i<pages.length;i++){
+    const p=pages[i],reading=String(p.reading||p.narration||'').trim();
+    if(p.audio&&!p.audioStale&&p.audioText===reading){completed++;if(st)st.textContent='作成済みを確認中… '+completed+'/'+pages.length+'ページ';continue}
+    if(st)st.textContent='VOICEVOX 青山龍星で作成中… '+(i+1)+'/'+pages.length+'ページ';
+    allBtn.textContent='作成中 '+(i+1)+'/'+pages.length;
+    await new Promise(r=>setTimeout(r,30));
+    const x=await vv(reading);
+    p.audio='data:'+(x.mimeType||'audio/mpeg')+';base64,'+x.data;
+    p.audioSource='VOICEVOX・青山龍星';p.audioText=reading;p.audioStale=false;p.leadingSilenceMs=Number(x.leadingSilenceMs||0);completed++;
+    const audio=document.getElementById('audio-'+i);if(audio){audio.src=p.audio;audio.style.display='block'}
+    const status=document.getElementById('status-'+i);if(status)status.textContent='VOICEVOX 青山龍星の音声が完成しました。';
+    if(st)st.textContent='完成 '+completed+'/'+pages.length+'ページ';
+    await new Promise(r=>setTimeout(r,180));
+   }
+   if(typeof render==='function')render();
+   if(st)st.textContent='全'+completed+'ページのVOICEVOX音声が完成しました。';
+  }catch(err){
+   if(st)st.textContent='PAGE '+(completed+1)+'で停止しました：'+(err?.message||String(err))+'　もう一度押すと続きから再開します。';
+  }finally{const b=document.getElementById('allAudio');if(b){b.disabled=false;b.textContent='全ページのAI音声を作る'}}
+ },true)
+}
 })();`;
 d.body.appendChild(s);return true}
 let n=0;const t=setInterval(()=>{n++;if(inject()||n>120)clearInterval(t)},250);window.addEventListener('load',()=>setTimeout(inject,350));
