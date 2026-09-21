@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#16233f"><title>YouTube動画作成2</title><style>html,body{margin:0;width:100%;height:100%;background:#f4f5f7}#app{position:fixed;inset:0;width:100%;height:100%;border:0;background:#f4f5f7}</style></head><body><iframe id="app" src="youtube-video.html?v=reading-manual3" allow="microphone;camera"></iframe><script>
+<html lang="ja"><head><script>
+// 旧い中身だけのURLを直接開いた場合は、全機能入りの最新版へ移動する。
+if(window.top===window.self){location.replace('youtube-video-2.html?v=entryfix1')}
+</script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#16233f"><title>YouTube動画作成2</title><style>html,body{margin:0;width:100%;height:100%;background:#f4f5f7}#app{position:fixed;inset:0;width:100%;height:100%;border:0;background:#f4f5f7}</style></head><body><iframe id="app" src="youtube-video.html?v=reading-manual3" allow="microphone;camera"></iframe><script>
 const frame=document.getElementById('app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function setVal(d,id,val){const e=d.getElementById(id);if(e&&val!=null){e.value=String(val);e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}))}}
