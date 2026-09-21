@@ -35,7 +35,8 @@ if(!provider){
 }
 const old=voice.value,dir=document.getElementById('direction')?.closest('.field');
 function syncProvider(){const isV=provider.value==='voicevox';field.style.display=isV?'none':'';if(dir)dir.style.display=isV?'none':'';if(isV){if(![...voice.options].some(o=>o.value==='VOICEVOX:青山龍星'))voice.add(new Option('VOICEVOX：青山龍星','VOICEVOX:青山龍星'));voice.value='VOICEVOX:青山龍星'}else voice.value=old||voice.options[0]?.value||''}
-provider.onchange=syncProvider;syncProvider();
+try{provider.value=localStorage.getItem('presentationVoiceProvider')||'voicevox'}catch(_){provider.value='voicevox'}
+provider.onchange=()=>{try{localStorage.setItem('presentationVoiceProvider',provider.value)}catch(_){}syncProvider()};syncProvider();
 const geminiTts=window.tts;
 window.tts=async function(text){return provider.value==='voicevox'?vv(text):geminiTts(text)};
 try{tts=window.tts}catch(_){}
