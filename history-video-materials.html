@@ -65,5 +65,5 @@ $('copyScript').onclick=async()=>{await navigator.clipboard.writeText(scriptText
 $('copyAll').onclick=async()=>{await navigator.clipboard.writeText(scriptText(true));$('bulkStatus').textContent='脚本＋画像指示をコピーしました。'}
 $('downloadZip').onclick=async()=>{if(!project)return;const ready=project.scenes.filter(s=>s.image).length;if(!ready)return;const b=$('downloadZip');b.disabled=true;b.textContent='ZIP作成中…';try{if(typeof JSZip==='undefined')throw Error('ZIP機能を読み込めませんでした。');const zip=new JSZip();project.scenes.forEach((s,i)=>{if(!s.image)return;const base64=s.image.split(',')[1];zip.file(`scene-${String(i+1).padStart(2,'0')}.png`,base64,{base64:true})});zip.file('script.txt',scriptText(true));const blob=await zip.generateAsync({type:'blob'});const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=`history-materials-${new Date().toISOString().slice(0,10)}.zip`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),3000)}catch(e){$('bulkStatus').textContent='ZIP作成エラー：'+e.message}finally{b.disabled=false;b.textContent='画像をZIPでまとめて保存'}}
 </script>
-</body>
+<script src="video-draft-save.js?v=1"></script></body>
 </html>
