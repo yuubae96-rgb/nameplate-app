@@ -30,11 +30,11 @@ async function vv(text){
 const voice=document.getElementById('voice'),field=voice?.closest('.field');if(!voice||!field)return;
 let provider=document.getElementById('voiceProvider');
 if(!provider){
- const p=document.createElement('div');p.className='field';p.innerHTML='<label>音声エンジン</label><select id="voiceProvider"><option value="voicevox" selected>VOICEVOX：青山龍星（デフォルト）</option><option value="gemini">Google Gemini TTS・12種類</option></select><div class="hint">通常は青山龍星。必要な時だけGemini 12種類へ切り替えます。</div>';
+ const p=document.createElement('div');p.className='field';p.innerHTML='<label>音声エンジン</label><select id="voiceProvider"><option value="voicevox" selected>VOICEVOX：青山龍星（デフォルト）</option><option value="gemini38lite">Gemini 3.8 Flash-Lite TTS（低コスト・おすすめ）</option><option value="gemini38">Gemini 3.8 Flash TTS（高音質）</option></select><div class="hint">普段は無料の青山龍星。Geminiは3.8 Flash-Lite（低コスト）と3.8 Flash（高音質）を選べます。</div>';
  field.parentNode.insertBefore(p,field);provider=document.getElementById('voiceProvider')
 }
 const old=voice.value,dir=document.getElementById('direction')?.closest('.field');
-function syncProvider(){const isV=provider.value==='voicevox';field.style.display=isV?'none':'';if(dir)dir.style.display=isV?'none':'';if(isV){if(![...voice.options].some(o=>o.value==='VOICEVOX:青山龍星'))voice.add(new Option('VOICEVOX：青山龍星','VOICEVOX:青山龍星'));voice.value='VOICEVOX:青山龍星'}else voice.value=old||voice.options[0]?.value||''}
+function syncProvider(){const isV=provider.value==='voicevox';window.__geminiTtsModel=provider.value==='gemini38'?'gemini-3.8-flash-tts':'gemini-3.8-flash-lite-tts';field.style.display=isV?'none':'';if(dir)dir.style.display=isV?'none':'';if(isV){if(![...voice.options].some(o=>o.value==='VOICEVOX:青山龍星'))voice.add(new Option('VOICEVOX：青山龍星','VOICEVOX:青山龍星'));voice.value='VOICEVOX:青山龍星'}else voice.value=old||voice.options[0]?.value||''}
 try{provider.value=localStorage.getItem('presentationVoiceProvider')||'voicevox'}catch(_){provider.value='voicevox'}
 provider.onchange=()=>{try{localStorage.setItem('presentationVoiceProvider',provider.value)}catch(_){}syncProvider()};syncProvider();
 const geminiTts=window.tts;
