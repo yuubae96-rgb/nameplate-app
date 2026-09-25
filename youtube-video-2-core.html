@@ -49,7 +49,8 @@ if(styleSel&&!styleSel.dataset.extendedStyles){styleSel.dataset.extendedStyles='
 ['3DCG・博物館再現風','documentary','博物館の歴史再現展示のような精密3DCG。建物・衣装・道具の考証を重視し、過度なゲーム風表現は避ける。'],
 ['シネマティック再現ドラマ風','realistic','歴史再現ドラマのワンシーンのような実写シネマティック表現。自然な照明、映画的な被写界深度、人物中心。'],
 ['絵本・やさしい歴史イラスト','documentary','初心者にも親しみやすい歴史絵本風。分かりやすい形、柔らかな色、情報が一目で伝わる構図。'],
-['地図・図解イラスト風','documentary','歴史解説用の地図・図解イラスト風。位置関係、移動、勢力、時系列が一目で理解できる情報デザイン。']
+['地図・図解イラスト風','documentary','歴史解説用の地図・図解イラスト風。位置関係、移動、勢力、時系列が一目で理解できる情報デザイン。'],
+['手描き歴史図解・学習ポスター風','documentary','手描きの歴史学習ポスター・図解漫画風。温かい生成り紙の背景、水彩と色鉛筆のような柔らかな彩色、太めの手描き文字、川・地図・人物・建物・記号・矢印・囲みを一枚の画面に整理して配置する。難しい歴史や社会の仕組みを、親しみやすいイラストと短い日本語注釈で直感的に理解できる構成。写実的すぎず、子ども向けに幼すぎない。情報量は多くても視線の流れを明快にし、YouTubeの16:9画面で読みやすくする。']
 ].forEach(([label,val,prompt])=>{const o=new Option(label,val);o.dataset.stylePrompt=prompt;styleSel.add(o)})}
 const sc=d.createElement('script');sc.textContent=`(()=>{if(window.__yt2ReadingManual3)return;window.__yt2ReadingManual3=true;
 const KEY='yt2ReadingDictionaryV1';
