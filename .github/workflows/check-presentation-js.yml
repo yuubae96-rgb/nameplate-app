@@ -1,0 +1,23 @@
+name: Check presentation JavaScript
+on:
+  pull_request:
+    paths:
+      - 'youtube-presentation*.html'
+      - 'check-presentation-inline-js.py'
+      - '.github/workflows/check-presentation-js.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'youtube-presentation*.html'
+      - 'check-presentation-inline-js.py'
+      - '.github/workflows/check-presentation-js.yml'
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check presentation inline scripts
+        run: python3 check-presentation-inline-js.py
