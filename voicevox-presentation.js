@@ -32,12 +32,12 @@ let provider=document.getElementById('voiceProvider');
 if(!provider){
  const p=document.createElement('div');p.className='field';
  const geminiOptions=[...voice.options].map(o=>'<option value="gemini:'+o.value+'">Gemini：'+o.textContent+'</option>').join('');
- p.innerHTML='<label>ナレーション音声</label><select id="voiceProvider"><option value="voicevox" selected>VOICEVOX：青山龍星（標準・デフォルト）</option>'+geminiOptions+'<option value="fish">Fish Audio：日本語ナレーション（無料枠）</option></select>'<div class="hint">普段は青山龍星を使います。必要な時だけGeminiの12種類の声へ、この1か所で切り替えます。</div>';
+ p.innerHTML='<label>ナレーション音声</label><select id="voiceProvider"><option value="voicevox">VOICEVOX：青山龍星</option>'+geminiOptions+'<option value="fish" selected>Fish Audio：日本語ナレーション（無料枠）</option></select><div class="hint">初期設定はFish Audioです。この1か所でVOICEVOXやGeminiの声へ切り替えられます。</div>';
  field.parentNode.insertBefore(p,field);provider=document.getElementById('voiceProvider')
 }
 const dir=document.getElementById('direction')?.closest('.field');
 function syncProvider(){const isV=provider.value==='voicevox';if(provider.value==='fish')voice.value='Fish Audio';window.__geminiTtsModel='gemini-3.8-flash-tts';field.style.display='none';if(dir)dir.style.display=isV?'none':'';if(isV){if(![...voice.options].some(o=>o.value==='VOICEVOX:青山龍星'))voice.add(new Option('VOICEVOX：青山龍星','VOICEVOX:青山龍星'));voice.value='VOICEVOX:青山龍星'}else{const v=provider.value.replace(/^gemini:/,'');if([...voice.options].some(o=>o.value===v))voice.value=v}}
-try{provider.value=localStorage.getItem('presentationVoiceProvider')||'voicevox';if(provider.value!=='voicevox'&&provider.value!=='fish'&&!provider.value.startsWith('gemini:'))provider.value='voicevox'}catch(_){provider.value='voicevox'}
+try{if(localStorage.getItem('presentationVoiceDefaultFishV1')!=='1'){localStorage.setItem('presentationVoiceProvider','fish');localStorage.setItem('presentationVoiceDefaultFishV1','1')}provider.value=localStorage.getItem('presentationVoiceProvider')||'fish';if(provider.value!=='voicevox'&&provider.value!=='fish'&&!provider.value.startsWith('gemini:'))provider.value='fish'}catch(_){provider.value='fish'}
 provider.onchange=()=>{try{localStorage.setItem('presentationVoiceProvider',provider.value)}catch(_){}syncProvider()};syncProvider();
 const geminiTts=window.tts;
 async function fishTts(text){const r=await fetch('https://vnnvuxccazkdzwqjmntz.supabase.co/functions/v1/youtube-video-maker-safe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'generateTts',ttsProvider:'fish',fishTimestamps:true,text,fishVoiceId:'297a6fd278df47c3b9da9bfdf55ac89a'})});const d=await r.json();if(!r.ok)throw Error(d.error||'Fish Audio HTTP '+r.status);return d}
