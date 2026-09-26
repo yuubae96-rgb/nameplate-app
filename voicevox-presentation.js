@@ -32,15 +32,17 @@ let provider=document.getElementById('voiceProvider');
 if(!provider){
  const p=document.createElement('div');p.className='field';
  const geminiOptions=[...voice.options].map(o=>'<option value="gemini:'+o.value+'">Gemini：'+o.textContent+'</option>').join('');
- p.innerHTML='<label>ナレーション音声</label><select id="voiceProvider"><option value="voicevox" selected>VOICEVOX：青山龍星（標準・デフォルト）</option>'+geminiOptions+'</select><div class="hint">普段は青山龍星を使います。必要な時だけGeminiの12種類の声へ、この1か所で切り替えます。</div>';
+ p.innerHTML='<label>ナレーション音声</label><select id="voiceProvider"><option value="voicevox" selected>VOICEVOX：青山龍星（標準・デフォルト）</option>'+geminiOptions+'<option value="fish">Fish Audio：日本語ナレーション（無料枠）</option></select>'<div class="hint">普段は青山龍星を使います。必要な時だけGeminiの12種類の声へ、この1か所で切り替えます。</div>';
  field.parentNode.insertBefore(p,field);provider=document.getElementById('voiceProvider')
 }
 const dir=document.getElementById('direction')?.closest('.field');
-function syncProvider(){const isV=provider.value==='voicevox';window.__geminiTtsModel='gemini-3.8-flash-tts';field.style.display='none';if(dir)dir.style.display=isV?'none':'';if(isV){if(![...voice.options].some(o=>o.value==='VOICEVOX:青山龍星'))voice.add(new Option('VOICEVOX：青山龍星','VOICEVOX:青山龍星'));voice.value='VOICEVOX:青山龍星'}else{const v=provider.value.replace(/^gemini:/,'');if([...voice.options].some(o=>o.value===v))voice.value=v}}
-try{provider.value=localStorage.getItem('presentationVoiceProvider')||'voicevox';if(provider.value!=='voicevox'&&!provider.value.startsWith('gemini:'))provider.value='voicevox'}catch(_){provider.value='voicevox'}
+function syncProvider(){const isV=provider.value==='voicevox';if(provider.value==='fish')voice.value='Fish Audio';window.__geminiTtsModel='gemini-3.8-flash-tts';field.style.display='none';if(dir)dir.style.display=isV?'none':'';if(isV){if(![...voice.options].some(o=>o.value==='VOICEVOX:青山龍星'))voice.add(new Option('VOICEVOX：青山龍星','VOICEVOX:青山龍星'));voice.value='VOICEVOX:青山龍星'}else{const v=provider.value.replace(/^gemini:/,'');if([...voice.options].some(o=>o.value===v))voice.value=v}}
+try{provider.value=localStorage.getItem('presentationVoiceProvider')||'voicevox';if(provider.value!=='voicevox'&&provider.value!=='fish'&&!provider.value.startsWith('gemini:'))provider.value='voicevox'}catch(_){provider.value='voicevox'}
 provider.onchange=()=>{try{localStorage.setItem('presentationVoiceProvider',provider.value)}catch(_){}syncProvider()};syncProvider();
 const geminiTts=window.tts;
-window.tts=async function(text){return provider.value==='voicevox'?vv(text):geminiTts(text)};
+async function fishTts(text){const r=await fetch('https://vnnvuxccazkdzwqjmntz.supabase.co/functions/v1/youtube-video-maker-safe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'generateTts',ttsProvider:'fish',text,fishVoiceId:'297a6fd278df47c3b9da9bfdf55ac89a'})});const d=await r.json();if(!r.ok)throw Error(d.error||'Fish Audio HTTP '+r.status);return d}
+if([...voice.options].every(o=>o.value!=='Fish Audio'))voice.add(new Option('Fish Audio：日本語ナレーション','Fish Audio'));
+window.tts=async function(text){return provider.value==='voicevox'?vv(text):provider.value==='fish'?fishTts(text):geminiTts(text)};
 try{tts=window.tts}catch(_){}
 const sample=document.getElementById('sampleVoice');if(sample&&!sample.dataset.vvfix){sample.dataset.vvfix='1';sample.addEventListener('click',async e=>{if(provider.value!=='voicevox')return;e.stopImmediatePropagation();sample.disabled=true;const st=document.getElementById('audioStatus'),a=document.getElementById('sampleAudio');if(st)st.textContent='青山龍星の試聴音声を作成中…';try{const x=await vv('こんにちは。プレゼン資料の内容を、分かりやすく自然にご紹介します。');a.src='data:'+(x.mimeType||'audio/mpeg')+';base64,'+x.data;a.style.display='block';if(st)st.textContent='VOICEVOX 青山龍星です。下の再生ボタンで確認できます。'}catch(err){if(st)st.textContent='青山龍星の試聴エラー：'+err.message}finally{sample.disabled=false}},true)}
 const allBtn=document.getElementById('allAudio');
