@@ -54,8 +54,8 @@ Deno.serve(async(req:Request)=>{
       const r=await fetch(url,{headers:{"Authorization":`Bearer ${key}`},signal:AbortSignal.timeout(10000)});
       if(!r.ok)return json({error:`Fish Audioの声一覧を取得できませんでした（HTTP ${r.status}）。`},r.status,h);
       const result=await r.json();
-      const items=(Array.isArray(result.items)?result.items:[]).filter((v:any)=>/^[a-f0-9]{32}$/i.test(String(v._id||""))).map((v:any)=>({id:v._id,title:String(v.title||"名称なし").slice(0,90),description:String(v.description||"").slice(0,180),author:String(v.author?.nickname||"").slice(0,50),licensed:Boolean(v.licensed)}));
-      return json({items,total:Number(result.total||0),hasMore:Boolean(result.has_more)&&page<30,page},200,h);
+      const items=(Array.isArray(result.items)?result.items:[]).filter((v:any)=>/^[a-f0-9]{32}$/i.test(String(v._id||""))).map((v:any)=>({id:v._id,title:String(v.title||"名称なし").slice(0,90),description:String(v.description||"").slice(0,180),author:String(v.author?.nickname||"").slice(0,50),licensed:Boolean(v.licensed)})).filter((v:any)=>!title||v.title.toLocaleLowerCase().includes(title.toLocaleLowerCase()));
+      return json({items,total:Number(result.total||0),hasMore:Boolean(result.has_more)&&page<30&&(!title||items.length>0),page},200,h);
     }
     if(action==="generateTts" && body.ttsProvider==="fish") {
       await persistentGuard("tts",body);
