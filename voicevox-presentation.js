@@ -40,7 +40,7 @@ function syncProvider(){const isV=provider.value==='voicevox';if(provider.value=
 try{provider.value=localStorage.getItem('presentationVoiceProvider')||'voicevox';if(provider.value!=='voicevox'&&provider.value!=='fish'&&!provider.value.startsWith('gemini:'))provider.value='voicevox'}catch(_){provider.value='voicevox'}
 provider.onchange=()=>{try{localStorage.setItem('presentationVoiceProvider',provider.value)}catch(_){}syncProvider()};syncProvider();
 const geminiTts=window.tts;
-async function fishTts(text){const r=await fetch('https://vnnvuxccazkdzwqjmntz.supabase.co/functions/v1/youtube-video-maker-safe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'generateTts',ttsProvider:'fish',text,fishVoiceId:'297a6fd278df47c3b9da9bfdf55ac89a'})});const d=await r.json();if(!r.ok)throw Error(d.error||'Fish Audio HTTP '+r.status);return d}
+async function fishTts(text){const r=await fetch('https://vnnvuxccazkdzwqjmntz.supabase.co/functions/v1/youtube-video-maker-safe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'generateTts',ttsProvider:'fish',fishTimestamps:true,text,fishVoiceId:'297a6fd278df47c3b9da9bfdf55ac89a'})});const d=await r.json();if(!r.ok)throw Error(d.error||'Fish Audio HTTP '+r.status);return d}
 if([...voice.options].every(o=>o.value!=='Fish Audio'))voice.add(new Option('Fish Audio：日本語ナレーション','Fish Audio'));
 window.tts=async function(text){return provider.value==='voicevox'?vv(text):provider.value==='fish'?fishTts(text):geminiTts(text)};
 try{tts=window.tts}catch(_){}
