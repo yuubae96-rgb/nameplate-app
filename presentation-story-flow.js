@@ -67,13 +67,13 @@ function installPasteNarration(d){
   card.className='mode';
   card.style.marginTop='12px';
   card.innerHTML='<h3 style="margin:0 0 8px">ChatGPTで作ったナレーションを貼り付ける</h3><div class="hint" style="margin-bottom:8px">下の指示文をChatGPTへそのままコピーして使えます。PDF名やページ番号は読み上げ本文に入れない指定です。</div><textarea id="chatgptPrompt" readonly style="min-height:220px"></textarea><button type="button" class="btn blue full" id="copyChatgptPrompt" style="margin:8px 0 12px">ChatGPTへの指示をコピー</button><div class="hint" style="margin-bottom:8px">ChatGPTの回答を「1ページ」「2ページ」…の見出し付きのまま全部貼り付けてください。各ページへ自動で振り分けます。</div><textarea id="bulkNarrationPaste" placeholder="ここにChatGPTで作った全ページのナレーションをそのまま貼り付け"></textarea><button type="button" class="btn green full" id="applyBulkNarration" style="margin-top:8px">貼り付けた文章を全ページに反映</button><div id="bulkNarrationStatus" class="status"></div>';
+  make.parentElement.insertBefore(card,make);
   d.getElementById('chatgptPrompt').value=CHATGPT_PROMPT;
   d.getElementById('copyChatgptPrompt').onclick=async()=>{const b=d.getElementById('copyChatgptPrompt');try{await d.defaultView.navigator.clipboard.writeText(CHATGPT_PROMPT);b.textContent='✓ コピーしました';setTimeout(()=>b.textContent='ChatGPTへの指示をコピー',1600)}catch(e){const t=d.getElementById('chatgptPrompt');t.focus();t.select();d.execCommand('copy');b.textContent='✓ コピーしました';setTimeout(()=>b.textContent='ChatGPTへの指示をコピー',1600)}};
-  make.parentElement.insertBefore(card,make);
   const parse=(raw,count)=>{
     const text=String(raw||'').replace(/\r/g,'').trim();
     if(!text)return[];
-    const re=/^[ \t]*(?:#{1,6}[ \t]*)?(?:\*\*)?(?:第[ \t]*)?([0-9０-９]{1,3})[ \t　]*ページ(?:\*\*)?(?:[ \t　]*[ \t　\-―ー:：].*)?$/gm;
+    const re=/^[ \t]*(?:#{1,6}[ \t]*)?(?:\*\*)?[【\[]?[ \t　]*(?:第[ \t]*)?([0-9０-９]{1,3})[ \t　]*ページ(?:目)?[ \t　]*[】\]]?(?:\*\*)?(?:[ \t　]*[:：\-―ー].*)?[ \t　]*$/gm;
     const hits=[...text.matchAll(re)];
     if(!hits.length)return count===1?[text]:[];
     const out=Array(count).fill('');
@@ -97,6 +97,7 @@ function installPasteNarration(d){
     if(!filled){status.textContent='ページ見出しを認識できませんでした。「1ページ」「2ページ」…を付けた原稿を貼り付けてください。';return}
     parts.forEach((txt,i)=>{
       if(!txt)return;
+      txt=sanitizeSpeechText(d,txt);
       if(!d.__pastedNarrationPages)d.__pastedNarrationPages=new Set();
       d.__pastedNarrationPages.add(i);
       const nar=d.getElementById('nar-'+i),read=d.getElementById('read-'+i);
@@ -113,17 +114,32 @@ function sanitizeSpeechText(d,text){
   let s=String(text||'').replace(/\r/g,'');
   const file=d.getElementById('pdfFile')?.files?.[0]?.name||'';
   if(file){
-    const esc=file.replace(/[.*+?^$()|[\]\\]/g,'\\function walkDocs(d){');
+    const esc=file.replace(/[.*+?^$()|[\]\\]/g,'\\$&');
     s=s.replace(new RegExp(esc,'gi'),' ');
     const base=file.replace(/\.pdf$/i,'');
-    if(base){const eb=base.replace(/[.*+?^$()|[\]\\]/g,'\\function walkDocs(d){');s=s.replace(new RegExp(eb+'(?:\\.pdf)?','gi'),' ')}
+    if(base){const eb=base.replace(/[.*+?^$()|[\]\\]/g,'\\$&');s=s.replace(new RegExp(eb+'(?:\\.pdf)?','gi'),' ')}
   }
-  s=s.replace(/\b[^\s\n]{2,}\.pdf\b/gi,' ')
+  s=s.replace(/[^\s\n「」『』【】<>]{2,}\.pdf\b/gi,' ')
      .replace(/^\s*(?:【|\[|#*\s*)?(?:第\s*)?[0-9０-９]{1,3}\s*ページ(?:目)?(?:】|\])?\s*[:：\-―ー]?\s*$/gm,'')
      .replace(/\n{3,}/g,'\n\n').replace(/[ \t]{2,}/g,' ').trim();
   return s;
 }
 function installSpeechGuard(d){
+  const w=d.defaultView;
+  if(typeof w?.makeAudio==='function'&&!w.makeAudio.__filenameGuard){
+    const original=w.makeAudio;
+    const guarded=function(...args){
+      const i=args[0];
+      for(const id of ['nar-'+i,'read-'+i]){
+        const el=d.getElementById(id);
+        if(!el)continue;
+        const cleaned=sanitizeSpeechText(d,el.value);
+        if(cleaned!==el.value){el.value=cleaned;el.dispatchEvent(new w.Event('input',{bubbles:true}))}
+      }
+      return original.apply(this,args);
+    };
+    guarded.__filenameGuard=true;w.makeAudio=guarded;
+  }
   if(d.documentElement.dataset.speechGuard==='1')return;
   d.documentElement.dataset.speechGuard='1';
   const cleanAll=()=>{
