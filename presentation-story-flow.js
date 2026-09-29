@@ -15,6 +15,7 @@ function enforceSuzuyu(d){
   if(d.getElementById('narStyle')?.value!=='suzuyu')return;
   [...d.querySelectorAll('textarea[id^="nar-"]')].forEach(n=>{
     const i=Number(n.id.slice(4)),text=n.value.trim();
+    if(d.__pastedNarrationPages?.has(i))return;
     if(!text||n.dataset.suzuyuChecked===text)return;
     if(!startsWithQuestion(text)){
       const q=questionFor(d,i),next=q+'\n'+text;
@@ -51,15 +52,17 @@ function installPasteNarration(d){
   const parse=(raw,count)=>{
     const text=String(raw||'').replace(/\r/g,'').trim();
     if(!text)return[];
-    const re=/^(?:#{1,6}\s*)?(?:ページ\s*)?(\d{1,3})\s*ページ(?:\s*[　 \-―ー:：].*)?$/gm;
+    const re=/^[ \t]*(?:#{1,6}[ \t]*)?(?:\*\*)?(?:第[ \t]*)?([0-9０-９]{1,3})[ \t　]*ページ(?:\*\*)?(?:[ \t　]*[ \t　\-―ー:：].*)?$/gm;
     const hits=[...text.matchAll(re)];
     if(!hits.length)return count===1?[text]:[];
     const out=Array(count).fill('');
     hits.forEach((m,k)=>{
-      const page=Number(m[1])-1;
-      if(page<0||page>=count)return;
+      const page=Number(m[1].replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248)))-1;
+      if(page<0||page>=count)throw Error('PDFに存在しないページ番号があります：'+(page+1)+'ページ');
+      if(out[page])throw Error('ページ見出しが重複しています：'+(page+1)+'ページ');
       const start=m.index+m[0].length,end=k+1<hits.length?hits[k+1].index:text.length;
       out[page]=text.slice(start,end).trim().replace(/^[-–—―]+\s*/,'').trim();
+      if(!out[page])throw Error((page+1)+'ページの本文が空です。');
     });
     return out;
   };
@@ -67,18 +70,22 @@ function installPasteNarration(d){
     const areas=[...d.querySelectorAll('textarea[id^="nar-"]')];
     const status=d.getElementById('bulkNarrationStatus');
     if(!areas.length){status.textContent='先にPDFを読み込んでください。';return}
-    const parts=parse(d.getElementById('bulkNarrationPaste').value,areas.length);
+    if(d.documentElement.dataset.narrationGenerating==='1'||d.getElementById('makeNarration')?.disabled){status.textContent='ナレーション作成を停止してから反映してください。';return}
+    let parts;try{parts=parse(d.getElementById('bulkNarrationPaste').value,areas.length)}catch(e){status.textContent=e.message;return}
     const filled=parts.filter(Boolean).length;
     if(!filled){status.textContent='ページ見出しを認識できませんでした。「1ページ」「2ページ」…を付けた原稿を貼り付けてください。';return}
     parts.forEach((txt,i)=>{
       if(!txt)return;
+      if(!d.__pastedNarrationPages)d.__pastedNarrationPages=new Set();
+      d.__pastedNarrationPages.add(i);
       const nar=d.getElementById('nar-'+i),read=d.getElementById('read-'+i);
-      if(nar){nar.value=txt;nar.dispatchEvent(new Event('input',{bubbles:true}))}
-      if(read){read.value=txt;read.dispatchEvent(new Event('input',{bubbles:true}))}
+      const InputEvent=d.defaultView?.Event||Event;
+      if(nar){nar.value=txt;nar.dispatchEvent(new InputEvent('input',{bubbles:true}))}
+      if(read){read.value=txt;read.dispatchEvent(new InputEvent('input',{bubbles:true}))}
     });
     try{d.defaultView?.render&&d.defaultView.render()}catch(e){}
     const all=d.getElementById('allAudio');if(all)all.disabled=false;
-    status.textContent='全'+filled+'ページにナレーションを反映しました。各ページで修正してから音声生成もできます。';
+    status.textContent=filled+' / '+areas.length+'ページにナレーションを反映しました。'+(filled<areas.length?'見出しのないページは変更していません。':'')+'貼り付けた文章はそのまま使います。下の「全ページのAI音声を作る」で音声を作成してください。';
   };
 }
 function walkDocs(d){
@@ -95,6 +102,7 @@ function install(){
     if(btn.dataset.storyFlow2!=='1'){
       btn.dataset.storyFlow2='1';
       btn.addEventListener('click',()=>{
+        d.__pastedNarrationPages?.clear();
         const before=extra.value;
         extra.value=(before?before+'\n\n':'')+STORY;
         extra.dispatchEvent(new Event('input',{bubbles:true}));
