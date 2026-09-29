@@ -37,7 +37,57 @@ function syncPipeline(d){
   if(ready>0&&all.dataset.audioRunning!=='1')all.disabled=false;
   all.dataset.readyNarrations=String(ready);
 }
+
+function installPasteNarration(d){
+  if(d.getElementById('pasteNarrationCard'))return;
+  const extra=d.getElementById('extra'),make=d.getElementById('makeNarration');
+  if(!extra||!make)return;
+  const card=d.createElement('div');
+  card.id='pasteNarrationCard';
+  card.className='mode';
+  card.style.marginTop='12px';
+  card.innerHTML='<h3 style="margin:0 0 8px">ChatGPTで作ったナレーションを貼り付ける</h3><div class="hint" style="margin-bottom:8px">「1ページ」「### 1ページ」「1ページ　導入」のようなページ見出し付き原稿を、そのまま全部貼り付けてください。PDFの各ページへ自動で振り分けます。</div><textarea id="bulkNarrationPaste" placeholder="ここにChatGPTで作った全ページのナレーションをそのまま貼り付け"></textarea><button type="button" class="btn green full" id="applyBulkNarration" style="margin-top:8px">貼り付けた文章を全ページに反映</button><div id="bulkNarrationStatus" class="status"></div>';
+  make.parentElement.insertBefore(card,make);
+  const parse=(raw,count)=>{
+    const text=String(raw||'').replace(/\r/g,'').trim();
+    if(!text)return[];
+    const re=/^(?:#{1,6}\s*)?(?:ページ\s*)?(\d{1,3})\s*ページ(?:\s*[　 \-―ー:：].*)?$/gm;
+    const hits=[...text.matchAll(re)];
+    if(!hits.length)return count===1?[text]:[];
+    const out=Array(count).fill('');
+    hits.forEach((m,k)=>{
+      const page=Number(m[1])-1;
+      if(page<0||page>=count)return;
+      const start=m.index+m[0].length,end=k+1<hits.length?hits[k+1].index:text.length;
+      out[page]=text.slice(start,end).trim().replace(/^[-–—―]+\s*/,'').trim();
+    });
+    return out;
+  };
+  d.getElementById('applyBulkNarration').onclick=()=>{
+    const areas=[...d.querySelectorAll('textarea[id^="nar-"]')];
+    const status=d.getElementById('bulkNarrationStatus');
+    if(!areas.length){status.textContent='先にPDFを読み込んでください。';return}
+    const parts=parse(d.getElementById('bulkNarrationPaste').value,areas.length);
+    const filled=parts.filter(Boolean).length;
+    if(!filled){status.textContent='ページ見出しを認識できませんでした。「1ページ」「2ページ」…を付けた原稿を貼り付けてください。';return}
+    parts.forEach((txt,i)=>{
+      if(!txt)return;
+      const nar=d.getElementById('nar-'+i),read=d.getElementById('read-'+i);
+      if(nar){nar.value=txt;nar.dispatchEvent(new Event('input',{bubbles:true}))}
+      if(read){read.value=txt;read.dispatchEvent(new Event('input',{bubbles:true}))}
+    });
+    try{d.defaultView?.render&&d.defaultView.render()}catch(e){}
+    const all=d.getElementById('allAudio');if(all)all.disabled=false;
+    status.textContent='全'+filled+'ページにナレーションを反映しました。各ページで修正してから音声生成もできます。';
+  };
+}
+function walkDocs(d){
+  try{installPasteNarration(d)}catch(e){}
+  try{for(const f of d.querySelectorAll('iframe'))if(f.contentDocument)walkDocs(f.contentDocument)}catch(e){}
+}
+
 function install(){
+  walkDocs(document);
   for(const f of document.querySelectorAll('iframe')){try{
     const d=f.contentDocument;if(!d)continue;
     const extra=d.getElementById('extra'),btn=d.getElementById('makeNarration');
