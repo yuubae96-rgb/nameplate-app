@@ -1,4 +1,23 @@
 (()=>{
+const CHATGPT_PROMPT=`添付したPDF全体の内容と各ページの意図を理解して、最初から最後まで話が自然につながるプレゼン用ナレーションを作ってください。
+
+【重要】
+・PDFファイル名、拡張子、添付ファイル名はナレーション本文に絶対に入れないでください。
+・「1ページ目」「2ページ目」などのページ番号は読み上げ本文に入れないでください。
+・資料の文字をそのまま棒読みせず、意味を理解して分かりやすく説明してください。
+・前のページから次のページへ自然につながる文章にしてください。
+・各ページには、そのページで実際に読み上げるナレーションだけを書いてください。
+・タイトル、ファイル名、ページ番号、注釈など、読み上げ不要の情報は除外してください。
+
+出力形式：
+【1ページ】
+（1ページ目で読み上げる文章）
+
+【2ページ】
+（2ページ目で読み上げる文章）
+
+この形式で最後のページまで作成してください。`;
+
 const STORY=`【全ページ共通：一本の物語としてナレーションを書く】\nPDFの各ページを別々の説明文として処理せず、最初から最後まで一本のドキュメンタリー映画・ストーリーとしてつながるナレーションにしてください。前ページの結論・疑問・原因・人物の判断を、次ページの冒頭へ自然につなげてください。「次に」「そして」「このページでは」の機械的な連発、ページごとの仕切り直し、箇条書きの読み上げは禁止です。冒頭で続きを知りたくなる問いや状況を作り、中盤に資料に基づく転換点・対立・意外性・変化を置き、終盤は冒頭の問いへ意味の上で戻って全体が腑に落ちる着地にしてください。文章は流暢で自然な話し言葉にし、短文のぶつ切りを避けます。ただし資料にない会話・心情・出来事・因果関係は創作せず、資料の正確さを最優先してください。各ページのpreviousContextは単なる要約ではなく、前ページから次ページへ渡す物語の糸として使ってください。全ページを続けて聞いた時に一つの作品になることを最優先してください。\n\n【すずゆう風を選んだ場合】各ページの最初の一文は、必ずそのページの内容に即した短い疑問文にしてください。最初の一文の末尾は必ず「？」にし、その問いの答えを追うように説明を続けてください。`;
 
 function startsWithQuestion(text){
@@ -47,7 +66,9 @@ function installPasteNarration(d){
   card.id='pasteNarrationCard';
   card.className='mode';
   card.style.marginTop='12px';
-  card.innerHTML='<h3 style="margin:0 0 8px">ChatGPTで作ったナレーションを貼り付ける</h3><div class="hint" style="margin-bottom:8px">「1ページ」「### 1ページ」「1ページ　導入」のようなページ見出し付き原稿を、そのまま全部貼り付けてください。PDFの各ページへ自動で振り分けます。</div><textarea id="bulkNarrationPaste" placeholder="ここにChatGPTで作った全ページのナレーションをそのまま貼り付け"></textarea><button type="button" class="btn green full" id="applyBulkNarration" style="margin-top:8px">貼り付けた文章を全ページに反映</button><div id="bulkNarrationStatus" class="status"></div>';
+  card.innerHTML='<h3 style="margin:0 0 8px">ChatGPTで作ったナレーションを貼り付ける</h3><div class="hint" style="margin-bottom:8px">下の指示文をChatGPTへそのままコピーして使えます。PDF名やページ番号は読み上げ本文に入れない指定です。</div><textarea id="chatgptPrompt" readonly style="min-height:220px"></textarea><button type="button" class="btn blue full" id="copyChatgptPrompt" style="margin:8px 0 12px">ChatGPTへの指示をコピー</button><div class="hint" style="margin-bottom:8px">ChatGPTの回答を「1ページ」「2ページ」…の見出し付きのまま全部貼り付けてください。各ページへ自動で振り分けます。</div><textarea id="bulkNarrationPaste" placeholder="ここにChatGPTで作った全ページのナレーションをそのまま貼り付け"></textarea><button type="button" class="btn green full" id="applyBulkNarration" style="margin-top:8px">貼り付けた文章を全ページに反映</button><div id="bulkNarrationStatus" class="status"></div>';
+  d.getElementById('chatgptPrompt').value=CHATGPT_PROMPT;
+  d.getElementById('copyChatgptPrompt').onclick=async()=>{const b=d.getElementById('copyChatgptPrompt');try{await d.defaultView.navigator.clipboard.writeText(CHATGPT_PROMPT);b.textContent='✓ コピーしました';setTimeout(()=>b.textContent='ChatGPTへの指示をコピー',1600)}catch(e){const t=d.getElementById('chatgptPrompt');t.focus();t.select();d.execCommand('copy');b.textContent='✓ コピーしました';setTimeout(()=>b.textContent='ChatGPTへの指示をコピー',1600)}};
   make.parentElement.insertBefore(card,make);
   const parse=(raw,count)=>{
     const text=String(raw||'').replace(/\r/g,'').trim();
@@ -88,8 +109,37 @@ function installPasteNarration(d){
     status.textContent=filled+' / '+areas.length+'ページにナレーションを反映しました。'+(filled<areas.length?'見出しのないページは変更していません。':'')+'貼り付けた文章はそのまま使います。下の「全ページのAI音声を作る」で音声を作成してください。';
   };
 }
+function sanitizeSpeechText(d,text){
+  let s=String(text||'').replace(/\r/g,'');
+  const file=d.getElementById('pdfFile')?.files?.[0]?.name||'';
+  if(file){
+    const esc=file.replace(/[.*+?^$()|[\]\\]/g,'\\function walkDocs(d){');
+    s=s.replace(new RegExp(esc,'gi'),' ');
+    const base=file.replace(/\.pdf$/i,'');
+    if(base){const eb=base.replace(/[.*+?^$()|[\]\\]/g,'\\function walkDocs(d){');s=s.replace(new RegExp(eb+'(?:\\.pdf)?','gi'),' ')}
+  }
+  s=s.replace(/\b[^\s\n]{2,}\.pdf\b/gi,' ')
+     .replace(/^\s*(?:【|\[|#*\s*)?(?:第\s*)?[0-9０-９]{1,3}\s*ページ(?:目)?(?:】|\])?\s*[:：\-―ー]?\s*$/gm,'')
+     .replace(/\n{3,}/g,'\n\n').replace(/[ \t]{2,}/g,' ').trim();
+  return s;
+}
+function installSpeechGuard(d){
+  if(d.documentElement.dataset.speechGuard==='1')return;
+  d.documentElement.dataset.speechGuard='1';
+  const cleanAll=()=>{
+    [...d.querySelectorAll('textarea[id^="nar-"],textarea[id^="read-"]')].forEach(el=>{
+      const cleaned=sanitizeSpeechText(d,el.value);
+      if(cleaned!==el.value){el.value=cleaned;el.dispatchEvent(new (d.defaultView?.Event||Event)('input',{bubbles:true}))}
+    });
+  };
+  d.addEventListener('click',e=>{
+    const t=e.target?.closest?.('#allAudio,button[id^="audioBtn-"]');
+    if(t)cleanAll();
+  },true);
+}
 function walkDocs(d){
   try{installPasteNarration(d)}catch(e){}
+  try{installSpeechGuard(d)}catch(e){}
   try{for(const f of d.querySelectorAll('iframe'))if(f.contentDocument)walkDocs(f.contentDocument)}catch(e){}
 }
 
