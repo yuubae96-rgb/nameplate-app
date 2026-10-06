@@ -28,7 +28,7 @@ window.APP_REGISTRY=[
 {n:'文学→漫画AI',i:'漫',u:'aozora-manga-drag.html?v=20260921-3',c:'文学・漫画',company:0,d:'文学作品を漫画化'},
 {n:'文学漫画Codex',i:'文',u:'codex-literary-manga.html',c:'文学・漫画',company:0,d:'Codexで文学漫画を制作'},
 {n:'字幕工房（自動字幕）',i:'字',u:'https://kotoba-caption-studio.hotmilk.chatgpt.site',c:'YouTube・動画',company:1,d:'動画から日本語字幕を自動生成・修正し、SRT・VTT・字幕付き動画を保存'},
-{n:'YouTube動画作成',i:'映',u:'youtube-video.html?v=20261007-parallel1',c:'YouTube・動画',company:1,d:'テーマから台本・シーン・AI画像・ナレーションを作成'},
+{n:'YouTube動画作成',i:'映',u:'https://yuubae96-rgb.github.io/company-app/youtube-video-maker.html?v=20261007-parallel2',c:'YouTube・動画',company:1,d:'テーマから台本・シーン・AI画像・ナレーションを作成'},
 {n:'YouTube動画作成2',i:'映2',u:'youtube-video-2.html?v=20261007-separate1',c:'YouTube・動画',company:1,d:'実写風AI画像・ナレーション・字幕付き動画'},
 {n:'プレゼン資料→動画',i:'資',u:'youtube-presentation.html',c:'YouTube・動画',company:1,d:'PDFをAIナレーションで動画化'},
 {n:'プレゼン動画スタジオ',i:'資2',u:'youtube-presentation-studio.html',c:'YouTube・動画',company:1,d:'長い音声とページを同期して動画化'},
