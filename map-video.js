@@ -2,7 +2,7 @@
 const sleep=ms=>new Promise(r=>setTimeout(r,ms)),say=t=>$('status').textContent=t;
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function points(){return [start,...vias,end].filter(Boolean)}function paint(){paintLegs();distanceText='';$('distanceInfo').hidden=true; $('points').innerHTML='<label>設定した地点</label>'+[['出発',start],...vias.map((p,i)=>['経由'+(i+1),p]),['目的地',end]].map(([l,p])=>'<p>'+l+'：'+esc(p?.name||'未設定')+'</p>').join('');ready=false;$('preview').disabled=$('export').disabled=true;}
-let activeSlot='start';function add(p,slot=activeSlot){if(slot==='start')start=p;else if(slot==='end')end=p;else vias.push(p);$(slot+'Input').value=p.name;paint();map?.easeTo({center:p.coord,zoom:13});say(p.name+'を追加しました。地図とルートを準備してください。')}
+let activeSlot='start';function add(p,slot=activeSlot){if(slot==='start')start=p;else if(slot==='end')end=p;else vias=[p];$(slot+'Input').value=p.name;paint();map?.easeTo({center:p.coord,zoom:13});say(p.name+'を追加しました。地図とルートを準備してください。')}
 async function json(url,timeout=25000){const r=await fetch(url,{signal:AbortSignal.timeout(timeout)});if(!r.ok)throw Error('通信エラー '+r.status);return r.json()}
 const placeKey=s=>String(s||'').replace(/[\sヶヵ]/g,'').replace(/ケ/g,'').replace(/歴史/g,'');
 async function spotPlaces(q){
@@ -37,6 +37,8 @@ async function autoMixedLeg(a,b){
  const aa=await window.RailNetwork.nearest(a,4),bb=await window.RailNetwork.nearest(b,4);
  const starts=isStation(a)?aa.filter(p=>directKm(a.coord,p.coord)<.6).slice(0,1):aa;
  const ends=isStation(b)?bb.filter(p=>directKm(b.coord,p.coord)<.6).slice(0,1):bb;
+ // 最寄駅が同じ区間は、不要な鉄道の往復をせず車で経由地まで接続する。
+ if(starts[0]&&ends[0]&&directKm(starts[0].coord,ends[0].coord)<.03){const car=await travelLeg([a,b],'car');car.labels=[];return {subLegs:[car]};}
  const pairs=starts.flatMap(from=>ends.map(to=>({from,to,access:from.distance+to.distance}))).sort((a,b)=>a.access-b.access);
  let rail,pair;for(const choice of pairs){if(choice.from.name===choice.to.name&&directKm(choice.from.coord,choice.to.coord)<.6)continue;try{const found=await window.RailNetwork.route(choice.from,choice.to,$('shinkansen').value==='yes');if(found){rail=found;pair=choice;break}}catch(e){console.warn('駅の接続確認',e.message)}}
  if(!pair)throw Error('最寄駅同士を鉄道で接続できません。手動指定で経由駅を選んでください。');
