@@ -86,7 +86,7 @@ $('makeVideo').onclick=async()=>{
     rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);let stopped=new Promise((resolve,reject)=>{rec.onstop=resolve;rec.onerror=e=>reject(Error(e.error?.message||'動画記録に失敗しました。'))});
     let preparePage=async i=>{
       let s=pages[i];$('videoStatus').textContent=`動画準備 2/2：PAGE ${i+1}/${pages.length} の画像を読込中…`;
-      let img=await timed(loadImg(s.image),45000,`PAGE ${i+1}の画像読込`);if(cancelRequested)throw Error('USER_CANCELLED');
+      let img=await timed(s.video?loadMapSceneVideo(s.video):loadImg(s.image),45000,`PAGE ${i+1}の画像読込`);if(cancelRequested)throw Error('USER_CANCELLED');
       $('videoStatus').textContent=`動画準備 2/2：PAGE ${i+1}/${pages.length} の音声を読込中…`;
       let buf=await timed(decode(ac,s.audio),60000,`PAGE ${i+1}の音声読込`);if(cancelRequested)throw Error('USER_CANCELLED');
       return{img,buf};
@@ -98,9 +98,9 @@ $('makeVideo').onclick=async()=>{
       let uploaded=(s.audioSource||'').startsWith('手持ち')||(s.audioSource||'').startsWith('連続'),lead=uploaded?.9:0,leadStart=performance.now();
       while(performance.now()-leadStart<lead*1000&&!cancelRequested){draw(ctx,c,img,'');$('videoStatus').textContent=`動画生成中… PAGE ${i+1}/${pages.length}（音声開始前）`;await wait(33)}
       if(cancelRequested)break;
-      let src=ac.createBufferSource();activeSource=src;src.buffer=buf;src.connect(dest);src.start();let st=performance.now(),dur=buf.duration;
+      let src=ac.createBufferSource();activeSource=src;src.buffer=buf;src.connect(dest);if(s.video){img.currentTime=0;await img.play()}src.start();let st=performance.now(),dur=buf.duration;
       while(performance.now()-st<dur*1000&&!cancelRequested){let el=(performance.now()-st)/1000,cap=$('showCaption').checked&&s.narration?capAt(s.narration,el,dur,s.audioAlignment):'';draw(ctx,c,img,cap);$('videoStatus').textContent=`動画生成中… PAGE ${i+1}/${pages.length}`;$('videoProgress').style.width=Math.round((i+(el/dur))/pages.length*100)+'%';await wait(33)}
-      try{src.stop()}catch{}try{src.disconnect()}catch{}activeSource=null;buf=null;img.src='';img=null;
+      try{src.stop()}catch{}try{src.disconnect()}catch{}activeSource=null;buf=null;if(s.video)img.pause();img.src='';img=null;
       if(next&&!cancelRequested){$('videoStatus').textContent=`次のページを準備中… PAGE ${i+2}/${pages.length}`;let outcome=await next;if(outcome.error)throw outcome.error;prepared=outcome.value}
     }
     rec.stop();await timed(stopped,15000,'動画ファイルの仕上げ');
@@ -115,4 +115,4 @@ $('makeVideo').onclick=async()=>{
     activeSource=null;if(stream)stream.getTracks().forEach(t=>t.stop());if(ac&&ac.state!=='closed')try{await ac.close()}catch{}b=$('makeVideo');if(b)b.disabled=false;$('cancelVideo').style.display='none';
   }
 };
-</script><script src="video-draft-save.js?v=1"></script></body></html>
+</script><script src="video-draft-save.js?v=1"></script><script src="map-video-insert.js?v=20261012-map1"></script></body></html>

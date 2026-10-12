@@ -1,4 +1,5 @@
 window.APP_REGISTRY=[
+{n:'地図動画メーカー',i:'地',u:'map-video.html?v=20261012-map1',c:'YouTube・動画',company:1,d:'道路ルートの赤線・航空写真・3D地形・目的地ズームを動画にする'},
 {n:'業務日報訪問',i:'営',u:'https://yuubae96-rgb.github.io/sales-crm/',c:'会社・製造',company:1,d:'会社・人物・名刺・営業活動を管理'},
 {n:'朝礼AI',i:'朝',u:'https://yuubae96-rgb.github.io/sales-crm/morning-talk.html',c:'会社・製造',company:1,d:'世界のWebから朝礼向きの話題を探し、3分・5分の朝礼原稿を作成'},
 {n:'育てる図面変換',i:'図',u:'drawing-converter.html',c:'会社・製造',company:1,d:'客先図面→校正図の変換を学習'},
