@@ -17,13 +17,17 @@ function nearHighSpeed(c,segments){const x=c[0],y=c[1],scale=Math.cos(y*Math.PI/
 function shinkansenMatchSummary(){const rail=travelLegs.filter(l=>l.mode==='rail');let hit=0,total=0;for(const leg of rail){if(!leg.highSpeed?.length)continue;const step=Math.max(1,Math.floor(leg.coords.length/150));for(let i=0;i<leg.coords.length;i+=step){total++;if(nearHighSpeed(leg.coords[i],leg.highSpeed))hit++}}return {hit,total}}
 function updateShinkansenStatus(){const rail=travelLegs.filter(l=>l.mode==='rail');const el=$('railRouteInfo');if(!el||!travelLegs.some(l=>l.mode==='rail'))return;if($('shinkansen').value==='no'){if(rail.every(l=>l.usedProfile==='osm-local')){el.textContent='🚃 在来線の線路データを直接たどった経路（新幹線を除外）';return}el.textContent=rail.every(l=>l.usedProfile==='non_tgv')?'🚃 在来線向け検索を使用（経路の確認を推奨）':'⚠ 在来線向け検索が失敗したため、全線検索で代替しました';return}if(rail.some(l=>l.usedProfile==='all_tracks')){el.textContent='⚠ 新幹線優先検索が失敗したため全線検索で代替。🚅区間は地図と照合中';return}if(rail.every(l=>l.usedProfile==='osm-shinkansen')){el.textContent='🚅 山陽新幹線 小倉駅～博多駅｜新幹線の線路に沿うルート';return}const result=shinkansenMatchSummary();el.textContent=result.hit?'🚅 新幹線線路と一致する地点 '+result.hit+'件を確認。該当区間で🚅、その他は🚃':'🚃 新幹線の線路と一致する区間は確認できませんでした（新幹線利用は未確定）'}
 function isStationNamed(p,name){return String(p.name||'').replace(/^(福岡県|北九州市|福岡市)/g,'').includes(name)}
+async function fetchRailOSM(query,timeout=18000){
+ const mirrors=['https://overpass.kumi.systems/api/interpreter','https://overpass.nchc.org.tw/api/interpreter','https://overpass.private.coffee/api/interpreter'];
+ const errors=[];
+ for(const url of mirrors){try{const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeout);let res;try{res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(query),signal:ctrl.signal})}finally{clearTimeout(timer)}if(!res.ok)throw Error('HTTP '+res.status);const data=await res.json();if(!Array.isArray(data.elements))throw Error('線路データ形式が不正');return data}catch(e){errors.push(e.message)}}
+ throw Error('線路データサーバーに接続できません（'+errors.join('／')+'）')
+}
 async function kokuraHakataRail(ps){if($('shinkansen').value!=='yes'||ps.length!==2)return null;const a=ps[0],b=ps[1];const forward=isStationNamed(a,'小倉駅')&&isStationNamed(b,'博多駅');const backward=isStationNamed(a,'博多駅')&&isStationNamed(b,'小倉駅');if(!forward&&!backward)return null;
 // 山陽新幹線の小倉～博多間。OSMの高速鉄道線路を直接取得し、端点を接続して経路を構築する。
 const west=[130.420,33.560],east=[130.900,33.910];
 const query='[out:json][timeout:24];way["railway"="rail"]["highspeed"="yes"](33.55,130.40,33.93,130.92);out geom;';
-const response=await fetch('https://overpass.kumi.systems/api/interpreter',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(query),signal:AbortSignal.timeout(18000)});
-if(!response.ok)throw Error('新幹線の線路データを取得できません（'+response.status+'）');
-const data=await response.json(),ways=(data.elements||[]).filter(e=>e.geometry?.length>1).map(e=>e.geometry.map(p=>[p.lon,p.lat]));
+const data=await fetchRailOSM(query,14000),ways=(data.elements||[]).filter(e=>e.geometry?.length>1).map(e=>e.geometry.map(p=>[p.lon,p.lat]));
 if(!ways.length)throw Error('山陽新幹線の線路データが見つかりません');
 const startCoord=forward?a.coord:b.coord,endCoord=forward?b.coord:a.coord;
 const nodes=new Map(),adj=new Map(),key=p=>p.map(n=>n.toFixed(5)).join(',');
@@ -42,9 +46,7 @@ if($('shinkansen').value!=='no'||ps.length!==2)return null;
 const a=ps[0].coord,b=ps[1].coord,km=directKm(a,b);if(km>120) return null;
 const pad=.035,box=[Math.min(a[1],b[1])-pad,Math.min(a[0],b[0])-pad,Math.max(a[1],b[1])+pad,Math.max(a[0],b[0])+pad];
 const query='[out:json][timeout:35];way["railway"="rail"]["highspeed"!="yes"]["service"!~"^(yard|siding|spur)$"]('+box.join(',')+');out geom;';
-const response=await fetch('https://overpass.kumi.systems/api/interpreter',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(query),signal:AbortSignal.timeout(28000)});
-if(!response.ok)throw Error('在来線データの取得に失敗（'+response.status+'）');
-const data=await response.json(),ways=(data.elements||[]).filter(e=>e.geometry?.length>1).map(e=>e.geometry.map(p=>[p.lon,p.lat]));if(!ways.length)throw Error('在来線の線路データがありません');
+const data=await fetchRailOSM(query,22000),ways=(data.elements||[]).filter(e=>e.geometry?.length>1).map(e=>e.geometry.map(p=>[p.lon,p.lat]));if(!ways.length)throw Error('在来線の線路データがありません');
 const nodes=new Map(),adj=new Map(),key=p=>p.map(n=>n.toFixed(5)).join(',');
 for(const line of ways)for(let i=1;i<line.length;i++){const p=line[i-1],q=line[i],u=key(p),v=key(q),w=directKm(p,q);nodes.set(u,p);nodes.set(v,q);if(!adj.has(u))adj.set(u,[]);if(!adj.has(v))adj.set(v,[]);adj.get(u).push([v,w]);adj.get(v).push([u,w])}
 const nearest=c=>{let best='',d=Infinity;for(const [k,p] of nodes){const n=directKm(c,p);if(n<d){d=n;best=k}}return {key:best,km:d}};
