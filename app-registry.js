@@ -1,4 +1,5 @@
 window.APP_REGISTRY=[
+{n:'航空写真ズーム動画',i:'空',u:'https://aerial-zoom-studio.hotmilk.chatgpt.site',c:'YouTube・動画',company:1,d:'日本全体→都道府県→目的地へズームし、一時停止と360度回転の航空写真動画を作成'},
 {n:'地図動画メーカー',i:'地',u:'map-video.html?v=20261012-mapfix6',c:'YouTube・動画',company:1,d:'道路ルートの赤線・航空写真・3D地形・目的地ズームを動画にする'},
 {n:'業務日報訪問',i:'営',u:'https://yuubae96-rgb.github.io/sales-crm/',c:'会社・製造',company:1,d:'会社・人物・名刺・営業活動を管理'},
 {n:'朝礼AI',i:'朝',u:'https://yuubae96-rgb.github.io/sales-crm/morning-talk.html',c:'会社・製造',company:1,d:'世界のWebから朝礼向きの話題を探し、3分・5分の朝礼原稿を作成'},
