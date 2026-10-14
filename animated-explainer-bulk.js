@@ -50,6 +50,7 @@
      const current=bridge.items(),now=current.map(sceneData);if(current.length!==source.length||current.some((s,i)=>s!==source[i])||JSON.stringify(now.map(s=>({title:s.title,narration:s.narration,audio:s.audio})))!==snapshot)throw Error('作成中にナレーションや音声が変更されています。変更後の内容でもう一度実行してください。');
      for(let i=0;i<clips.length;i++)bridge.insert(i,clips[i].cfg,clips[i].src,clips[i].poster);bridge.refresh();clips.length=0;
      say('全体の意図に沿ったアニメーションが完成しました。ナレーションとつないで動画を書き出します。');
+     const subtitlePosition=document.getElementById('subtitlePosition');if(subtitlePosition&&[...subtitlePosition.options].some(o=>o.value==='bottom')){subtitlePosition.value='bottom';subtitlePosition.dispatchEvent(new Event('change',{bubbles:true}))}
      const exportButton=document.getElementById('makeVideo')||document.getElementById('exportVideo');if(exportButton&&!exportButton.disabled)exportButton.click();else say('全体のアニメーションが完成しました。音声の準備を確認して「動画を書き出す」を押してください。');
    }catch(e){say(cancelled?'一括作成を中止しました。元のシーンは保持しています。':(e.name==='AbortError'?'AIの構成を待つ時間を超えました。もう一度実行してください。':e.message));for(const clip of clips)URL.revokeObjectURL(clip.src)}finally{running=false;controller=null;button.disabled=false;stop.hidden=true;}
  }
