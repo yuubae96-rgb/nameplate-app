@@ -1,0 +1,171 @@
+{
+  "name": "Open Peeps",
+  "author": "Pablo Stanley",
+  "license": "CC0-1.0",
+  "source": "https://www.openpeeps.com/",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "assets": [
+    {
+      "id": "person-01",
+      "file": "person-01.svg",
+      "label": "人物01（胸から上）",
+      "pose": "胸から上",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e535a648e249323fd077d2b_peep-75.svg",
+      "sha256": "813c9a0692f3e8c19436a31adf2e50d842642d60e3c1f90497e0035f3047d87e",
+      "bytes": 26810
+    },
+    {
+      "id": "person-02",
+      "file": "person-02.svg",
+      "label": "人物02（胸から上）",
+      "pose": "胸から上",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e5357a8c992500f5fc84f40_peep-52.svg",
+      "sha256": "fc9e20365c5c0536e0527f94f1ede60b2977e827c36655c8eabc358017a21a73",
+      "bytes": 61830
+    },
+    {
+      "id": "person-03",
+      "file": "person-03.svg",
+      "label": "人物03（胸から上）",
+      "pose": "胸から上",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e535cf47488c27eb04a70d1_peep-97.svg",
+      "sha256": "96dfeabba71db9741be210070ee7fca6c632a26e166fa85e3258f90a04ed03ee",
+      "bytes": 40012
+    },
+    {
+      "id": "person-04",
+      "file": "person-04.svg",
+      "label": "人物04（胸から上）",
+      "pose": "胸から上",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e5354c88e249320e005285e_peep-32.svg",
+      "sha256": "6e2564d398f3639d429df04eb210576e7e53e38b8060e9abd7b3505845d33e7d",
+      "bytes": 57998
+    },
+    {
+      "id": "person-05",
+      "file": "person-05.svg",
+      "label": "人物05（胸から上）",
+      "pose": "胸から上",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e5352b1c99250785ac5ab18_peep-20.svg",
+      "sha256": "5cd5841f9012e412bdbbd12fcb60274c78631e29184da53da505f31cdad39e18",
+      "bytes": 81301
+    },
+    {
+      "id": "person-06",
+      "file": "person-06.svg",
+      "label": "人物06（胸から上）",
+      "pose": "胸から上",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e535c225197058c80a6eabc_peep-90.svg",
+      "sha256": "e43e63445c08a4cb6d295cf18bc354ac35e042e38a321ded67cb2b2a0543cb04",
+      "bytes": 59481
+    },
+    {
+      "id": "person-07",
+      "file": "person-07.svg",
+      "label": "人物07（立ち姿）",
+      "pose": "立ち姿",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e5360ba550b761a0bfabd32_peep-standing-4.svg",
+      "sha256": "43be974ee3561925b6e7f669bc29fb2744edb605db797b476e6b3ff9173f730f",
+      "bytes": 38893
+    },
+    {
+      "id": "person-08",
+      "file": "person-08.svg",
+      "label": "人物08（立ち姿）",
+      "pose": "立ち姿",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e53633a7371bbe22da4c986_peep-standing-25.svg",
+      "sha256": "0c33051d7b39f72328403bd39159a82e44aaef45520f28178914caf0fd3d176d",
+      "bytes": 42154
+    },
+    {
+      "id": "person-09",
+      "file": "person-09.svg",
+      "label": "人物09（立ち姿）",
+      "pose": "立ち姿",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e53624b9b55b0127f5851cf_peep-standing-17.svg",
+      "sha256": "7025ce2684ffcfff2f2017ffc332ae807e95d3b8befa266ebe66a186d3c03414",
+      "bytes": 50041
+    },
+    {
+      "id": "person-10",
+      "file": "person-10.svg",
+      "label": "人物10（立ち姿）",
+      "pose": "立ち姿",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e536210c67e798fb29b1e94_peep-standing-15.svg",
+      "sha256": "887a47e61a3be67ad9fac118d8d78469300258bcc01003de378643318332c060",
+      "bytes": 54693
+    },
+    {
+      "id": "person-11",
+      "file": "person-11.svg",
+      "label": "人物11（立ち姿）",
+      "pose": "立ち姿",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e5361ccd3992383f7595afc_peep-standing-13.svg",
+      "sha256": "a8a87c1247b6b54d7319cba4f95c83a46385d1b0f9250054960719941989146b",
+      "bytes": 46063
+    },
+    {
+      "id": "person-12",
+      "file": "person-12.svg",
+      "label": "人物12（立ち姿）",
+      "pose": "立ち姿",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e5362fa8becbf1d50570b23_peep-standing-23.svg",
+      "sha256": "b25c09bd3f2c2f5538f490bffce60f22caa954acd0da4cd010b3872c83c719fe",
+      "bytes": 53996
+    },
+    {
+      "id": "person-13",
+      "file": "person-13.svg",
+      "label": "人物13（座り姿）",
+      "pose": "座り姿",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e535f96c67e7961f5994532_peep-sitting-15.svg",
+      "sha256": "a63c4b9b071ad62a75cf841224c3ea38617bb4eabbfbcdaaed4988237b466964",
+      "bytes": 78845
+    },
+    {
+      "id": "person-14",
+      "file": "person-14.svg",
+      "label": "人物14（座り姿）",
+      "pose": "座り姿",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e535f438becbf2fab5619bb_peep-sitting-12.svg",
+      "sha256": "1ec3e10269037194259dc76a43aca43e5f41129702b7ad0a1e2cabe6a0c36b5f",
+      "bytes": 39008
+    },
+    {
+      "id": "person-15",
+      "file": "person-15.svg",
+      "label": "人物15（座り姿）",
+      "pose": "座り姿",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e536006c67e7976719986dc_peep-sitting-18.svg",
+      "sha256": "fdd2238d466b12e13c391eff502f6131a08e45a428a8e9864a0c3239b8cd79b3",
+      "bytes": 35923
+    },
+    {
+      "id": "person-16",
+      "file": "person-16.svg",
+      "label": "人物16（座り姿）",
+      "pose": "座り姿",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e535e838e249316920983c3_peep-sitting-5.svg",
+      "sha256": "9eed8e2fbe71e1351bd203e4b3fe292df1e4d4efa551b973128ec37ef99c1a5f",
+      "bytes": 44296
+    },
+    {
+      "id": "person-17",
+      "file": "person-17.svg",
+      "label": "人物17（座り姿）",
+      "pose": "座り姿",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e535f7d9b55b097be57089f_peep-sitting-14.svg",
+      "sha256": "32d3b9a600c33f1666541dcd96ce90563d1188b6e8c82638655b3f6a071a761b",
+      "bytes": 79121
+    },
+    {
+      "id": "person-18",
+      "file": "person-18.svg",
+      "label": "人物18（座り姿）",
+      "pose": "座り姿",
+      "source": "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e535e658e24935b1b096148_peep-sitting-4.svg",
+      "sha256": "923eec36d10fc37583a8e6c934eb43b7b31368552668bf9c87ad3f2cbabcabc2",
+      "bytes": 40062
+    }
+  ]
+}
