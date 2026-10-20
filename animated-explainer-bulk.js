@@ -31,7 +31,7 @@
      AnimatedExplainer.render(ctx,cfg,cfg.duration,assets);const poster=c.toDataURL('image/png');rec.stop();const blob=await Promise.race([ended,new Promise((_,j)=>{finishTimer=setTimeout(()=>j(Error('動画の仕上げが完了しませんでした。')),15000)})]);if(!blob.size)throw Error('動画が空です。');return{src:URL.createObjectURL(blob),poster};
    }finally{clearTimeout(finishTimer);if(rec&&rec.state!=='inactive')rec.stop();stream?.getTracks().forEach(t=>t.stop())}
  }
- async function build(panel){
+ async function build(panel,options={}){
    if(running)return;const bridge=root.AnimatedExplainerBridge;if(!bridge)return;const source=bridge.items().slice(),scenes=source.map(sceneData),status=panel.querySelector('[role=status]'),button=panel.querySelector('.ae-bulk-start'),stop=panel.querySelector('.ae-bulk-cancel'),clips=[];
    const say=text=>status.textContent=text;
    try{
@@ -53,9 +53,11 @@
      for(let i=0;i<clips.length;i++)bridge.insert(i,clips[i].cfg,clips[i].src,clips[i].poster);bridge.refresh();clips.length=0;
      say('全体の意図に沿ったアニメーションが完成しました。ナレーションとつないで動画を書き出します。');
      const subtitlePosition=document.getElementById('subtitlePosition');if(subtitlePosition&&[...subtitlePosition.options].some(o=>o.value==='bottom')){subtitlePosition.value='bottom';subtitlePosition.dispatchEvent(new Event('change',{bubbles:true}))}
-     const exportButton=document.getElementById('makeVideo')||document.getElementById('exportVideo');if(exportButton&&!exportButton.disabled)exportButton.click();else say('全体のアニメーションが完成しました。音声の準備を確認して「動画を書き出す」を押してください。');
-   }catch(e){say(cancelled?'一括作成を中止しました。元のシーンは保持しています。':(e.name==='AbortError'?'AIの構成を待つ時間を超えました。もう一度実行してください。':e.message));for(const clip of clips)URL.revokeObjectURL(clip.src)}finally{running=false;controller=null;button.disabled=false;stop.hidden=true;}
+     const exportButton=document.getElementById('makeVideo')||document.getElementById('exportVideo');if(options.exportVideo)await options.exportVideo();else if(exportButton&&!exportButton.disabled)exportButton.click();else say('全体のアニメーションが完成しました。音声の準備を確認して「動画を書き出す」を押してください。');
+     return {ok:true};
+   }catch(e){say(cancelled?'一括作成を中止しました。元のシーンは保持しています。':(e.name==='AbortError'?'AIの構成を待つ時間を超えました。もう一度実行してください。':e.message));for(const clip of clips)URL.revokeObjectURL(clip.src);return {ok:false,error:status.textContent}}finally{running=false;controller=null;button.disabled=false;stop.hidden=true;}
  }
+ root.AnimatedExplainerBulk={build(options={}){const panel=document.getElementById('aeWholeStoryPanel');if(!panel)return Promise.resolve({ok:false,error:'アニメーション欄が見つかりません。'});return build(panel,options)}};
  function install(){if(document.getElementById('aeWholeStoryPanel')||!root.AnimatedExplainerBridge)return;const panel=document.createElement('div');panel.id='aeWholeStoryPanel';panel.style.cssText='margin:12px;padding:14px;background:#fff0f5;border:1px solid #e9aac2;border-radius:15px;font:14px system-ui;color:#5c2943';panel.innerHTML='<button type="button" class="ae-bulk-start" style="width:100%;padding:16px;min-height:54px;border:0;border-radius:12px;background:#ed91b7;color:#351224;font:800 17px system-ui">🌸 全体をAIアニメーション化</button><p style="margin:9px 0">全ページの意図をAIがまとめて読み取り、ナレーションに沿って文字・人物・矢印を一括作成し、完成動画の書き出しまで進めます。人物には収録済みのOpen Peeps素材を使い、同じ人物を全ページで統一します。先に全ページの音声を用意してください。</p><p class="ae-bulk-intent" style="margin:8px 0"></p><p role="status" style="margin:8px 0"></p><button type="button" class="ae-bulk-cancel" hidden style="padding:10px 16px;min-height:44px">一括作成を中止</button>';
      const close=document.createElement('button');close.type='button';close.className='ae-bulk-dismiss';close.textContent='× アニメーションを使わない（閉じる）';close.style.cssText='display:block;margin:8px auto 0;padding:7px 12px;border:1px solid #d8b6c4;border-radius:8px;background:#fff;color:#745568;font:600 12px system-ui;cursor:pointer';panel.querySelector('.ae-bulk-start').after(close);
      const reopen=document.createElement('button');reopen.type='button';reopen.id='aeWholeStoryReopen';reopen.textContent='🌸 AIアニメーションを表示';reopen.style.cssText='display:none;margin:10px 12px;padding:9px 13px;border:1px solid #e9aac2;border-radius:9px;background:#fff0f5;color:#79324f;font:700 12px system-ui;cursor:pointer';
