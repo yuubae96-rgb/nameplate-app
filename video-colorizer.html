@@ -24,7 +24,7 @@ dialog{width:min(520px,calc(100% - 28px));max-height:85dvh;overflow:auto;border:
 <h2>2. カラー化の設定</h2>
 <div class="grid2">
 <div class="field"><label>色の雰囲気</label><select id="mode"><option value="historical">史実重視・自然</option><option value="natural" selected>自然な現代カラー</option><option value="vivid">少し鮮やか</option></select></div>
-<div class="field"><label>AI基準フレーム間隔</label><select id="interval"><option value="0.5" selected>0.5秒ごと（細かく補正・生成枚数が増えます）</option><option value="1">1秒ごと</option><option value="2">2秒ごと（おすすめ）</option><option value="3">3秒ごと（節約）</option><option value="5">5秒ごと（長尺向け）</option></select></div>
+<div class="field"><label>AI基準フレーム間隔</label><select id="interval"><option value="0.5">0.5秒ごと（細かく補正・生成枚数が増えます）</option><option value="1" selected>1秒ごと</option><option value="2">2秒ごと</option><option value="3">3秒ごと（節約）</option><option value="5">5秒ごと（長尺向け）</option></select></div>
 </div>
 <div id="planStatus" class="status" aria-live="polite"></div>
 <div class="quality"><span class="pill">0.5秒設定は15枚制限なし</span><span class="pill">元の動き保持</span><span class="pill">元音声保持</span><span class="pill">ちらつき抑制</span><span class="pill">動きに合わせた色補正</span></div>
@@ -87,8 +87,8 @@ function keyPair(t){let a=keyframes[0],b=a;for(const k of keyframes){b=k;if(k.t>
 let colorHistory=null;
 function resetColorHistory(){colorHistory=null}
 function chromaField(g,k){const out=new Float32Array(mw*mh*3);for(let y=0;y<mh;y+=8)for(let x=0;x<mw;x+=8){const match=blockMatch(g,k.g,Math.min(x,mw-8),Math.min(y,mh-8));
-// A weak match must not turn a colored region back into black and white.
-const strength=.92*(.7+.3*match.confidence);
+// Keep saturation constant: matching confidence changes must not pulse the color.
+const strength=.92;
 for(let j=0;j<8&&y+j<mh;j++)for(let i=0;i<8&&x+i<mw;i++){const px=x+i,py=y+j,q=(py*mw+px)*3,rx=Math.max(0,Math.min(mw-1,px+match.dx)),ry=Math.max(0,Math.min(mh-1,py+match.dy)),r=(ry*mw+rx)*4,lum=.299*k.rgb[r]+.587*k.rgb[r+1]+.114*k.rgb[r+2];for(let c=0;c<3;c++)out[q+c]=(k.rgb[r+c]-lum)*strength}}return out}
 function stabilizeChroma(field,g,t,canvas){const prev=colorHistory,dt=prev?t-prev.t:0;let difference=0;if(prev&&prev.g.length===g.length)for(let i=0;i<g.length;i++)difference+=Math.abs(g[i]-prev.g[i]);
 // Reset on a seek, new output surface, or large scene change. Never blend luminance.
