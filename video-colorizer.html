@@ -62,9 +62,34 @@ function modePrompt(){const m=$('mode').value;if(m==='vivid')return 'Natural but
 function contentBounds(data,width,height){const columns=new Uint32Array(width),rows=new Uint32Array(height);for(let y=0;y<height;y++)for(let x=0;x<width;x++){const q=(y*width+x)*4;if(Math.max(data[q],data[q+1],data[q+2])>24){columns[x]++;rows[y]++}}let x=0,y=0,right=width-1,bottom=height-1;while(x<right&&columns[x]<height*.08)x++;while(right>x&&columns[right]<height*.08)right--;while(y<bottom&&rows[y]<width*.08)y++;while(bottom>y&&rows[bottom]<width*.08)bottom--;if(right-x<width*.3||bottom-y<height*.3)return {x:0,y:0,width,height};if(x<width*.04)x=0;if(right>width*.96)right=width-1;if(y<height*.04)y=0;if(bottom>height*.96)bottom=height-1;return {x,y,width:right-x+1,height:bottom-y+1}}
 async function aiFrame(frame,signal){const original=await loadImage(frame,signal),c=document.createElement('canvas');c.width=original.naturalWidth;c.height=original.naturalHeight;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(original,0,0);const bounds=contentBounds(ctx.getImageData(0,0,c.width,c.height).data,c.width,c.height),crop=document.createElement('canvas');crop.width=bounds.width;crop.height=bounds.height;crop.getContext('2d').drawImage(c,bounds.x,bounds.y,bounds.width,bounds.height,0,0,bounds.width,bounds.height);const ratios=[['1:1',1],['4:3',4/3],['3:4',3/4],['16:9',16/9],['9:16',9/16]],ratio=bounds.width/bounds.height,aspectRatio=ratios.reduce((a,b)=>Math.abs(Math.log(ratio/b[1]))<Math.abs(Math.log(ratio/a[1]))?b:a)[0];return {frame:crop.toDataURL('image/jpeg',.95),bounds,width:c.width,height:c.height,aspectRatio}}
 async function callColorize(frame,signal){const prepared=await aiFrame(frame,signal);const prompt=`COLORIZE ONLY. Preserve exact people, faces, pose, objects, crop, geometry, text, lighting and original luminance. Do not retouch, beautify or sharpen. Preserve film texture. ${modePrompt()} Avoid orange skin, neon colors and color bleeding. No new text or logos.`;const r=await fetch(FN,{method:'POST',signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'generateImage',prompt,aspectRatio:prepared.aspectRatio,sceneReference:prepared.frame,refineMode:true})});const txt=await r.text();check(signal);let d;try{d=JSON.parse(txt)}catch{throw new Error('AIから正しい応答がありませんでした')}if(!r.ok||!d.data)throw new Error(d.error||`AI画像を取得できませんでした (HTTP ${r.status})`);const colored=await loadImage(`data:${d.mimeType||'image/jpeg'};base64,${d.data}`,signal),restored=document.createElement('canvas');restored.width=prepared.width;restored.height=prepared.height;const ctx=restored.getContext('2d'),b=prepared.bounds;ctx.fillStyle='#000';ctx.fillRect(0,0,restored.width,restored.height);ctx.drawImage(colored,b.x,b.y,b.width,b.height);return restored.toDataURL('image/jpeg',.95)}
-// OpenCV dense optical flow; failure is reported rather than using the old matcher.
+// OpenCV can expose either a runtime object or a Promise for the runtime.
 let colorEngine=null,colorEnginePromise=null;
-function ensureColorEngine(){if(colorEngine)return Promise.resolve();if(colorEnginePromise)return colorEnginePromise;colorEnginePromise=new Promise((resolve,reject)=>{const script=document.createElement('script');let timer=setTimeout(()=>fail(),45000);function fail(){clearTimeout(timer);colorEnginePromise=null;script.remove();reject(new Error('動き追跡エンジンを読み込めません。通信を確認して再実行してください。'))}function ready(){if(!window.cv?.Mat||!window.cv?.calcOpticalFlowFarneback)return;clearTimeout(timer);colorEngine=window.cv;resolve()}script.src='https://docs.opencv.org/4.13.0/opencv.js';script.onerror=fail;script.onload=()=>{if(window.cv?.Mat)ready();else if(window.cv)window.cv.onRuntimeInitialized=ready;else fail()};document.head.appendChild(script)});return colorEnginePromise}
+function usableColorEngine(cv){return !!(cv&&typeof cv.Mat==='function'&&typeof cv.calcOpticalFlowFarneback==='function'&&typeof cv.resize==='function')}
+function loadColorEngineScript(url){return new Promise((resolve,reject)=>{
+  const script=document.createElement('script');let settled=false,watched=null;
+  const clean=()=>{clearTimeout(timer);clearInterval(poll);script.onload=null;script.onerror=null};
+  const fail=error=>{if(settled)return;settled=true;clean();script.remove();reject(error instanceof Error?error:new Error('OpenCVの読み込みに失敗しました'))};
+  const ready=cv=>{if(settled||!usableColorEngine(cv))return false;settled=true;clean();colorEngine=cv;resolve();return true};
+  const inspect=()=>{const cv=window.cv;if(ready(cv))return;
+    // Newer OpenCV builds publish a Promise. Runtime callbacks on that Promise never run.
+    if(cv&&typeof cv.then==='function'&&cv!==watched){watched=cv;cv.then(module=>{if(!ready(module))fail(new Error('OpenCVに必要な動き追跡機能がありません'))},fail)}
+  };
+  const timer=setTimeout(()=>fail(new Error('OpenCVの初期化がタイムアウトしました')),60000);
+  const poll=setInterval(inspect,100);
+  script.src=url;script.async=true;script.onerror=()=>fail(new Error('OpenCV配信元に接続できません'));script.onload=inspect;
+  document.head.appendChild(script);
+})}
+function ensureColorEngine(){
+  if(usableColorEngine(colorEngine))return Promise.resolve();
+  if(colorEnginePromise)return colorEnginePromise;
+  colorEnginePromise=(async()=>{
+    if(usableColorEngine(window.cv)){colorEngine=window.cv;return}
+    const sources=['https://docs.opencv.org/4.13.0/opencv.js','https://docs.opencv.org/4.12.0/opencv.js'];
+    for(const url of sources){try{window.cv=undefined;await loadColorEngineScript(url);return}catch(error){console.warn('OpenCV loader:',url,error)}}
+    throw new Error('動き追跡エンジンの読み込み・初期化に失敗しました。通信を確認して再実行してください。');
+  })().catch(error=>{colorEnginePromise=null;throw error});
+  return colorEnginePromise;
+}
 function awaitColorEngine(signal){return new Promise((resolve,reject)=>{check(signal);const cancel=()=>{signal.removeEventListener('abort',cancel);reject(aborted())};signal.addEventListener('abort',cancel,{once:true});ensureColorEngine().then(()=>{signal.removeEventListener('abort',cancel);if(signal.aborted)reject(aborted());else resolve()},e=>{signal.removeEventListener('abort',cancel);reject(e)})})}
 function denseFlow(a,b){const cv=colorEngine,first=new cv.Mat(mh,mw,cv.CV_8UC1),second=new cv.Mat(mh,mw,cv.CV_8UC1),flow=new cv.Mat;try{first.data.set(a);second.data.set(b);cv.calcOpticalFlowFarneback(first,second,flow,.5,4,15,3,5,1.1,0);return new Float32Array(flow.data32F)}finally{first.delete();second.delete();flow.delete()}}
 function sample(data,width,height,x,y,stride=1,channel=0){x=Math.max(0,Math.min(width-1,x));y=Math.max(0,Math.min(height-1,y));const x0=Math.floor(x),y0=Math.floor(y),x1=Math.min(width-1,x0+1),y1=Math.min(height-1,y0+1),tx=x-x0,ty=y-y0;return (data[(y0*width+x0)*stride+channel]*(1-tx)+data[(y0*width+x1)*stride+channel]*tx)*(1-ty)+(data[(y1*width+x0)*stride+channel]*(1-tx)+data[(y1*width+x1)*stride+channel]*tx)*ty}
